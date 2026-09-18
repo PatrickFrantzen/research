@@ -5,21 +5,21 @@
 # damit die relative Pfadauflösung in src/app.module.ts unverändert bleibt
 # (identisch zum lokalen Dev-Layout).
 
-FROM node:22-bookworm-slim AS frontend-build
+FROM node:22.23-bookworm-slim AS frontend-build
 WORKDIR /workspace/frontend
 COPY frontend/package*.json ./
 RUN npm install --legacy-peer-deps
 COPY frontend/ ./
 RUN npm run build
 
-FROM node:22-bookworm-slim AS backend-build
+FROM node:22.23-bookworm-slim AS backend-build
 WORKDIR /workspace/backend
 COPY backend/package*.json ./
 RUN npm install --legacy-peer-deps
 COPY backend/ ./
 RUN npm run build
 
-FROM node:22-bookworm-slim AS runtime
+FROM node:22.23-bookworm-slim AS runtime
 WORKDIR /app/backend
 COPY backend/package*.json ./
 RUN npm install --omit=dev --legacy-peer-deps
