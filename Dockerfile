@@ -37,6 +37,9 @@ COPY --from=backend-build /workspace/backend/prisma ./prisma
 COPY --from=backend-build /workspace/backend/prisma.config.ts ./prisma.config.ts
 COPY --from=backend-build /workspace/backend/src/generated ./src/generated
 COPY --from=frontend-build /workspace/frontend/dist /app/frontend/dist
+# AVV-Stammdaten für prisma/seed-avv-codes.ts (liest ../../data/avv/avv-liste.json
+# relativ zu backend/prisma/, siehe data/avv/README.md).
+COPY data/avv /app/data/avv
 ENV NODE_ENV=production
 EXPOSE 3000
 CMD ["node", "dist/main.js"]

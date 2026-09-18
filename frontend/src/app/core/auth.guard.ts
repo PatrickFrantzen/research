@@ -13,3 +13,9 @@ export const vorgesetzterGuard: CanActivateFn = () => {
   const router = inject(Router);
   return authService.rolle() === 'VORGESETZTER' ? true : router.createUrlTree(['/']);
 };
+
+export const mitarbeiterGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+  return authService.rolle() === 'MITARBEITER' ? true : router.createUrlTree(['/']);
+};
