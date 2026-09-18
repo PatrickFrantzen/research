@@ -1,0 +1,39 @@
+<div class="seite">
+  <a routerLink="/">Zurück zur Startseite</a>
+  <h1>Wareneinträge</h1>
+
+  <div class="filter">
+    <mat-form-field appearance="outline">
+      <mat-label>AVV-Code</mat-label>
+      <input
+        matInput
+        name="avvSuche"
+        [matAutocomplete]="avvAuto"
+        [(ngModel)]="avvSucheAnzeige"
+        (ngModelChange)="onAvvSucheEingabe($event)"
+      />
+      <mat-autocomplete #avvAuto="matAutocomplete" (optionSelected)="onAvvCodeAusgewaehlt($event)">
+        @for (avvCode of avvTreffer.value(); track avvCode.id) {
+          <mat-option [value]="avvCode">{{ avvCode.code }} – {{ avvCode.bezeichnung }}</mat-option>
+        }
+      </mat-autocomplete>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Freitext durchsuchen</mat-label>
+      <input matInput name="suche" (ngModelChange)="onSucheEingabe($event)" ngModel />
+    </mat-form-field>
+  </div>
+
+  <div class="karten">
+    @for (wareneintrag of wareneintraege.value(); track wareneintrag.id) {
+      <mat-card class="karte">
+        <img [src]="wareneintrag.fotoUrl" alt="Foto des Wareneintrags" />
+        <p>{{ wareneintrag.freitext }}</p>
+        <p class="datum">{{ wareneintrag.erstelltAm | date: 'short' }}</p>
+      </mat-card>
+    } @empty {
+      <p>Keine Wareneinträge gefunden.</p>
+    }
+  </div>
+</div>

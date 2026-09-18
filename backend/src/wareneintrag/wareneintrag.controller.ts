@@ -2,9 +2,11 @@ import {
   Body,
   Controller,
   FileTypeValidator,
+  Get,
   MaxFileSizeValidator,
   ParseFilePipe,
   Post,
+  Query,
   Req,
   UploadedFile,
   UseGuards,
@@ -26,6 +28,12 @@ const FOTO_MAX_GROESSE_BYTES = 10 * 1024 * 1024; // 10 MB
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class WareneintragController {
   constructor(private readonly wareneintragService: WareneintragService) {}
+
+  @Get()
+  @Roles(Rolle.VORGESETZTER)
+  async findAll(@Query('avvCodeId') avvCodeId?: string, @Query('suche') suche?: string) {
+    return this.wareneintragService.findAll({ avvCodeId, suche });
+  }
 
   @Post()
   @Roles(Rolle.MITARBEITER)

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '../generated/prisma/client.js';
 import { ObjectStorageService } from '../object-storage/object-storage.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateWareneintragDto } from './dto/create-wareneintrag.dto.js';
@@ -9,6 +10,28 @@ export class WareneintragService {
     private readonly prisma: PrismaService,
     private readonly objectStorage: ObjectStorageService,
   ) {}
+
+  async findAll(filter: { avvCodeId?: string; suche?: string }) {
+    if (!filter.suche) {
+      return this.prisma.wareneintrag.findMany({
+        where: filter.avvCodeId ? { avvCodeId: filter.avvCodeId } : undefined,
+        orderBy: { erstelltAm: 'desc' },
+      });
+    }
+
+    // Volltextsuche über die generierte tsvector-Spalte (GIN-indiziert), kein
+    // LIKE-Scan, siehe Issue #4.
+    const avvFilter = filter.avvCodeId ? Prisma.sql`AND avv_code_id = ${filter.avvCodeId}` : Prisma.empty;
+    return this.prisma.$queryRaw`
+      SELECT
+        id, foto_url AS "fotoUrl", avv_code_id AS "avvCodeId", freitext,
+        erfasst_von_id AS "erfasstVonId", standort_id AS "standortId", erstellt_am AS "erstelltAm"
+      FROM wareneintraege
+      WHERE freitext_tsv @@ websearch_to_tsquery('german', ${filter.suche})
+      ${avvFilter}
+      ORDER BY erstellt_am DESC
+    `;
+  }
 
   async create(erfasstVonId: string, foto: Express.Multer.File, dto: CreateWareneintragDto) {
     // Standort wird als Kopie des aktuellen Nutzer-Standorts geschrieben, nicht

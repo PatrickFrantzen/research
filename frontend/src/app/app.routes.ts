@@ -22,6 +22,11 @@ export const routes: Routes = [
       import('./features/mitarbeiter-anlegen/mitarbeiter-anlegen.js').then((m) => m.MitarbeiterAnlegen),
   },
   {
+    path: 'wareneintraege',
+    canActivate: [authGuard, vorgesetzterGuard],
+    loadComponent: () => import('./features/wareneintrag-liste/wareneintrag-liste.js').then((m) => m.WareneintragListe),
+  },
+  {
     path: 'wareneintrag-erfassen',
     canActivate: [authGuard, mitarbeiterGuard],
     loadComponent: () =>
