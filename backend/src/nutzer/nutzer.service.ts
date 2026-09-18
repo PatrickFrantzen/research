@@ -4,6 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { Rolle } from '../generated/prisma/enums.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateMitarbeiterDto } from './dto/create-mitarbeiter.dto.js';
+import { UpdateEigeneDatenDto } from './dto/update-eigene-daten.dto.js';
 
 const INITIAL_ZUGANG_GUELTIGKEIT_MS = 7 * 24 * 60 * 60 * 1000; // 7 Tage
 
@@ -50,6 +51,33 @@ export class NutzerService {
       email: nutzer.email,
       standortId: nutzer.standortId,
       passwortSetzenLink: `/passwort-setzen?token=${token}`,
+    };
+  }
+
+  async findEigeneDaten(id: string) {
+    const nutzer = await this.prisma.nutzer.findUniqueOrThrow({ where: { id } });
+    return {
+      id: nutzer.id,
+      vorname: nutzer.vorname,
+      nachname: nutzer.nachname,
+      email: nutzer.email,
+      standortId: nutzer.standortId,
+    };
+  }
+
+  async updateEigeneDaten(id: string, dto: UpdateEigeneDatenDto) {
+    // Standort wird nur am Nutzer aktualisiert; bereits erfasste Wareneinträge
+    // behalten ihre eigene Standort-Kopie, siehe ADR-0004.
+    const nutzer = await this.prisma.nutzer.update({
+      where: { id },
+      data: { vorname: dto.vorname, nachname: dto.nachname, standortId: dto.standortId },
+    });
+    return {
+      id: nutzer.id,
+      vorname: nutzer.vorname,
+      nachname: nutzer.nachname,
+      email: nutzer.email,
+      standortId: nutzer.standortId,
     };
   }
 }
