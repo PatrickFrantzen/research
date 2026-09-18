@@ -24,10 +24,11 @@ export class PasswortVergessen {
     this.wirdGeladen.set(true);
     try {
       await this.authService.passwortVergessen(this.email);
-    } finally {
-      this.wirdGeladen.set(false);
+    } catch {
       // Immer die gleiche Meldung, egal ob die E-Mail existiert
       // (keine Rückschlüsse auf bestehende Accounts).
+    } finally {
+      this.wirdGeladen.set(false);
       this.angefordert.set(true);
     }
   }
