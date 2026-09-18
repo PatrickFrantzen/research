@@ -26,12 +26,12 @@ describe('PasswortVergessen', () => {
     expect((component as unknown as { angefordert: () => boolean }).angefordert()).toBe(true);
   });
 
-  it('sets angefordert via the finally block even when the request fails', async () => {
+  it('shows the confirmation without throwing even when the request fails', async () => {
     authService.passwortVergessen.and.rejectWith(new Error('not found'));
     const fixture = TestBed.createComponent(PasswortVergessen);
     const component = fixture.componentInstance;
 
-    await expectAsync(component.submit()).toBeRejected();
+    await expectAsync(component.submit()).toBeResolved();
 
     expect((component as unknown as { angefordert: () => boolean }).angefordert()).toBe(true);
   });
