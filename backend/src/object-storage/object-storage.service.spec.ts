@@ -9,6 +9,9 @@ vi.mock('@aws-sdk/client-s3', () => ({
   PutObjectCommand: vi.fn().mockImplementation(function PutObjectCommandMock(input: unknown) {
     return input;
   }),
+  DeleteObjectCommand: vi.fn().mockImplementation(function DeleteObjectCommandMock(input: unknown) {
+    return input;
+  }),
 }));
 
 process.env['DATABASE_URL'] = 'postgres://user:pass@localhost:5432/db';
@@ -33,5 +36,17 @@ describe('ObjectStorageService', () => {
 
     expect(key).toMatch(/^wareneintraege\//);
     expect(sendMock).toHaveBeenCalledOnce();
+  });
+
+  it('deletes the photo under the given key', async () => {
+    sendMock.mockResolvedValue({});
+    const service = new ObjectStorageService();
+
+    await service.deleteFoto('wareneintraege/foto-1');
+
+    expect(sendMock).toHaveBeenCalledOnce();
+    expect(sendMock).toHaveBeenCalledWith(
+      expect.objectContaining({ Bucket: 'bucket', Key: 'wareneintraege/foto-1' }),
+    );
   });
 });
