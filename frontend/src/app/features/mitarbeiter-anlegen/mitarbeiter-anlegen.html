@@ -1,0 +1,49 @@
+<div class="seite">
+  <mat-card class="karte">
+    <h1>Mitarbeiter anlegen</h1>
+
+    @if (angelegt(); as ergebnis) {
+      <p>Account für {{ ergebnis.email }} wurde angelegt.</p>
+      <p>
+        Initial-Zugang (an den Mitarbeiter weitergeben, kein Mailversand):
+        <code>{{ ergebnis.passwortSetzenLink }}</code>
+      </p>
+      <a routerLink="/">Zurück zur Startseite</a>
+    } @else {
+      <form (ngSubmit)="submit()">
+        <mat-form-field appearance="outline">
+          <mat-label>Vorname</mat-label>
+          <input matInput name="vorname" [(ngModel)]="vorname" required />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Nachname</mat-label>
+          <input matInput name="nachname" [(ngModel)]="nachname" required />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>E-Mail</mat-label>
+          <input matInput type="email" name="email" [(ngModel)]="email" required />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Standort</mat-label>
+          <mat-select name="standortId" [(ngModel)]="standortId" required>
+            @for (standort of standorte.value(); track standort.id) {
+              <mat-option [value]="standort.id">{{ standort.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        @if (fehler()) {
+          <p class="fehler">{{ fehler() }}</p>
+        }
+
+        <div class="aktionen">
+          <a routerLink="/">Abbrechen</a>
+          <button matButton="filled" type="submit" [disabled]="wirdGeladen()">Anlegen</button>
+        </div>
+      </form>
+    }
+  </mat-card>
+</div>

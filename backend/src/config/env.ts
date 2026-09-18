@@ -7,6 +7,10 @@ export interface EnvConfig {
     secretAccessKey: string;
     bucket: string;
   };
+  auth: {
+    jwtSecret: string;
+    jwtExpiresIn: string;
+  };
 }
 
 function required(name: string): string {
@@ -26,6 +30,10 @@ export function loadEnv(): EnvConfig {
       accessKeyId: required('OBJECT_STORAGE_ACCESS_KEY_ID'),
       secretAccessKey: required('OBJECT_STORAGE_SECRET_ACCESS_KEY'),
       bucket: required('OBJECT_STORAGE_BUCKET'),
+    },
+    auth: {
+      jwtSecret: required('JWT_SECRET'),
+      jwtExpiresIn: process.env['JWT_EXPIRES_IN'] ?? '8h',
     },
   };
 }

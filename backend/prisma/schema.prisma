@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Rolle {
+  MITARBEITER
+  VORGESETZTER
+}
+
+model Standort {
+  id     String @id @default(uuid())
+  name   String @unique
+  nutzer Nutzer[]
+
+  @@map("standorte")
+}
+
+model Nutzer {
+  id     String @id @default(uuid())
+  vorname   String
+  nachname  String
+  rolle     Rolle
+  email     String @unique
+  standortId String @map("standort_id")
+  standort   Standort @relation(fields: [standortId], references: [id])
+
+  passwortHash String @map("passwort_hash")
+
+  // true bis der Nutzer sein eigenes Passwort gesetzt hat (Initial-Zugang)
+  mussPasswortSetzen Boolean @default(true) @map("muss_passwort_setzen")
+
+  // gemeinsamer Mechanismus für Initial-Zugang und "Passwort vergessen"
+  passwortSetzenToken       String?   @unique @map("passwort_setzen_token")
+  passwortSetzenTokenAblauf DateTime? @map("passwort_setzen_token_ablauf")
+
+  erstelltVonId String? @map("erstellt_von_id")
+  erstelltVon   Nutzer? @relation("NutzerErstelltVon", fields: [erstelltVonId], references: [id])
+  erstellteNutzer Nutzer[] @relation("NutzerErstelltVon")
+
+  erstelltAm DateTime @default(now()) @map("erstellt_am")
+
+  @@map("nutzer")
+}
