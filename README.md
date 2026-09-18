@@ -16,6 +16,6 @@ des Kunden).
 
 ## Planungsstand
 
-1. [Projektbeschreibung & Spezifikation](docs/research/01-projektbeschreibung-spezifikation.md) – fertig, offene Fragen siehe Abschnitt 6
-2. Infrastruktur & Architektur – ausstehend
+1. [Projektbeschreibung & Spezifikation](docs/research/01-projektbeschreibung-spezifikation.md) – abgeschlossen
+2. [Infrastruktur & Architektur](docs/research/02-architektur.md) – Entwurf, hosting-agnostisch geplant
 3. Code – ausstehend
