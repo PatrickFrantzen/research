@@ -1,0 +1,33 @@
+<div class="seite">
+  <mat-card class="karte">
+    <h1>Passwort setzen</h1>
+
+    @if (erfolgreich()) {
+      <p>Passwort wurde gesetzt. Weiterleitung zum Login…</p>
+    } @else {
+      <form (ngSubmit)="submit()">
+        <mat-form-field appearance="outline">
+          <mat-label>Neues Passwort</mat-label>
+          <input
+            matInput
+            type="password"
+            name="neuesPasswort"
+            [(ngModel)]="neuesPasswort"
+            required
+            minlength="8"
+            autocomplete="new-password"
+          />
+        </mat-form-field>
+
+        @if (fehler()) {
+          <p class="fehler">{{ fehler() }}</p>
+        }
+
+        <div class="aktionen">
+          <a routerLink="/login">Zurück zum Login</a>
+          <button matButton="filled" type="submit" [disabled]="wirdGeladen()">Passwort setzen</button>
+        </div>
+      </form>
+    }
+  </mat-card>
+</div>

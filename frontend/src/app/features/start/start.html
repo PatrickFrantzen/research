@@ -1,0 +1,12 @@
+<mat-toolbar color="primary">
+  <span>RESEARCH</span>
+  <span class="spacer"></span>
+  @if (authService.rolle() === 'VORGESETZTER') {
+    <a mat-button routerLink="/mitarbeiter-anlegen">Mitarbeiter anlegen</a>
+  }
+  <button mat-button (click)="logout()">Logout</button>
+</mat-toolbar>
+
+<div class="inhalt">
+  <p>Eingeloggt als Rolle: {{ authService.rolle() }}</p>
+</div>

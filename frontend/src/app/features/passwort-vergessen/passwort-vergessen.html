@@ -1,0 +1,24 @@
+<div class="seite">
+  <mat-card class="karte">
+    <h1>Passwort vergessen</h1>
+
+    @if (angefordert()) {
+      <p>
+        Falls ein Account mit dieser E-Mail existiert, wurde ein Link zum
+        Setzen eines neuen Passworts versendet.
+      </p>
+    } @else {
+      <form (ngSubmit)="submit()">
+        <mat-form-field appearance="outline">
+          <mat-label>E-Mail</mat-label>
+          <input matInput type="email" name="email" [(ngModel)]="email" required autocomplete="username" />
+        </mat-form-field>
+
+        <div class="aktionen">
+          <a routerLink="/login">Zurück zum Login</a>
+          <button matButton="filled" type="submit" [disabled]="wirdGeladen()">Link anfordern</button>
+        </div>
+      </form>
+    }
+  </mat-card>
+</div>

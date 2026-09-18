@@ -10,10 +10,14 @@ services:
       OBJECT_STORAGE_ACCESS_KEY_ID: research
       OBJECT_STORAGE_SECRET_ACCESS_KEY: research-secret
       OBJECT_STORAGE_BUCKET: research-fotos
+      JWT_SECRET: ${JWT_SECRET:-local-dev-secret-change-me}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
     depends_on:
       postgres:
         condition: service_healthy
       minio-init:
+        condition: service_completed_successfully
+      migrate:
         condition: service_completed_successfully
 
   postgres:
@@ -29,6 +33,20 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+
+  # Schema-Migration + Stammdaten-/Bootstrap-Seed, läuft einmal vor dem
+  # Start der App (siehe backend/prisma/).
+  migrate:
+    build: .
+    environment:
+      DATABASE_URL: postgres://research:research@postgres:5432/research
+      INITIAL_VORGESETZTER_EMAIL: ${INITIAL_VORGESETZTER_EMAIL:-vorgesetzter@example.com}
+      INITIAL_VORGESETZTER_PASSWORT: ${INITIAL_VORGESETZTER_PASSWORT:-change-me-now}
+      INITIAL_VORGESETZTER_STANDORT: Hauptsitz
+    entrypoint: sh -c "npx prisma migrate deploy && npm run db:seed"
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   minio:
     image: quay.io/minio/minio:latest

@@ -22,16 +22,25 @@ des Kunden).
 
 ## Lokale Entwicklung
 
+Einmalig `.env.example` im Repo-Root als `.env` kopieren und `JWT_SECRET`
+sowie den Initial-Zugang für den ersten Vorgesetzter-Account setzen
+(ohne `.env` greifen unsichere Platzhalter-Defaults – nur für Wegwerf-Setups
+okay).
+
 ```
 docker compose up
 ```
 
 Startet App-Container (NestJS-API + ausgelieferter Angular-Build), PostgreSQL
-und MinIO. Danach:
+und MinIO, spielt Migrationen + Stammdaten-Seed ein (fester Standort
+"Hauptsitz", ein initialer Vorgesetzter-Account). Danach:
 
 - App: http://localhost:3000
 - Health-Check: http://localhost:3000/api/v1/health
 - MinIO-Console: http://localhost:9001
+- Login mit `INITIAL_VORGESETZTER_EMAIL` / `INITIAL_VORGESETZTER_PASSWORT`
+  aus der `.env`
 
 Für Backend-Entwicklung ohne Container siehe `backend/.env.example`
-(Datenbank/Objektspeicher-Zugangsdaten für `npm run start:dev`).
+(Datenbank/Objektspeicher/Auth-Zugangsdaten für `npm run start:dev`,
+`npx prisma migrate dev`, `npm run db:seed`).

@@ -1,15 +1,1 @@
-<main>
-  <h1>RESEARCH</h1>
-  @if (health() === 'loading') {
-    <p>Prüfe Verbindung…</p>
-  } @else if (health() === 'error') {
-    <p>Backend nicht erreichbar.</p>
-  } @else {
-    @let result = health();
-    @if (result !== 'loading' && result !== 'error') {
-      <p>Status: {{ result.status }}</p>
-      <p>Datenbank: {{ result.database }}</p>
-      <p>Objektspeicher: {{ result.objectStorage }}</p>
-    }
-  }
-</main>
+<router-outlet></router-outlet>

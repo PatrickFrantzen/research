@@ -22,6 +22,7 @@ process.env['OBJECT_STORAGE_ENDPOINT'] = 'http://localhost:9000';
 process.env['OBJECT_STORAGE_ACCESS_KEY_ID'] = 'access';
 process.env['OBJECT_STORAGE_SECRET_ACCESS_KEY'] = 'secret';
 process.env['OBJECT_STORAGE_BUCKET'] = 'bucket';
+process.env['JWT_SECRET'] = 'test-secret';
 
 const { HealthService } = await import('./health.service.js');
 
