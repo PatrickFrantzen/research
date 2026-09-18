@@ -5,7 +5,6 @@
     @if (angelegt()) {
       <p>Wareneintrag wurde angelegt.</p>
       <div class="aktionen">
-        <a routerLink="/">Zurück zur Startseite</a>
         <button matButton="filled" type="button" (click)="weitererEintrag()">Weiteren Eintrag erfassen</button>
       </div>
     } @else {

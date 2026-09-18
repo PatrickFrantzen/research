@@ -6,7 +6,6 @@ import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/ma
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
 interface AvvCode {
@@ -29,15 +28,7 @@ const FILTER_DEBOUNCE_MS = 300;
 
 @Component({
   selector: 'app-wareneintrag-liste',
-  imports: [
-    DatePipe,
-    FormsModule,
-    MatAutocompleteModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    RouterLink,
-  ],
+  imports: [DatePipe, FormsModule, MatAutocompleteModule, MatCardModule, MatFormFieldModule, MatInputModule],
   templateUrl: './wareneintrag-liste.html',
   styleUrl: './wareneintrag-liste.scss',
 })

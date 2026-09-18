@@ -1,0 +1,15 @@
+<mat-toolbar color="primary">
+  <span>RESEARCH</span>
+  <span class="spacer"></span>
+  @if (authService.rolle() === 'VORGESETZTER') {
+    <a mat-button routerLink="/mitarbeiter-anlegen">Mitarbeiter anlegen</a>
+    <a mat-button routerLink="/wareneintraege">Wareneinträge</a>
+  }
+  @if (authService.rolle() === 'MITARBEITER') {
+    <a mat-button routerLink="/wareneintrag-erfassen">Wareneintrag erfassen</a>
+  }
+  <a mat-button routerLink="/einstellungen">Einstellungen</a>
+  <button mat-button (click)="logout()">Logout</button>
+</mat-toolbar>
+
+<router-outlet></router-outlet>

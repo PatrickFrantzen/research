@@ -16,30 +16,36 @@ export const routes: Routes = [
     loadComponent: () => import('./features/passwort-setzen/passwort-setzen.js').then((m) => m.PasswortSetzen),
   },
   {
-    path: 'mitarbeiter-anlegen',
-    canActivate: [authGuard, vorgesetzterGuard],
-    loadComponent: () =>
-      import('./features/mitarbeiter-anlegen/mitarbeiter-anlegen.js').then((m) => m.MitarbeiterAnlegen),
-  },
-  {
-    path: 'wareneintraege',
-    canActivate: [authGuard, vorgesetzterGuard],
-    loadComponent: () => import('./features/wareneintrag-liste/wareneintrag-liste.js').then((m) => m.WareneintragListe),
-  },
-  {
-    path: 'wareneintrag-erfassen',
-    canActivate: [authGuard, mitarbeiterGuard],
-    loadComponent: () =>
-      import('./features/wareneintrag-erfassen/wareneintrag-erfassen.js').then((m) => m.WareneintragErfassen),
-  },
-  {
-    path: 'einstellungen',
-    canActivate: [authGuard],
-    loadComponent: () => import('./features/einstellungen/einstellungen.js').then((m) => m.Einstellungen),
-  },
-  {
     path: '',
     canActivate: [authGuard],
-    loadComponent: () => import('./features/start/start.js').then((m) => m.Start),
+    loadComponent: () => import('./core/app-shell/app-shell.js').then((m) => m.AppShell),
+    children: [
+      {
+        path: 'mitarbeiter-anlegen',
+        canActivate: [vorgesetzterGuard],
+        loadComponent: () =>
+          import('./features/mitarbeiter-anlegen/mitarbeiter-anlegen.js').then((m) => m.MitarbeiterAnlegen),
+      },
+      {
+        path: 'wareneintraege',
+        canActivate: [vorgesetzterGuard],
+        loadComponent: () =>
+          import('./features/wareneintrag-liste/wareneintrag-liste.js').then((m) => m.WareneintragListe),
+      },
+      {
+        path: 'wareneintrag-erfassen',
+        canActivate: [mitarbeiterGuard],
+        loadComponent: () =>
+          import('./features/wareneintrag-erfassen/wareneintrag-erfassen.js').then((m) => m.WareneintragErfassen),
+      },
+      {
+        path: 'einstellungen',
+        loadComponent: () => import('./features/einstellungen/einstellungen.js').then((m) => m.Einstellungen),
+      },
+      {
+        path: '',
+        loadComponent: () => import('./features/start/start.js').then((m) => m.Start),
+      },
+    ],
   },
 ];
