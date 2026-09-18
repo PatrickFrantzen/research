@@ -1,0 +1,4702 @@
+{
+  "kapitel": [
+    {
+      "code": "01",
+      "bezeichnung": "Abfälle, die beim Aufsuchen, Ausbeuten und Gewinnen sowie bei der physikalischen und chemischen Behandlung von Bodenschätzen entstehen"
+    },
+    {
+      "code": "02",
+      "bezeichnung": "Abfälle aus Landwirtschaft, Gartenbau, Teichwirtschaft, Forstwirtschaft, Jagd und Fischerei sowie der Herstellung und Verarbeitung von Nahrungsmitteln"
+    },
+    {
+      "code": "03",
+      "bezeichnung": "Abfälle aus der Holzbearbeitung und der Herstellung von Platten, Möbeln, Zellstoffen, Papier und Pappe"
+    },
+    {
+      "code": "04",
+      "bezeichnung": "Abfälle aus der Leder-, Pelz- und Textilindustrie"
+    },
+    {
+      "code": "05",
+      "bezeichnung": "Abfälle aus der Erdölraffination, Erdgasreinigung und Kohlepyrolyse"
+    },
+    {
+      "code": "06",
+      "bezeichnung": "Abfälle aus anorganisch-chemischen Prozessen"
+    },
+    {
+      "code": "07",
+      "bezeichnung": "Abfälle aus organisch-chemischen Prozessen"
+    },
+    {
+      "code": "08",
+      "bezeichnung": "Abfälle aus Herstellung, Zubereitung, Vertrieb und Anwendung (HZVA) von Beschichtungen (Farben, Lacke, Email), Klebstoffen, Dichtmassen und Druckfarben"
+    },
+    {
+      "code": "09",
+      "bezeichnung": "Abfälle aus der fotografischen Industrie"
+    },
+    {
+      "code": "10",
+      "bezeichnung": "Abfälle aus thermischen Prozessen"
+    },
+    {
+      "code": "11",
+      "bezeichnung": "Abfälle aus der chemischen Oberflächenbearbeitung und Beschichtung von Metallen und anderen Werkstoffen; Nichteisenhydrometallurgie"
+    },
+    {
+      "code": "12",
+      "bezeichnung": "Abfälle aus Prozessen der mechanischen Formgebung sowie der physikalischen und mechanischen Oberflächenbearbeitung vom Metallen und Kunststoffen"
+    },
+    {
+      "code": "13",
+      "bezeichnung": "Ölabfälle und Abfälle aus flüssigen Brennstoffen (außer Speiseöle und Ölabfälle, die unter Kapitel 05, 12 oder 19 fallen)"
+    },
+    {
+      "code": "14",
+      "bezeichnung": "Abfälle aus organischen Lösemitteln, Kühlmitteln und Treibgasen (außer Abfälle, die unter Kapitel 07 oder 08 fallen)"
+    },
+    {
+      "code": "15",
+      "bezeichnung": "Verpackungsabfall, Aufsaugmassen, Wischtücher, Filtermaterialien und Schutzkleidung (a. n. g.)"
+    },
+    {
+      "code": "16",
+      "bezeichnung": "Abfälle, die nicht anderswo im Verzeichnis aufgeführt sind"
+    },
+    {
+      "code": "17",
+      "bezeichnung": "Bau- und Abbruchabfälle (einschließlich Aushub von verunreinigten Standorten)"
+    },
+    {
+      "code": "18",
+      "bezeichnung": "Abfälle aus der humanmedizinischen oder tierärztlichen Versorgung und Forschung (ohne Küchen- und Restaurantabfälle, die nicht aus der unmittelbaren Krankenpflege stammen)"
+    },
+    {
+      "code": "19",
+      "bezeichnung": "Abfälle aus Abfallbehandlungsanlagen, öffentlichen Abwasserbehandlungsanlagen sowie der Aufbereitung von Wasser für den menschlichen Gebrauch und Wasser für industrielle Zwecke"
+    },
+    {
+      "code": "20",
+      "bezeichnung": "Siedlungsabfälle (Haushaltsabfälle und ähnliche gewerbliche und industrielle Abfälle sowie Abfälle aus Einrichtungen), einschließlich getrennt gesammelter Fraktionen"
+    }
+  ],
+  "gruppen": [
+    {
+      "code": "01 01",
+      "bezeichnung": "Abfälle aus dem Abbau von Bodenschätzen"
+    },
+    {
+      "code": "01 03",
+      "bezeichnung": "Abfälle aus der physikalischen und chemischen Verarbeitung von metallhaltigen Bodenschätzen"
+    },
+    {
+      "code": "01 04",
+      "bezeichnung": "Abfälle aus der physikalischen und chemischen Weiterverarbeitung von nichtmetallhaltigen Bodenschätzen"
+    },
+    {
+      "code": "01 05",
+      "bezeichnung": "Bohrschlämme und andere Bohrabfälle"
+    },
+    {
+      "code": "02 01",
+      "bezeichnung": "Abfälle aus Landwirtschaft, Gartenbau, Teichwirtschaft, Forstwirtschaft, Jagd und Fischerei"
+    },
+    {
+      "code": "02 02",
+      "bezeichnung": "Abfälle aus der Zubereitung und Verarbeitung von Fleisch, Fisch und anderen Nahrungsmitteln tierischen Ursprungs"
+    },
+    {
+      "code": "02 03",
+      "bezeichnung": "Abfälle aus der Zubereitung und Verarbeitung von Obst, Gemüse, Getreide, Speiseölen, Kakao, Kaffee, Tee und Tabak, aus der Konservenherstellung, der Herstellung von Hefe und Hefeextrakt sowie der Zubereitung und Fermentierung von Melasse"
+    },
+    {
+      "code": "02 04",
+      "bezeichnung": "Abfälle aus der Zuckerherstellung"
+    },
+    {
+      "code": "02 05",
+      "bezeichnung": "Abfälle aus der Milchverarbeitung"
+    },
+    {
+      "code": "02 06",
+      "bezeichnung": "Abfälle aus der Herstellung von Back- und Süßwaren"
+    },
+    {
+      "code": "02 07",
+      "bezeichnung": "Abfälle aus der Herstellung von alkoholischen und alkoholfreien Getränken (ohne Kaffee, Tee und Kakao)"
+    },
+    {
+      "code": "03 01",
+      "bezeichnung": "Abfälle aus der Holzbearbeitung und der Herstellung von Platten und Möbeln"
+    },
+    {
+      "code": "03 02",
+      "bezeichnung": "Abfälle aus der Holzkonservierung"
+    },
+    {
+      "code": "03 03",
+      "bezeichnung": "Abfälle aus der Herstellung und Verarbeitung von Zellstoff, Papier, Karton und Pappe"
+    },
+    {
+      "code": "04 01",
+      "bezeichnung": "Abfälle aus der Leder- und Pelzindustrie"
+    },
+    {
+      "code": "04 02",
+      "bezeichnung": "Abfälle aus der Textilindustrie"
+    },
+    {
+      "code": "05 01",
+      "bezeichnung": "Abfälle aus der Erdölraffination"
+    },
+    {
+      "code": "05 06",
+      "bezeichnung": "Abfälle aus der Kohlepyrolyse"
+    },
+    {
+      "code": "05 07",
+      "bezeichnung": "Abfälle aus Erdgasreinigung und -transport"
+    },
+    {
+      "code": "06 01",
+      "bezeichnung": "Abfälle aus Herstellung, Zubereitung, Vertrieb und Anwendung (HZVA) von Säuren"
+    },
+    {
+      "code": "06 02",
+      "bezeichnung": "Abfälle aus HZVA von Basen"
+    },
+    {
+      "code": "06 03",
+      "bezeichnung": "Abfälle aus HZVA von Salzen, Salzlösungen und Metalloxiden"
+    },
+    {
+      "code": "06 04",
+      "bezeichnung": "Metallhaltige Abfälle mit Ausnahme derjenigen, die unter 06 03 fallen"
+    },
+    {
+      "code": "06 05",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung"
+    },
+    {
+      "code": "06 06",
+      "bezeichnung": "Abfälle aus HZVA von schwefelhaltigen Chemikalien, aus Schwefelchemie und Entschwefelungsprozessen"
+    },
+    {
+      "code": "06 07",
+      "bezeichnung": "Abfälle aus HZVA von Halogenen und aus der Halogenchemie"
+    },
+    {
+      "code": "06 08",
+      "bezeichnung": "Abfälle aus HZVA von Silicium und Siliciumverbindungen"
+    },
+    {
+      "code": "06 09",
+      "bezeichnung": "Abfälle aus HZVA von phosphorhaltigen Chemikalien und aus der Phosphorchemie"
+    },
+    {
+      "code": "06 10",
+      "bezeichnung": "Abfälle aus HZVA von stickstoffhaltigen Chemikalien, aus der Stickstoffchemie und der Herstellung von Düngemitteln"
+    },
+    {
+      "code": "06 11",
+      "bezeichnung": "Abfälle aus der Herstellung von anorganischen Pigmenten und Farbgebern"
+    },
+    {
+      "code": "06 13",
+      "bezeichnung": "Abfälle aus anorganisch-chemischen Prozessen a. n. g."
+    },
+    {
+      "code": "07 01",
+      "bezeichnung": "Abfälle aus Herstellung, Zubereitung, Vertrieb und Anwendung (HZVA) organischer Grundchemikalien"
+    },
+    {
+      "code": "07 02",
+      "bezeichnung": "Abfälle aus HZVA von Kunststoffen, synthetischem Gummi und Kunstfasern"
+    },
+    {
+      "code": "07 03",
+      "bezeichnung": "Abfälle aus HZVA von organischen Farbstoffen und Pigmenten (außer 06 11)"
+    },
+    {
+      "code": "07 04",
+      "bezeichnung": "Abfälle aus HZVA von organischen Pflanzenschutzmitteln (außer 02 01 08 und 02 01 09), Holzschutzmitteln (außer 03 02) und anderen Bioziden"
+    },
+    {
+      "code": "07 05",
+      "bezeichnung": "Abfälle aus HZVA von Pharmazeutika"
+    },
+    {
+      "code": "07 06",
+      "bezeichnung": "Abfälle aus HZVA von Fetten, Schmierstoffen, Seifen, Waschmitteln, Desinfektionsmitteln und Körperpflegemitteln"
+    },
+    {
+      "code": "07 07",
+      "bezeichnung": "Abfälle aus HZVA von Feinchemikalien und Chemikalien a. n. g."
+    },
+    {
+      "code": "08 01",
+      "bezeichnung": "Abfälle aus HZVA und Entfernung von Farben und Lacken"
+    },
+    {
+      "code": "08 02",
+      "bezeichnung": "Abfälle aus HZVA anderer Beschichtungen (einschließlich keramischer Werkstoffe)"
+    },
+    {
+      "code": "08 03",
+      "bezeichnung": "Abfälle aus HZVA von Druckfarben"
+    },
+    {
+      "code": "08 04",
+      "bezeichnung": "Abfälle aus HZVA von Klebstoffen und Dichtmassen (einschließlich wasserabweisender Materialien)"
+    },
+    {
+      "code": "08 05",
+      "bezeichnung": "Nicht unter 08 aufgeführte Abfälle"
+    },
+    {
+      "code": "09 01",
+      "bezeichnung": "Abfälle aus der fotografischen Industrie"
+    },
+    {
+      "code": "10 01",
+      "bezeichnung": "Abfälle aus Kraftwerken und anderen Verbrennungsanlagen (außer 19)"
+    },
+    {
+      "code": "10 02",
+      "bezeichnung": "Abfälle aus der Eisen- und Stahlindustrie"
+    },
+    {
+      "code": "10 03",
+      "bezeichnung": "Abfälle aus der thermischen Aluminium-Metallurgie"
+    },
+    {
+      "code": "10 04",
+      "bezeichnung": "Abfälle aus der thermischen Bleimetallurgie"
+    },
+    {
+      "code": "10 05",
+      "bezeichnung": "Abfälle aus der thermischen Zinkmetallurgie"
+    },
+    {
+      "code": "10 06",
+      "bezeichnung": "Abfälle aus der thermischen Kupfermetallurgie"
+    },
+    {
+      "code": "10 07",
+      "bezeichnung": "Abfälle aus der thermischen Silber-, Gold- und Platinmetallurgie"
+    },
+    {
+      "code": "10 08",
+      "bezeichnung": "Abfälle aus sonstiger thermischer Nichteisenmetallurgie"
+    },
+    {
+      "code": "10 09",
+      "bezeichnung": "Abfälle vom Gießen von Eisen und Stahl"
+    },
+    {
+      "code": "10 10",
+      "bezeichnung": "Abfälle vom Gießen von Nichteisenmetallen"
+    },
+    {
+      "code": "10 11",
+      "bezeichnung": "Abfälle aus der Herstellung von Glas und Glaserzeugnissen"
+    },
+    {
+      "code": "10 12",
+      "bezeichnung": "Abfälle aus der Herstellung von Keramikerzeugnissen und keramischen Baustoffen wie Ziegeln, Fliesen, Steinzeug"
+    },
+    {
+      "code": "10 13",
+      "bezeichnung": "Abfälle aus der Herstellung von Zement, Branntkalk, Gips und Erzeugnissen aus diesen"
+    },
+    {
+      "code": "10 14",
+      "bezeichnung": "Abfälle aus Krematorien"
+    },
+    {
+      "code": "11 01",
+      "bezeichnung": "Abfälle aus der chemischen Oberflächenbearbeitung und Beschichtung von Metallen und anderen Werkstoffen (z.B. Galvanik, Verzinkung, Beizen, Ätzen, Phosphatieren, alkalisches Entfetten und Anodisierung)"
+    },
+    {
+      "code": "11 02",
+      "bezeichnung": "Abfälle aus Prozessen der Nichteisen-Hydrometallurgie"
+    },
+    {
+      "code": "11 03",
+      "bezeichnung": "Schlämme und Feststoffe aus Härteprozessen"
+    },
+    {
+      "code": "11 05",
+      "bezeichnung": "Abfälle aus Prozessen der thermischen Verzinkung"
+    },
+    {
+      "code": "12 01",
+      "bezeichnung": "Abfälle aus Prozessen der mechanischen Formgebung sowie der physikalischen und mechanischen Oberflächenbearbeitung von Metallen und Kunststoffen"
+    },
+    {
+      "code": "12 03",
+      "bezeichnung": "Abfälle aus der Wasser- und Dampfentfettung (außer 11)"
+    },
+    {
+      "code": "13 01",
+      "bezeichnung": "Abfälle von Hydraulikölen"
+    },
+    {
+      "code": "13 02",
+      "bezeichnung": "Abfälle von Maschinen-, Getriebe- und Schmierölen"
+    },
+    {
+      "code": "13 03",
+      "bezeichnung": "Abfälle von Isolier- und Wärmeübertragungsölen"
+    },
+    {
+      "code": "13 04",
+      "bezeichnung": "Bilgenöle"
+    },
+    {
+      "code": "13 05",
+      "bezeichnung": "Inhalte von Öl-/Wasserabscheidern"
+    },
+    {
+      "code": "13 07",
+      "bezeichnung": "Abfälle aus flüssigen Brennstoffen"
+    },
+    {
+      "code": "13 08",
+      "bezeichnung": "Ölabfälle a. n. g."
+    },
+    {
+      "code": "14 06",
+      "bezeichnung": "Abfälle aus organischen Lösemitteln, Kühlmitteln sowie Schaum- und Aerosoltreibgasen"
+    },
+    {
+      "code": "15 01",
+      "bezeichnung": "Verpackungen (einschließlich getrennt gesammelter kommunaler Verpackungsabfälle)"
+    },
+    {
+      "code": "15 02",
+      "bezeichnung": "Aufsaug- und Filtermaterialien, Wischtücher und Schutzkleidung"
+    },
+    {
+      "code": "16 01",
+      "bezeichnung": "Altfahrzeuge verschiedener Verkehrsträger (einschließlich mobiler Maschinen) und Abfälle aus der Demontage von Altfahrzeugen sowie der Fahrzeugwartung (außer 13, 14, 16 06 und 16 08)"
+    },
+    {
+      "code": "16 02",
+      "bezeichnung": "Elektrische und elektronische Geräte und deren Bauteile"
+    },
+    {
+      "code": "16 03",
+      "bezeichnung": "Fehlchargen und ungebrauchte Erzeugnisse"
+    },
+    {
+      "code": "16 04",
+      "bezeichnung": "Explosivabfälle"
+    },
+    {
+      "code": "16 05",
+      "bezeichnung": "Gase in Druckbehältern und gebrauchte Chemikalien"
+    },
+    {
+      "code": "16 06",
+      "bezeichnung": "Batterien und Akkumulatoren"
+    },
+    {
+      "code": "16 07",
+      "bezeichnung": "Abfälle aus der Reinigung von Transport- und Lagertanks und Fässern (außer 05 und 13)"
+    },
+    {
+      "code": "16 08",
+      "bezeichnung": "Gebrauchte Katalysatoren"
+    },
+    {
+      "code": "16 09",
+      "bezeichnung": "Oxidierende Stoffe"
+    },
+    {
+      "code": "16 10",
+      "bezeichnung": "Wässrige flüssige Abfälle zur externen Behandlung"
+    },
+    {
+      "code": "16 11",
+      "bezeichnung": "Gebrauchte Auskleidungen und feuerfeste Materialien"
+    },
+    {
+      "code": "17 01",
+      "bezeichnung": "Beton, Ziegel, Fliesen und Keramik"
+    },
+    {
+      "code": "17 02",
+      "bezeichnung": "Holz, Glas und Kunststoff"
+    },
+    {
+      "code": "17 03",
+      "bezeichnung": "Bitumengemische, Kohlenteer und teerhaltige Produkte"
+    },
+    {
+      "code": "17 04",
+      "bezeichnung": "Metalle (einschließlich Legierungen)"
+    },
+    {
+      "code": "17 05",
+      "bezeichnung": "Boden (einschließlich Aushub von verunreinigten Standorten), Steine und Baggergut"
+    },
+    {
+      "code": "17 06",
+      "bezeichnung": "Dämmmaterial und asbesthaltige Baustoffe"
+    },
+    {
+      "code": "17 08",
+      "bezeichnung": "Baustoffe auf Gipsbasis"
+    },
+    {
+      "code": "17 09",
+      "bezeichnung": "Sonstige Bau- und Abbruchabfälle"
+    },
+    {
+      "code": "18 01",
+      "bezeichnung": "Abfälle aus der humanmedizinischen oder tierärztlichen Versorgung und Forschung (ohne Küchen- und Restaurantabfälle, die nicht aus der unmittelbaren Krankenpflege stammen)"
+    },
+    {
+      "code": "18 02",
+      "bezeichnung": "Abfälle aus Forschung, Diagnose, Krankenbehandlung und Vorsorge bei Tieren"
+    },
+    {
+      "code": "19 01",
+      "bezeichnung": "Abfälle aus der Verbrennung oder Pyrolyse von Abfällen"
+    },
+    {
+      "code": "19 02",
+      "bezeichnung": "Abfälle aus der physikalisch-chemischen Behandlung von Abfällen (einschließlich Dechromatisierung, Cyanidentfernung, Neutralisation)"
+    },
+    {
+      "code": "19 03",
+      "bezeichnung": "Stabilisierte und verfestigte Abfälle"
+    },
+    {
+      "code": "19 04",
+      "bezeichnung": "Verglaste Abfälle und Abfälle aus der Verglasung"
+    },
+    {
+      "code": "19 05",
+      "bezeichnung": "Abfälle aus der aeroben Behandlung von festen Abfällen"
+    },
+    {
+      "code": "19 06",
+      "bezeichnung": "Abfälle aus der anaeroben Behandlung von Abfällen"
+    },
+    {
+      "code": "19 07",
+      "bezeichnung": "Deponiesickerwasser"
+    },
+    {
+      "code": "19 08",
+      "bezeichnung": "Abfälle aus Abwasserbehandlungsanlagen a. n. g."
+    },
+    {
+      "code": "19 09",
+      "bezeichnung": "Abfälle aus der Zubereitung von Wasser für den menschlichen Gebrauch oder industriellem Brauchwasser"
+    },
+    {
+      "code": "19 10",
+      "bezeichnung": "Abfälle aus dem Schreddern von metallhaltigen Abfällen"
+    },
+    {
+      "code": "19 11",
+      "bezeichnung": "Abfälle aus der Altölaufbereitung"
+    },
+    {
+      "code": "19 12",
+      "bezeichnung": "Abfälle aus der mechanischen Behandlung von Abfällen (z. B. Sortieren, Zerkleinern, Verdichten, Pelletieren) a. n. g."
+    },
+    {
+      "code": "19 13",
+      "bezeichnung": "Abfälle aus der Sanierung von Böden und Grundwasser"
+    },
+    {
+      "code": "20 01",
+      "bezeichnung": "Siedlungsabfälle (Haushaltsabfälle und ähnliche gewerbliche und industrielle Abfälle sowie Abfälle aus Einrichtungen), einschließlich getrennt gesammelter Fraktionen"
+    },
+    {
+      "code": "20 02",
+      "bezeichnung": "Garten- und Parkabfälle (einschließlich Friedhofsabfälle)"
+    },
+    {
+      "code": "20 03",
+      "bezeichnung": "Andere Siedlungsabfälle"
+    }
+  ],
+  "codes": [
+    {
+      "code": "01 01 01",
+      "bezeichnung": "Abfälle aus dem Abbau von metallhaltigen Bodenschätzen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "01 01 02",
+      "bezeichnung": "Abfälle aus dem Abbau von nichtmetallhaltigen Bodenschätzen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "01 03 04",
+      "bezeichnung": "Säure bildende Aufbereitungsrückstände aus der Verarbeitung von sulfidischem Erz",
+      "gefaehrlich": false
+    },
+    {
+      "code": "01 03 05",
+      "bezeichnung": "andere Aufbereitungsrückstände, die gefährliche Stoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "01 03 06",
+      "bezeichnung": "Aufbereitungsrückstände mit Ausnahme derjenigen, die unter 01 03 04 und 01 03 05 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "01 03 07",
+      "bezeichnung": "andere, gefährliche Stoffe enthaltende Abfälle aus der physikalischen und chemischen Verarbeitung von metallhaltigen Bodenschätzen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "01 03 08",
+      "bezeichnung": "staubende und pulvrige Abfälle mit Ausnahme derjenigen, die unter 01 03 07 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "01 03 09",
+      "bezeichnung": "Rotschlamm aus der Aluminiumoxidherstellung mit Ausnahme von Abfällen, die unter 01 03 10 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "01 03 10",
+      "bezeichnung": "Rotschlamm aus der Aluminiumoxidherstellung, der gefährliche Stoffe enthält, mit Ausnahme der unter 01 03 07 genannten Abfälle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "01 03 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "01 04 07",
+      "bezeichnung": "gefährliche Stoffe enthaltende Abfälle aus der physikalischen und chemischen Weiterverarbeitung von nichtmetallhaltigen Bodenschätzen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "01 04 08",
+      "bezeichnung": "Abfälle von Kies- und Gesteinsbruch mit Ausnahme derjenigen, die unter 01 04 07 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "01 04 09",
+      "bezeichnung": "Abfälle von Sand und Ton",
+      "gefaehrlich": false
+    },
+    {
+      "code": "01 04 10",
+      "bezeichnung": "staubende und pulvrige Abfälle mit Ausnahme derjenigen, die unter 01 04 07 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "01 04 11",
+      "bezeichnung": "Abfälle aus der Verarbeitung von Kali- und Steinsalz mit Ausnahme derjenigen, die unter 01 04 07 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "01 04 12",
+      "bezeichnung": "Aufbereitungsrückstände und andere Abfälle aus der Wäsche und Reinigung von Bodenschätzen mit Ausnahme derjenigen, die unter 01 04 07 und 01 04 11 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "01 04 13",
+      "bezeichnung": "Abfälle aus Steinmetz- und -sägearbeiten mit Ausnahme derjenigen, die unter 01 04 07 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "01 04 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "01 05 04",
+      "bezeichnung": "Schlämme und Abfälle aus Süßwasserbohrungen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "01 05 05",
+      "bezeichnung": "ölhaltige Bohrschlämme und -abfälle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "01 05 06",
+      "bezeichnung": "Bohrschlämme und andere Bohrabfälle, die gefährliche Stoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "01 05 07",
+      "bezeichnung": "barythaltige Bohrschlämme und -abfälle mit Ausnahme derjenigen, die unter 01 05 05 und 01 05 06 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "01 05 08",
+      "bezeichnung": "chloridhaltige Bohrschlämme und -abfälle mit Ausnahme derjenigen, die unter 01 05 05 und 01 05 06 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "01 05 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 01 01",
+      "bezeichnung": "Schlämme von Wasch- und Reinigungsvorgängen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 01 02",
+      "bezeichnung": "Abfälle aus tierischem Gewebe",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 01 03",
+      "bezeichnung": "Abfälle aus pflanzlichem Gewebe",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 01 04",
+      "bezeichnung": "Kunststoffabfälle (ohne Verpackungen)",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 01 06",
+      "bezeichnung": "tierische Ausscheidungen, Gülle/Jauche und Stallmist (einschließlich verdorbenes Stroh), Abwässer, getrennt gesammelt und extern behandelt",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 01 07",
+      "bezeichnung": "Abfälle aus der Forstwirtschaft",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 01 08",
+      "bezeichnung": "Abfälle von Chemikalien für die Landwirtschaft, die gefährliche Stoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 01 09",
+      "bezeichnung": "Abfälle von Chemikalien für die Landwirtschaft mit Ausnahme derjenigen, die unter 02 01 08 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 01 10",
+      "bezeichnung": "Metallabfälle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 01 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 02 01",
+      "bezeichnung": "Schlämme von Wasch- und Reinigungsvorgängen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 02 02",
+      "bezeichnung": "Abfälle aus tierischem Gewebe",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 02 03",
+      "bezeichnung": "für Verzehr oder Verarbeitung ungeeignete Stoffe",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 02 04",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 02 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 03 01",
+      "bezeichnung": "Schlämme aus Wasch-, Reinigungs-, Schäl-, Zentrifugier- und Abtrennprozessen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 03 02",
+      "bezeichnung": "Abfälle von Konservierungsstoffen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 03 03",
+      "bezeichnung": "Abfälle aus der Extraktion mit Lösemitteln",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 03 04",
+      "bezeichnung": "für Verzehr oder Verarbeitung ungeeignete Stoffe",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 03 05",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 03 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 04 01",
+      "bezeichnung": "Rübenerde",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 04 02",
+      "bezeichnung": "nicht spezifikationsgerechter Calciumcarbonatschlamm",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 04 03",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 04 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 05 01",
+      "bezeichnung": "für Verzehr oder Verarbeitung ungeeignete Stoffe",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 05 02",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 05 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 06 01",
+      "bezeichnung": "für Verzehr oder Verarbeitung ungeeignete Stoffe",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 06 02",
+      "bezeichnung": "Abfälle von Konservierungsstoffen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 06 03",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 06 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 07 01",
+      "bezeichnung": "Abfälle aus der Wäsche, Reinigung und mechanischen Zerkleinerung des Rohmaterials",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 07 02",
+      "bezeichnung": "Abfälle aus der Alkoholdestillation",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 07 03",
+      "bezeichnung": "Abfälle aus der chemischen Behandlung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 07 04",
+      "bezeichnung": "für Verzehr oder Verarbeitung ungeeignete Stoffe",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 07 05",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "02 07 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "03 01 01",
+      "bezeichnung": "Rinden- und Korkabfälle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "03 01 04",
+      "bezeichnung": "Sägemehl, Späne, Abschnitte, Holz, Spanplatten und Furniere, die gefährliche Stoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "03 01 05",
+      "bezeichnung": "Sägemehl, Späne, Abschnitte, Holz, Spanplatten und Furniere mit Ausnahme derjenigen, die unter 03 01 04 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "03 01 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "03 02 01",
+      "bezeichnung": "halogenfreie organische Holzschutzmittel",
+      "gefaehrlich": false
+    },
+    {
+      "code": "03 02 02",
+      "bezeichnung": "chlororganische Holzschutzmittel",
+      "gefaehrlich": false
+    },
+    {
+      "code": "03 02 03",
+      "bezeichnung": "metallorganische Holzschutzmittel",
+      "gefaehrlich": false
+    },
+    {
+      "code": "03 02 04",
+      "bezeichnung": "anorganische Holzschutzmittel",
+      "gefaehrlich": false
+    },
+    {
+      "code": "03 02 05",
+      "bezeichnung": "andere Holzschutzmittel, die gefährliche Stoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "03 02 99",
+      "bezeichnung": "Holzschutzmittel a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "03 03 01",
+      "bezeichnung": "Rinden- und Holzabfälle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "03 03 02",
+      "bezeichnung": "Sulfitschlämme (aus der Rückgewinnung von Kochlaugen)",
+      "gefaehrlich": false
+    },
+    {
+      "code": "03 03 05",
+      "bezeichnung": "De-inking-Schlämme aus dem Papierrecycling",
+      "gefaehrlich": false
+    },
+    {
+      "code": "03 03 07",
+      "bezeichnung": "mechanisch abgetrennte Abfälle aus der Auflösung von Papier- und Pappabfällen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "03 03 08",
+      "bezeichnung": "Abfälle aus dem Sortieren von Papier und Pappe für das Recycling",
+      "gefaehrlich": false
+    },
+    {
+      "code": "03 03 09",
+      "bezeichnung": "Kalkschlammabfälle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "03 03 10",
+      "bezeichnung": "Faserabfälle, Faser-, Füller- und Überzugsschlämme aus der mechanischen Abtrennung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "03 03 11",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung mit Ausnahme derjenigen, die unter 03 03 10 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "03 03 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "04 01 01",
+      "bezeichnung": "Fleischabschabungen und Häuteabfälle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "04 01 02",
+      "bezeichnung": "geäschertes Leimleder",
+      "gefaehrlich": false
+    },
+    {
+      "code": "04 01 03",
+      "bezeichnung": "Entfettungsabfälle, lösemittelhaltig, ohne flüssige Phase",
+      "gefaehrlich": false
+    },
+    {
+      "code": "04 01 04",
+      "bezeichnung": "chromhaltige Gerbereibrühe",
+      "gefaehrlich": false
+    },
+    {
+      "code": "04 01 05",
+      "bezeichnung": "chromfreie Gerbereibrühe",
+      "gefaehrlich": false
+    },
+    {
+      "code": "04 01 06",
+      "bezeichnung": "chromhaltige Schlämme, insbesondere aus der betriebseigenen Abwasserbehandlung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "04 01 07",
+      "bezeichnung": "chromfreie Schlämme, insbesondere aus der betriebseigenen Abwasserbehandlung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "04 01 08",
+      "bezeichnung": "chromhaltige Abfälle aus gegerbtem Leder (Abschnitte, Schleifstaub, Falzspäne)",
+      "gefaehrlich": false
+    },
+    {
+      "code": "04 01 09",
+      "bezeichnung": "Abfälle aus der Zurichtung und dem Finish",
+      "gefaehrlich": false
+    },
+    {
+      "code": "04 01 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "04 02 09",
+      "bezeichnung": "Abfälle aus Verbundmaterialien (imprägnierte Textilien, Elastomer, Plastomer)",
+      "gefaehrlich": false
+    },
+    {
+      "code": "04 02 10",
+      "bezeichnung": "organische Stoffe aus Naturstoffen (z.B. Fette, Wachse)",
+      "gefaehrlich": false
+    },
+    {
+      "code": "04 02 14",
+      "bezeichnung": "Abfälle aus dem Finish, die organische Lösungsmittel enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "04 02 15",
+      "bezeichnung": "Abfälle aus dem Finish mit Ausnahme derjenigen, die unter 04 02 14 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "04 02 16",
+      "bezeichnung": "Farbstoffe und Pigmente, die gefährliche Stoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "04 02 17",
+      "bezeichnung": "Farbstoffe und Pigmente mit Ausnahme derjenigen, die unter 04 02 16 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "04 02 19",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung, die gefährliche Stoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "04 02 20",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung mit Ausnahme derjenigen, die unter 04 02 19 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "04 02 21",
+      "bezeichnung": "Abfälle aus unbehandelten Textilfasern",
+      "gefaehrlich": false
+    },
+    {
+      "code": "04 02 22",
+      "bezeichnung": "Abfälle aus verarbeiteten Textilfasern",
+      "gefaehrlich": false
+    },
+    {
+      "code": "04 02 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "05 01 02",
+      "bezeichnung": "Entsalzungsschlämme",
+      "gefaehrlich": false
+    },
+    {
+      "code": "05 01 03",
+      "bezeichnung": "Bodenschlämme aus Tanks",
+      "gefaehrlich": false
+    },
+    {
+      "code": "05 01 04",
+      "bezeichnung": "saure Alkylschlämme",
+      "gefaehrlich": false
+    },
+    {
+      "code": "05 01 05",
+      "bezeichnung": "verschüttetes Öl",
+      "gefaehrlich": false
+    },
+    {
+      "code": "05 01 06",
+      "bezeichnung": "ölhaltige Schlämme aus Betriebsvorgängen und Instandhaltung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "05 01 07",
+      "bezeichnung": "Säureteere",
+      "gefaehrlich": false
+    },
+    {
+      "code": "05 01 08",
+      "bezeichnung": "andere Teere",
+      "gefaehrlich": false
+    },
+    {
+      "code": "05 01 09",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung, die gefährliche Stoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "05 01 10",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung mit Ausnahme derjenigen, die unter 05 01 09 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "05 01 11",
+      "bezeichnung": "Abfälle aus der Brennstoffreinigung mit Basen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "05 01 12",
+      "bezeichnung": "säurehaltige Öle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "05 01 13",
+      "bezeichnung": "Schlämme aus der Kesselspeisewasseraufbereitung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "05 01 14",
+      "bezeichnung": "Abfälle aus Kühlkolonnen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "05 01 15",
+      "bezeichnung": "gebrauchte Filtertone",
+      "gefaehrlich": false
+    },
+    {
+      "code": "05 01 16",
+      "bezeichnung": "schwefelhaltige Abfälle aus der Ölentschwefelung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "05 01 17",
+      "bezeichnung": "Bitumen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "05 01 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "05 06 01",
+      "bezeichnung": "Säureteere",
+      "gefaehrlich": false
+    },
+    {
+      "code": "05 06 03",
+      "bezeichnung": "andere Teere",
+      "gefaehrlich": false
+    },
+    {
+      "code": "05 06 04",
+      "bezeichnung": "Abfälle aus Kühlkolonnen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "05 06 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "05 07 01",
+      "bezeichnung": "quecksilberhaltige Abfälle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "05 07 02",
+      "bezeichnung": "schwefelhaltige Abfälle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "05 07 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 01 01",
+      "bezeichnung": "Schwefelsäure und schweflige Säure",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 01 02",
+      "bezeichnung": "Salzsäure",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 01 03",
+      "bezeichnung": "Flusssäure",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 01 04",
+      "bezeichnung": "Phosphorsäure und phosphorige Säure",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 01 05",
+      "bezeichnung": "Salpetersäure und salpetrige Säure",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 01 06",
+      "bezeichnung": "andere Säuren",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 01 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 02 01",
+      "bezeichnung": "Calciumhydroxid",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 02 03",
+      "bezeichnung": "Ammoniumhydroxid",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 02 04",
+      "bezeichnung": "Natrium- und Kaliumhydroxid",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 02 05",
+      "bezeichnung": "andere Basen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 02 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 03 11",
+      "bezeichnung": "feste Salze und Lösungen, die Cyanid enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 03 13",
+      "bezeichnung": "feste Salze und Lösungen, die Schwermetalle enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 03 14",
+      "bezeichnung": "feste Salze und Lösungen mit Ausnahme derjenigen, die unter 06 03 11 und 06 03 13 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 03 15",
+      "bezeichnung": "Metalloxide, die Schwermetalle enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 03 16",
+      "bezeichnung": "Metalloxide mit Ausnahme derjenigen, die unter 06 03 15 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 03 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 04 03",
+      "bezeichnung": "arsenhaltige Abfälle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 04 04",
+      "bezeichnung": "quecksilberhaltige Abfälle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 04 05",
+      "bezeichnung": "Abfälle, die andere Schwermetalle enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 04 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 05 02",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung, die gefährliche Stoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 05 03",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung mit Ausnahme derjenigen, die unter 06 05 02 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 06 02",
+      "bezeichnung": "Abfälle, die gefährliche Sulfide enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 06 03",
+      "bezeichnung": "sulfidhaltige Abfälle mit Ausnahme derjenigen, die unter 06 06 02 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 06 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 07 01",
+      "bezeichnung": "asbesthaltige Abfälle aus der Elektrolyse",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 07 02",
+      "bezeichnung": "Aktivkohle aus der Chlorherstellung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 07 03",
+      "bezeichnung": "quecksilberhaltige Bariumsulfatschlämme",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 07 04",
+      "bezeichnung": "Lösungen und Säuren, z.B. Kontaktsäure",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 07 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 08 02",
+      "bezeichnung": "Abfälle, die gefährliche Chlorsilane enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 08 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 09 02",
+      "bezeichnung": "phosphorhaltige Schlacke",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 09 03",
+      "bezeichnung": "Reaktionsabfälle auf Calciumbasis, die gefährliche Stoffe enthalten oder durch gefährliche Stoffe verunreinigt sind",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 09 04",
+      "bezeichnung": "Reaktionsabfälle auf Calciumbasis mit Ausnahme derjenigen, die unter 06 09 03 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 09 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 10 02",
+      "bezeichnung": "Abfälle, die gefährliche Stoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 10 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 11 01",
+      "bezeichnung": "Reaktionsabfälle auf Calciumbasis aus der Titandioxidherstellung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 11 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 13 01",
+      "bezeichnung": "anorganische Pflanzenschutzmittel, Holzschutzmittel und andere Biozide",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 13 02",
+      "bezeichnung": "gebrauchte Aktivkohle (außer 06 07 02)",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 13 03",
+      "bezeichnung": "Industrieruß",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 13 04",
+      "bezeichnung": "Abfälle aus der Asbestverarbeitung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 13 05",
+      "bezeichnung": "Ofen- und Kaminruß",
+      "gefaehrlich": false
+    },
+    {
+      "code": "06 13 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 01 01",
+      "bezeichnung": "wässrige Waschflüssigkeiten und Mutterlaugen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 01 03",
+      "bezeichnung": "halogenorganische Lösemittel, Waschflüssigkeiten und Mutterlaugen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 01 04",
+      "bezeichnung": "andere organische Lösemittel, Waschflüssigkeiten und Mutterlaugen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 01 07",
+      "bezeichnung": "halogenierte Reaktions- und Destillationsrückstände",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 01 08",
+      "bezeichnung": "andere Reaktions- und Destillationsrückstände",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 01 09",
+      "bezeichnung": "halogenierte Filterkuchen, gebrauchte Aufsaugmaterialien",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 01 10",
+      "bezeichnung": "andere Filterkuchen, gebrauchte Aufsaugmaterialien",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 01 11",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung, die gefährliche Stoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 01 12",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung mit Ausnahme derjenigen, die unter 07 01 11 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 01 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 02 01",
+      "bezeichnung": "wässrige Waschflüssigkeiten und Mutterlaugen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 02 03",
+      "bezeichnung": "halogenorganische Lösemittel, Waschflüssigkeiten und Mutterlaugen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 02 04",
+      "bezeichnung": "andere organische Lösemittel, Waschflüssigkeiten und Mutterlaugen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 02 07",
+      "bezeichnung": "halogenierte Reaktions- und Destillationsrückstände",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 02 08",
+      "bezeichnung": "andere Reaktions- und Destillationsrückstände",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 02 09",
+      "bezeichnung": "halogenierte Filterkuchen, gebrauchte Aufsaugmaterialien",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 02 10",
+      "bezeichnung": "andere Filterkuchen, gebrauchte Aufsaugmaterialien",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 02 11",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung, die gefährliche Stoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 02 12",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung mit Ausnahme derjenigen, die unter 07 02 11 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 02 13",
+      "bezeichnung": "Kunststoffabfälle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 02 14",
+      "bezeichnung": "Abfälle von Zusatzstoffen, die gefährliche Stoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 02 15",
+      "bezeichnung": "Abfälle von Zusatzstoffen mit Ausnahme derjenigen, die unter 07 02 14 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 02 16",
+      "bezeichnung": "Abfälle, die gefährliche Silicone enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 02 17",
+      "bezeichnung": "siliconhaltige Abfälle, andere als die in 07 02 16 genannten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 02 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 03 01",
+      "bezeichnung": "wässrige Waschflüssigkeiten und Mutterlaugen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 03 03",
+      "bezeichnung": "halogenorganische Lösemittel, Waschflüssigkeiten und Mutterlaugen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 03 04",
+      "bezeichnung": "andere organische Lösemittel, Waschflüssigkeiten und Mutterlaugen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 03 07",
+      "bezeichnung": "halogenierte Reaktions- und Destillationsrückstände",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 03 08",
+      "bezeichnung": "andere Reaktions- und Destillationsrückstände",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 03 09",
+      "bezeichnung": "halogenierte Filterkuchen, gebrauchte Aufsaugmaterialien",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 03 10",
+      "bezeichnung": "andere Filterkuchen, gebrauchte Aufsaugmaterialien",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 03 11",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung, die gefährliche Stoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 03 12",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung mit Ausnahme derjenigen, die unter 07 03 11 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 03 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 04 01",
+      "bezeichnung": "wässrige Waschflüssigkeiten und Mutterlaugen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 04 03",
+      "bezeichnung": "halogenorganische Lösemittel, Waschflüssigkeiten und Mutterlaugen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 04 04",
+      "bezeichnung": "andere organische Lösemittel, Waschflüssigkeiten und Mutterlaugen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 04 07",
+      "bezeichnung": "halogenierte Reaktions- und Destillationsrückstände",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 04 08",
+      "bezeichnung": "andere Reaktions- und Destillationsrückstände",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 04 09",
+      "bezeichnung": "halogenierte Filterkuchen, gebrauchte Aufsaugmaterialien",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 04 10",
+      "bezeichnung": "andere Filterkuchen, gebrauchte Aufsaugmaterialien",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 04 11",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung, die gefährliche Stoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 04 12",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung mit Ausnahme derjenigen, die unter 07 04 11 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 04 13",
+      "bezeichnung": "feste Abfälle, die gefährliche Stoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 04 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 05 01",
+      "bezeichnung": "wässrige Waschflüssigkeiten und Mutterlaugen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 05 03",
+      "bezeichnung": "halogenorganische Lösemittel, Waschflüssigkeiten und Mutterlaugen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 05 04",
+      "bezeichnung": "andere organische Lösemittel, Waschflüssigkeiten und Mutterlaugen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 05 07",
+      "bezeichnung": "halogenierte Reaktions- und Destillationsrückstände",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 05 08",
+      "bezeichnung": "andere Reaktions- und Destillationsrückstände",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 05 09",
+      "bezeichnung": "halogenierte Filterkuchen, gebrauchte Aufsaugmaterialien",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 05 10",
+      "bezeichnung": "andere Filterkuchen, gebrauchte Aufsaugmaterialien",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 05 11",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung, die gefährliche Stoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 05 12",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung mit Ausnahme derjenigen, die unter 07 05 11 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 05 13",
+      "bezeichnung": "feste Abfälle, die gefährliche Stoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 05 14",
+      "bezeichnung": "feste Abfälle mit Ausnahme derjenigen, die unter 07 05 13 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 05 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 06 01",
+      "bezeichnung": "wässrige Waschflüssigkeiten und Mutterlaugen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 06 03",
+      "bezeichnung": "halogenorganische Lösemittel, Waschflüssigkeiten und Mutterlaugen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 06 04",
+      "bezeichnung": "andere organische Lösemittel, Waschflüssigkeiten und Mutterlaugen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 06 07",
+      "bezeichnung": "halogenierte Reaktions- und Destillationsrückstände",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 06 08",
+      "bezeichnung": "andere Reaktions- und Destillationsrückstände",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 06 09",
+      "bezeichnung": "halogenierte Filterkuchen, gebrauchte Aufsaugmaterialien",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 06 10",
+      "bezeichnung": "andere Filterkuchen, gebrauchte Aufsaugmaterialien",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 06 11",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung, die gefährliche Stoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 06 12",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung mit Ausnahme derjenigen, die unter 07 06 11 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 06 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 07 01",
+      "bezeichnung": "wässrige Waschflüssigkeiten und Mutterlaugen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 07 03",
+      "bezeichnung": "halogenorganische Lösemittel, Waschflüssigkeiten und Mutterlaugen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 07 04",
+      "bezeichnung": "andere organische Lösemittel, Waschflüssigkeiten und Mutterlaugen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 07 07",
+      "bezeichnung": "halogenierte Reaktions- und Destillationsrückstände",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 07 08",
+      "bezeichnung": "andere Reaktions- und Destillationsrückstände",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 07 09",
+      "bezeichnung": "halogenierte Filterkuchen, gebrauchte Aufsaugmaterialien",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 07 10",
+      "bezeichnung": "andere Filterkuchen, gebrauchte Aufsaugmaterialien",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 07 11",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung, die gefährliche Stoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 07 12",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung mit Ausnahme derjenigen, die unter 07 07 11 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "07 07 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 01 11",
+      "bezeichnung": "Farb- und Lackabfälle, die organische Lösemittel oder andere gefährliche Stoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 01 12",
+      "bezeichnung": "Farb- und Lackabfälle mit Ausnahme derjenigen, die unter 08 01 11 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 01 13",
+      "bezeichnung": "Farb- und Lackschlämme, die organische Lösemittel oder andere gefährliche Stoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 01 14",
+      "bezeichnung": "Farb- und Lackschlämme mit Ausnahme derjenigen, die unter 08 01 13 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 01 15",
+      "bezeichnung": "wässrige Schlämme, die Farben oder Lacke mit organischen Lösemitteln oder anderen gefährlichen Stoffen enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 01 16",
+      "bezeichnung": "wässrige Schlämme, die Farben oder Lacke enthalten, mit Ausnahme derjenigen, die unter 08 01 15 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 01 17",
+      "bezeichnung": "Abfälle aus der Farb- oder Lackentfernung, die organische Lösemittel oder andere gefährliche Stoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 01 18",
+      "bezeichnung": "Abfälle aus der Farb- oder Lackentfernung mit Ausnahme derjenigen, die unter 08 01 17 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 01 19",
+      "bezeichnung": "wässrige Suspensionen, die Farben oder Lacke mit organischen Lösemitteln oder anderen gefährlichen Stoffen enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 01 20",
+      "bezeichnung": "wässrige Suspensionen, die Farben oder Lacke enthalten, mit Ausnahme derjenigen, die unter 08 01 19 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 01 21",
+      "bezeichnung": "Farb- oder Lackentfernerabfälle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 01 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 02 01",
+      "bezeichnung": "Abfälle von Beschichtungspulver",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 02 02",
+      "bezeichnung": "wässrige Schlämme, die keramische Werkstoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 02 03",
+      "bezeichnung": "wässrige Suspensionen, die keramische Werkstoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 02 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 03 07",
+      "bezeichnung": "wässrige Schlämme, die Druckfarben enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 03 08",
+      "bezeichnung": "wässrige flüssige Abfälle, die Druckfarben enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 03 12",
+      "bezeichnung": "Druckfarbenabfälle, die gefährliche Stoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 03 13",
+      "bezeichnung": "Druckfarbenabfälle mit Ausnahme derjenigen, die unter 08 03 12 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 03 14",
+      "bezeichnung": "Druckfarbenschlämme, die gefährliche Stoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 03 15",
+      "bezeichnung": "Druckfarbenschlämme mit Ausnahme derjenigen, die unter 08 03 14 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 03 16",
+      "bezeichnung": "Abfälle von Ätzlösungen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 03 17",
+      "bezeichnung": "Tonerabfälle, die gefährliche Stoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 03 18",
+      "bezeichnung": "Tonerabfälle mit Ausnahme derjenigen, die unter 08 03 17 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 03 19",
+      "bezeichnung": "Dispersionsöl",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 03 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 04 09",
+      "bezeichnung": "Klebstoff- und Dichtmassenabfälle, die organische Lösemittel oder andere gefährliche Stoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 04 10",
+      "bezeichnung": "Klebstoff- und Dichtmassenabfälle mit Ausnahme derjenigen, die unter 08 04 09 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 04 11",
+      "bezeichnung": "klebstoff- und dichtmassenhaltige Schlämme, die organische Lösemittel oder andere gefährliche Stoffe enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 04 12",
+      "bezeichnung": "klebstoff- und dichtmassenhaltige Schlämme mit Ausnahme derjenigen, die unter 08 04 11 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 04 13",
+      "bezeichnung": "wässrige Schlämme, die Klebstoffe oder Dichtmassen mit organischen Lösemitteln oder anderen gefährlichen Stoffen enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 04 14",
+      "bezeichnung": "wässrige Schlämme, die Klebstoffe oder Dichtmassen enthalten, mit Ausnahme derjenigen, die unter 08 04 13 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 04 15",
+      "bezeichnung": "wässrige flüssige Abfälle, die Klebstoffe oder Dichtmassen mit organischen Lösemitteln oder anderen gefährlichen Stoffen enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 04 16",
+      "bezeichnung": "wässrige flüssige Abfälle, die Klebstoffe oder Dichtmassen enthalten, mit Ausnahme derjenigen, die unter 08 04 15 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 04 17",
+      "bezeichnung": "Harzöle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 04 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "08 05 01",
+      "bezeichnung": "Isocyanatabfälle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "09 01 01",
+      "bezeichnung": "Entwickler und Aktivatorenlösungen auf Wasserbasis",
+      "gefaehrlich": false
+    },
+    {
+      "code": "09 01 02",
+      "bezeichnung": "Offsetdruckplatten-Entwicklerlösungen auf Wasserbasis",
+      "gefaehrlich": false
+    },
+    {
+      "code": "09 01 03",
+      "bezeichnung": "Entwicklerlösungen auf Lösemittelbasis",
+      "gefaehrlich": false
+    },
+    {
+      "code": "09 01 04",
+      "bezeichnung": "Fixierbäder",
+      "gefaehrlich": false
+    },
+    {
+      "code": "09 01 05",
+      "bezeichnung": "Bleichlösungen und Bleich-Fixier-Bäder",
+      "gefaehrlich": false
+    },
+    {
+      "code": "09 01 06",
+      "bezeichnung": "silberhaltige Abfälle aus der betriebseigenen Behandlung fotografischer Abfälle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "09 01 07",
+      "bezeichnung": "Filme und fotografische Papiere, die Silber oder Silberverbindungen enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "09 01 08",
+      "bezeichnung": "Filme und fotografische Papiere, die kein Silber und keine Silberverbindungen enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "09 01 10",
+      "bezeichnung": "Einwegkameras ohne Batterien",
+      "gefaehrlich": false
+    },
+    {
+      "code": "09 01 11",
+      "bezeichnung": "Einwegkameras mit Batterien, die unter 16 06 01, 16 06 02 oder 16 06 03 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "09 01 12",
+      "bezeichnung": "Einwegkameras mit Batterien mit Ausnahme derjenigen, die unter 09 01 11 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "09 01 13",
+      "bezeichnung": "wässrige flüssige Abfälle aus der betriebseigenen Silberrückgewinnung mit Ausnahme derjenigen, die unter 09 01 06 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "09 01 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 01 01",
+      "bezeichnung": "Rost- und Kesselasche, Schlacken und Kesselstaub mit Ausnahme von Kesselstaub, der unter 10 01 04 fällt",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 01 02",
+      "bezeichnung": "Filterstäube aus Kohlefeuerung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 01 03",
+      "bezeichnung": "Filterstäube aus Torffeuerung und Feuerung mit (unbehandeltem) Holz",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 01 04",
+      "bezeichnung": "Filterstäube und Kesselstaub aus Ölfeuerung",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 01 05",
+      "bezeichnung": "Reaktionsabfälle auf Calciumbasis aus der Rauchgasentschwefelung in fester Form",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 01 07",
+      "bezeichnung": "Reaktionsabfälle auf Calciumbasis aus der Rauchgasentschwefelung in Form von Schlämmen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 01 09",
+      "bezeichnung": "Schwefelsäure",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 01 13",
+      "bezeichnung": "Filterstäube aus emulgierten, als Brennstoffe verwendeten Kohlenwasserstoffen",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 01 14",
+      "bezeichnung": "Rost- und Kesselasche, Schlacken und Kesselstaub aus der Abfallmitverbrennung, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 01 15",
+      "bezeichnung": "Rost- und Kesselasche, Schlacken und Kesselstaub aus der Abfallmitverbrennung mit Ausnahme derjenigen, die unter 10 01 14 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 01 16",
+      "bezeichnung": "Filterstäube aus der Abfallmitverbrennung, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 01 17",
+      "bezeichnung": "Filterstäube aus der Abfallmitverbrennung mit Ausnahme derjenigen, die unter 10 01 16 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 01 18",
+      "bezeichnung": "Abfälle aus der Abgasbehandlung, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 01 19",
+      "bezeichnung": "Abfälle aus der Abgasbehandlung mit Ausnahme derjenigen, die unter 10 01 05, 10 01 07 und 10 01 18 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 01 20",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 01 21",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung mit Ausnahme derjenigen, die unter 10 01 20 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 01 22",
+      "bezeichnung": "wässrige Schlämme aus der Kesselreinigung, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 01 23",
+      "bezeichnung": "wässrige Schlämme aus der Kesselreinigung mit Ausnahme derjenigen, die unter 10 01 22 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 01 24",
+      "bezeichnung": "Sande aus der Wirbelschichtfeuerung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 01 25",
+      "bezeichnung": "Abfälle aus der Lagerung und Vorbereitung von Brennstoffen für Kohlekraftwerke",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 01 26",
+      "bezeichnung": "Abfälle aus der Kühlwasserbehandlung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 01 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 02 01",
+      "bezeichnung": "Abfälle aus der Verarbeitung von Schlacke",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 02 02",
+      "bezeichnung": "unbearbeitete Schlacke",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 02 07",
+      "bezeichnung": "feste Abfälle aus der Abgasbehandlung, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 02 08",
+      "bezeichnung": "feste Abfälle aus der Abgasbehandlung mit Ausnahme derjenigen, die unter 10 02 07 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 02 10",
+      "bezeichnung": "Walzzunder",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 02 11",
+      "bezeichnung": "ölhaltige Abfälle aus der Kühlwasserbehandlung",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 02 12",
+      "bezeichnung": "Abfälle aus der Kühlwasserbehandlung mit Ausnahme derjenigen, die unter 10 02 11 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 02 13",
+      "bezeichnung": "Schlämme und Filterkuchen aus der Abgasbehandlung, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 02 14",
+      "bezeichnung": "Schlämme und Filterkuchen aus der Abgasbehandlung mit Ausnahme derjenigen, die unter 10 02 13 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 02 15",
+      "bezeichnung": "andere Schlämme und Filterkuchen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 02 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 03 02",
+      "bezeichnung": "Anodenschrott",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 03 04",
+      "bezeichnung": "Schlacken aus der Erstschmelze",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 03 05",
+      "bezeichnung": "Aluminiumoxidabfälle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 03 08",
+      "bezeichnung": "Salzschlacken aus der Zweitschmelze",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 03 09",
+      "bezeichnung": "schwarze Krätzen aus der Zweitschmelze",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 03 15",
+      "bezeichnung": "Abschaum, der entzündlich ist oder in Kontakt mit Wasser entzündliche Gase in gefährlicher Menge abgibt",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 03 16",
+      "bezeichnung": "Abschaum mit Ausnahme desjenigen, der unter 10 03 15 fällt",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 03 17",
+      "bezeichnung": "teerhaltige Abfälle aus der Anodenherstellung",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 03 18",
+      "bezeichnung": "Abfälle aus der Anodenherstellung, die Kohlenstoff enthalten, mit Ausnahme derjenigen, die unter 10 03 17 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 03 19",
+      "bezeichnung": "Filterstaub, der gefährliche Stoffe enthält",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 03 20",
+      "bezeichnung": "Filterstaub mit Ausnahme von Filterstaub, der unter 10 03 19 fällt",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 03 21",
+      "bezeichnung": "andere Teilchen und Staub (einschließlich Kugelmühlenstaub), die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 03 22",
+      "bezeichnung": "andere Teilchen und Staub (einschließlich Kugelmühlenstaub) mit Ausnahme derjenigen, die unter 10 03 21 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 03 23",
+      "bezeichnung": "feste Abfälle aus der Abgasbehandlung, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 03 24",
+      "bezeichnung": "feste Abfälle aus der Abgasbehandlung mit Ausnahme derjenigen, die unter 10 03 23 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 03 25",
+      "bezeichnung": "Schlämme und Filterkuchen aus der Abgasbehandlung, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 03 26",
+      "bezeichnung": "Schlämme und Filterkuchen aus der Abgasbehandlung mit Ausnahme derjenigen, die unter 10 03 25 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 03 27",
+      "bezeichnung": "ölhaltige Abfälle aus der Kühlwasserbehandlung",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 03 28",
+      "bezeichnung": "Abfälle aus der Kühlwasserbehandlung mit Ausnahme derjenigen, die unter 10 03 27 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 03 29",
+      "bezeichnung": "gefährliche Stoffe enthaltende Abfälle aus der Behandlung von Salzschlacken und schwarzen Krätzen",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 03 30",
+      "bezeichnung": "Abfälle aus der Behandlung von Salzschlacken und schwarzen Krätzen mit Ausnahme derjenigen, die unter 10 03 29 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 03 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 04 01",
+      "bezeichnung": "Schlacken (Erst- und Zweitschmelze)",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 04 02",
+      "bezeichnung": "Krätzen und Abschaum (Erst- und Zweitschmelze)",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 04 03",
+      "bezeichnung": "Calciumarsenat",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 04 04",
+      "bezeichnung": "Filterstaub",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 04 05",
+      "bezeichnung": "andere Teilchen und Staub",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 04 06",
+      "bezeichnung": "feste Abfälle aus der Abgasbehandlung",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 04 07",
+      "bezeichnung": "Schlämme und Filterkuchen aus der Abgasbehandlung",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 04 09",
+      "bezeichnung": "ölhaltige Abfälle aus der Kühlwasserbehandlung",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 04 10",
+      "bezeichnung": "Abfälle aus der Kühlwasserbehandlung mit Ausnahme derjenigen, die unter 10 04 09 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 04 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 05 01",
+      "bezeichnung": "Schlacken (Erst- und Zweitschmelze)",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 05 03",
+      "bezeichnung": "Filterstaub",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 05 04",
+      "bezeichnung": "andere Teilchen und Staub",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 05 05",
+      "bezeichnung": "feste Abfälle aus der Abgasbehandlung",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 05 06",
+      "bezeichnung": "Schlämme und Filterkuchen aus der Abgasbehandlung",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 05 08",
+      "bezeichnung": "ölhaltige Abfälle aus der Kühlwasserbehandlung",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 05 09",
+      "bezeichnung": "Abfälle aus der Kühlwasserbehandlung mit Ausnahme derjenigen, die unter 10 05 08 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 05 10",
+      "bezeichnung": "Krätzen und Abschaum, die entzündlich sind oder in Kontakt mit Wasser entzündliche Gase in gefährlicher Menge abgeben",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 05 11",
+      "bezeichnung": "Krätzen und Abschaum mit Ausnahme derjenigen, die unter 10 05 10 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 05 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 06 01",
+      "bezeichnung": "Schlacken (Erst- und Zweitschmelze)",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 06 02",
+      "bezeichnung": "Krätzen und Abschaum (Erst- und Zweitschmelze)",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 06 03",
+      "bezeichnung": "Filterstaub",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 06 04",
+      "bezeichnung": "andere Teilchen und Staub",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 06 06",
+      "bezeichnung": "feste Abfälle aus der Abgasbehandlung",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 06 07",
+      "bezeichnung": "Schlämme und Filterkuchen aus der Abgasbehandlung",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 06 09",
+      "bezeichnung": "ölhaltige Abfälle aus der Kühlwasserbehandlung",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 06 10",
+      "bezeichnung": "Abfälle aus der Kühlwasserbehandlung mit Ausnahme derjenigen, die unter 10 06 09 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 06 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 07 01",
+      "bezeichnung": "Schlacken (Erst- und Zweitschmelze)",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 07 02",
+      "bezeichnung": "Krätzen und Abschaum (Erst- und Zweitschmelze)",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 07 03",
+      "bezeichnung": "feste Abfälle aus der Abgasbehandlung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 07 04",
+      "bezeichnung": "andere Teilchen und Staub",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 07 05",
+      "bezeichnung": "Schlämme und Filterkuchen aus der Abgasbehandlung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 07 07",
+      "bezeichnung": "ölhaltige Abfälle aus der Kühlwasserbehandlung",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 07 08",
+      "bezeichnung": "Abfälle aus der Kühlwasserbehandlung mit Ausnahme derjenigen, die unter 10 07 07 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 07 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 08 04",
+      "bezeichnung": "Teilchen und Staub",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 08 08",
+      "bezeichnung": "Salzschlacken (Erst- und Zweitschmelze)",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 08 09",
+      "bezeichnung": "andere Schlacken",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 08 10",
+      "bezeichnung": "Krätzen und Abschaum, die entzündlich sind oder in Kontakt mit Wasser entzündliche Gase in gefährlicher Menge abgeben",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 08 11",
+      "bezeichnung": "Krätzen und Abschaum mit Ausnahme derjenigen, die unter 10 08 10 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 08 12",
+      "bezeichnung": "teerhaltige Abfälle aus der Anodenherstellung",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 08 13",
+      "bezeichnung": "Abfälle aus der Anodenherstellung, die Kohlenstoff enthalten, mit Ausnahme derjenigen, die unter 10 08 12 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 08 14",
+      "bezeichnung": "Anodenschrott",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 08 15",
+      "bezeichnung": "Filterstaub, der gefährliche Stoffe enthält",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 08 16",
+      "bezeichnung": "Filterstaub mit Ausnahme desjenigen, der unter 10 08 15 fällt",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 08 17",
+      "bezeichnung": "Schlämme und Filterkuchen aus der Abgasbehandlung, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 08 18",
+      "bezeichnung": "Schlämme und Filterkuchen aus der Abgasbehandlung mit Ausnahme derjenigen, die unter 10 08 17 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 08 19",
+      "bezeichnung": "ölhaltige Abfälle aus der Kühlwasserbehandlung",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 08 20",
+      "bezeichnung": "Abfälle aus der Kühlwasserbehandlung mit Ausnahme derjenigen, die unter 10 08 19 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 08 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 09 03",
+      "bezeichnung": "Ofenschlacke",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 09 05",
+      "bezeichnung": "gefährliche Stoffe enthaltende Gießformen und -sande vor dem Gießen",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 09 06",
+      "bezeichnung": "Gießformen und -sande vor dem Gießen mit Ausnahme derjenigen, die unter 10 09 05 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 09 07",
+      "bezeichnung": "gefährliche Stoffe enthaltende Gießformen und -sande nach dem Gießen",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 09 08",
+      "bezeichnung": "Gießformen und -sande nach dem Gießen mit Ausnahme derjenigen, die unter 10 09 07 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 09 09",
+      "bezeichnung": "Filterstaub, der gefährliche Stoffe enthält",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 09 10",
+      "bezeichnung": "Filterstaub mit Ausnahme desjenigen, der unter 10 09 09 fällt",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 09 11",
+      "bezeichnung": "andere Teilchen, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 09 12",
+      "bezeichnung": "andere Teilchen mit Ausnahme derjenigen, die unter 10 09 11 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 09 13",
+      "bezeichnung": "Abfälle von Bindemitteln, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 09 14",
+      "bezeichnung": "Abfälle von Bindemitteln mit Ausnahme derjenigen, die unter 10 09 13 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 09 15",
+      "bezeichnung": "Abfälle aus rissanzeigenden Substanzen, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 09 16",
+      "bezeichnung": "Abfälle aus rissanzeigenden Substanzen mit Ausnahme derjenigen, die unter 10 09 15 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 09 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 10 03",
+      "bezeichnung": "Ofenschlacke",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 10 05",
+      "bezeichnung": "gefährliche Stoffe enthaltende Gießformen und -sande vor dem Gießen",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 10 06",
+      "bezeichnung": "Gießformen und -sande vor dem Gießen mit Ausnahme derjenigen, die unter 10 10 05 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 10 07",
+      "bezeichnung": "gefährliche Stoffe enthaltende Gießformen und -sande nach dem Gießen",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 10 08",
+      "bezeichnung": "Gießformen und -sande nach dem Gießen mit Ausnahme derjenigen, die unter 10 10 07 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 10 09",
+      "bezeichnung": "Filterstaub, der gefährliche Stoffe enthält",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 10 10",
+      "bezeichnung": "Filterstaub mit Ausnahme desjenigen, der unter 10 10 09 fällt",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 10 11",
+      "bezeichnung": "andere Teilchen, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 10 12",
+      "bezeichnung": "andere Teilchen mit Ausnahme derjenigen, die unter 10 10 11 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 10 13",
+      "bezeichnung": "Abfälle von Bindemitteln, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 10 14",
+      "bezeichnung": "Abfälle von Bindemitteln mit Ausnahme derjenigen, die unter 10 10 13 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 10 15",
+      "bezeichnung": "Abfälle aus rissanzeigenden Substanzen, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 10 16",
+      "bezeichnung": "Abfälle aus rissanzeigenden Substanzen mit Ausnahme derjenigen, die unter 10 10 15 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 10 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 11 03",
+      "bezeichnung": "Glasfaserabfall",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 11 05",
+      "bezeichnung": "Teilchen und Staub",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 11 09",
+      "bezeichnung": "Gemengeabfall mit gefährlichen Stoffen vor dem Schmelzen",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 11 10",
+      "bezeichnung": "Gemengeabfall vor dem Schmelzen mit Ausnahme desjenigen, der unter 10 11 09 fällt",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 11 11",
+      "bezeichnung": "Glasabfall in kleinen Teilchen und Glasstaub, die Schwermetalle enthalten (z.B. aus Kathodenstrahlröhren)",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 11 12",
+      "bezeichnung": "Glasabfall mit Ausnahme desjenigen, der unter 10 11 11 fällt",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 11 13",
+      "bezeichnung": "Glaspolier- und Glasschleifschlämme, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 11 14",
+      "bezeichnung": "Glaspolier- und Glasschleifschlämme mit Ausnahme derjenigen, die unter 10 11 13 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 11 15",
+      "bezeichnung": "feste Abfälle aus der Abgasbehandlung, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 11 16",
+      "bezeichnung": "feste Abfälle aus der Abgasbehandlung mit Ausnahme derjenigen, die unter 10 11 15 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 11 17",
+      "bezeichnung": "Schlämme und Filterkuchen aus der Abgasbehandlung, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 11 18",
+      "bezeichnung": "Schlämme und Filterkuchen aus der Abgasbehandlung mit Ausnahme derjenigen, die unter 10 11 17 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 11 19",
+      "bezeichnung": "feste Abfälle aus der betriebseigenen Abwasserbehandlung, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 11 20",
+      "bezeichnung": "feste Abfälle aus der betriebseigenen Abwasserbehandlung mit Ausnahme derjenigen, die unter 10 11 19 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 11 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 12 01",
+      "bezeichnung": "Rohmischungen vor dem Brennen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 12 03",
+      "bezeichnung": "Teilchen und Staub",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 12 05",
+      "bezeichnung": "Schlämme und Filterkuchen aus der Abgasbehandlung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 12 06",
+      "bezeichnung": "verworfene Formen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 12 08",
+      "bezeichnung": "Abfälle aus Keramikerzeugnissen, Ziegeln, Fliesen und Steinzeug (nach dem Brennen)",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 12 09",
+      "bezeichnung": "feste Abfälle aus der Abgasbehandlung, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 12 10",
+      "bezeichnung": "feste Abfälle aus der Abgasbehandlung mit Ausnahme derjenigen, die unter 10 12 09 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 12 11",
+      "bezeichnung": "Glasurabfälle, die Schwermetalle enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 12 12",
+      "bezeichnung": "Glasurabfälle mit Ausnahme derjenigen, die unter 10 12 11 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 12 13",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 12 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 13 01",
+      "bezeichnung": "Abfälle von Rohgemenge vor dem Brennen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 13 04",
+      "bezeichnung": "Abfälle aus der Kalzinierung und Hydratisierung von Branntkalk",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 13 06",
+      "bezeichnung": "Teilchen und Staub (außer 10 13 12 und 10 13 13)",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 13 07",
+      "bezeichnung": "Schlämme und Filterkuchen aus der Abgasbehandlung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 13 09",
+      "bezeichnung": "asbesthaltige Abfälle aus der Herstellung von Asbestzement",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 13 10",
+      "bezeichnung": "Abfälle aus der Herstellung von Asbestzement mit Ausnahme derjenigen, die unter 10 13 09 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 13 11",
+      "bezeichnung": "Abfälle aus der Herstellung anderer Verbundstoffe auf Zementbasis mit Ausnahme derjenigen, die unter 10 13 09 und 10 13 10 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 13 12",
+      "bezeichnung": "feste Abfälle aus der Abgasbehandlung, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "10 13 13",
+      "bezeichnung": "feste Abfälle aus der Abgasbehandlung mit Ausnahme derjenigen, die unter 10 13 12 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 13 14",
+      "bezeichnung": "Betonabfälle und Betonschlämme",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 13 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "10 14 01",
+      "bezeichnung": "quecksilberhaltige Abfälle aus der Gasreinigung",
+      "gefaehrlich": true
+    },
+    {
+      "code": "11 01 05",
+      "bezeichnung": "saure Beizlösungen",
+      "gefaehrlich": true
+    },
+    {
+      "code": "11 01 06",
+      "bezeichnung": "Säuren a. n. g.",
+      "gefaehrlich": true
+    },
+    {
+      "code": "11 01 07",
+      "bezeichnung": "alkalische Beizlösungen",
+      "gefaehrlich": true
+    },
+    {
+      "code": "11 01 08",
+      "bezeichnung": "Phosphatierschlämme",
+      "gefaehrlich": true
+    },
+    {
+      "code": "11 01 09",
+      "bezeichnung": "Schlämme und Filterkuchen, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "11 01 10",
+      "bezeichnung": "Schlämme und Filterkuchen mit Ausnahme derjenigen, die unter 11 01 09 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "11 01 11",
+      "bezeichnung": "wässrige Spülflüssigkeiten, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "11 01 12",
+      "bezeichnung": "wässrige Spülflüssigkeiten mit Ausnahme derjenigen, die unter 11 01 11 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "11 01 13",
+      "bezeichnung": "Abfälle aus der Entfettung, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "11 01 14",
+      "bezeichnung": "Abfälle aus der Entfettung mit Ausnahme derjenigen, die unter 11 01 13 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "11 01 15",
+      "bezeichnung": "Eluate und Schlämme aus Membransystemen oder Ionenaustauschsystemen, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "11 01 16",
+      "bezeichnung": "gesättigte oder verbrauchte Ionenaustauscherharze",
+      "gefaehrlich": true
+    },
+    {
+      "code": "11 01 98",
+      "bezeichnung": "andere Abfälle, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "11 01 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "11 02 02",
+      "bezeichnung": "Schlämme aus der Zink-Hydrometallurgie (einschließlich Jarosit, Goethit)",
+      "gefaehrlich": true
+    },
+    {
+      "code": "11 02 03",
+      "bezeichnung": "Abfälle aus der Herstellung von Anoden für wässrige elektrolytische Prozesse",
+      "gefaehrlich": false
+    },
+    {
+      "code": "11 02 05",
+      "bezeichnung": "Abfälle aus Prozessen der Kupfer-Hydrometallurgie, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "11 02 06",
+      "bezeichnung": "Abfälle aus Prozessen der Kupfer-Hydrometallurgie mit Ausnahme derjenigen, die unter 11 02 05 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "11 02 07",
+      "bezeichnung": "andere Abfälle, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "11 02 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "11 03 01",
+      "bezeichnung": "cyanidhaltige Abfälle",
+      "gefaehrlich": true
+    },
+    {
+      "code": "11 03 02",
+      "bezeichnung": "andere Abfälle",
+      "gefaehrlich": true
+    },
+    {
+      "code": "11 05 01",
+      "bezeichnung": "Hartzink",
+      "gefaehrlich": false
+    },
+    {
+      "code": "11 05 02",
+      "bezeichnung": "Zinkasche",
+      "gefaehrlich": false
+    },
+    {
+      "code": "11 05 03",
+      "bezeichnung": "feste Abfälle aus der Abgasbehandlung",
+      "gefaehrlich": true
+    },
+    {
+      "code": "11 05 04",
+      "bezeichnung": "gebrauchte Flussmittel",
+      "gefaehrlich": true
+    },
+    {
+      "code": "11 05 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "12 01 01",
+      "bezeichnung": "Eisenfeil- und -drehspäne",
+      "gefaehrlich": false
+    },
+    {
+      "code": "12 01 02",
+      "bezeichnung": "Eisenstaub und -teilchen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "12 01 03",
+      "bezeichnung": "NE-Metallfeil- und -drehspäne",
+      "gefaehrlich": false
+    },
+    {
+      "code": "12 01 04",
+      "bezeichnung": "NE-Metallstaub und -teilchen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "12 01 05",
+      "bezeichnung": "Kunststoffspäne und -drehspäne",
+      "gefaehrlich": false
+    },
+    {
+      "code": "12 01 06",
+      "bezeichnung": "halogenhaltige Bearbeitungsöle auf Mineralölbasis (außer Emulsionen und Lösungen)",
+      "gefaehrlich": true
+    },
+    {
+      "code": "12 01 07",
+      "bezeichnung": "halogenfreie Bearbeitungsöle auf Mineralölbasis (außer Emulsionen und Lösungen)",
+      "gefaehrlich": true
+    },
+    {
+      "code": "12 01 08",
+      "bezeichnung": "halogenhaltige Bearbeitungsemulsionen und -lösungen",
+      "gefaehrlich": true
+    },
+    {
+      "code": "12 01 09",
+      "bezeichnung": "halogenfreie Bearbeitungsemulsionen und -lösungen",
+      "gefaehrlich": true
+    },
+    {
+      "code": "12 01 10",
+      "bezeichnung": "synthetische Bearbeitungsöle",
+      "gefaehrlich": true
+    },
+    {
+      "code": "12 01 12",
+      "bezeichnung": "gebrauchte Wachse und Fette",
+      "gefaehrlich": true
+    },
+    {
+      "code": "12 01 13",
+      "bezeichnung": "Schweißabfälle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "12 01 14",
+      "bezeichnung": "Bearbeitungsschlämme, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "12 01 15",
+      "bezeichnung": "Bearbeitungsschlämme mit Ausnahme derjenigen, die unter 12 01 14 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "12 01 16",
+      "bezeichnung": "Strahlmittelabfälle, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "12 01 17",
+      "bezeichnung": "Strahlmittelabfälle mit Ausnahme derjenigen, die unter 12 01 16 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "12 01 18",
+      "bezeichnung": "ölhaltige Metallschlämme (Schleif-, Hon- und Läppschlämme)",
+      "gefaehrlich": true
+    },
+    {
+      "code": "12 01 19",
+      "bezeichnung": "biologisch leicht abbaubare Bearbeitungsöle",
+      "gefaehrlich": true
+    },
+    {
+      "code": "12 01 20",
+      "bezeichnung": "gebrauchte Hon- und Schleifmittel, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "12 01 21",
+      "bezeichnung": "gebrauchte Hon- und Schleifmittel mit Ausnahme derjenigen, die unter 12 01 20 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "12 01 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "12 03 01",
+      "bezeichnung": "wässrige Waschflüssigkeiten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "12 03 02",
+      "bezeichnung": "Abfälle aus der Dampfentfettung",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 01 01",
+      "bezeichnung": "Hydrauliköle, die PCB enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 01 04",
+      "bezeichnung": "chlorierte Emulsionen",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 01 05",
+      "bezeichnung": "nichtchlorierte Emulsionen",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 01 09",
+      "bezeichnung": "chlorierte Hydrauliköle auf Mineralölbasis",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 01 10",
+      "bezeichnung": "nichtchlorierte Hydrauliköle auf Mineralölbasis",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 01 11",
+      "bezeichnung": "synthetische Hydrauliköle",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 01 12",
+      "bezeichnung": "biologisch leicht abbaubare Hydrauliköle",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 01 13",
+      "bezeichnung": "andere Hydrauliköle",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 02 04",
+      "bezeichnung": "chlorierte Maschinen-, Getriebe- und Schmieröle auf Mineralölbasis",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 02 05",
+      "bezeichnung": "nichtchlorierte Maschinen-, Getriebe- und Schmieröle auf Mineralölbasis",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 02 06",
+      "bezeichnung": "synthetische Maschinen-, Getriebe- und Schmieröle",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 02 07",
+      "bezeichnung": "biologisch leicht abbaubare Maschinen-, Getriebe- und Schmieröle",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 02 08",
+      "bezeichnung": "andere Maschinen-, Getriebe- und Schmieröle",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 03 01",
+      "bezeichnung": "Isolier- und Wärmeübertragungsöle, die PCB enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 03 06",
+      "bezeichnung": "chlorierte Isolier- und Wärmeübertragungsöle auf Mineralölbasis mit Ausnahme derjenigen, die unter 13 03 01 fallen",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 03 07",
+      "bezeichnung": "nichtchlorierte Isolier- und Wärmeübertragungsöle auf Mineralölbasis",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 03 08",
+      "bezeichnung": "synthetische Isolier- und Wärmeübertragungsöle",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 03 09",
+      "bezeichnung": "biologisch leicht abbaubare Isolier- und Wärmeübertragungsöle",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 03 10",
+      "bezeichnung": "andere Isolier- und Wärmeübertragungsöle",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 04 01",
+      "bezeichnung": "Bilgenöle aus der Binnenschifffahrt",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 04 02",
+      "bezeichnung": "Bilgenöle aus Molenablaufkanälen",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 04 03",
+      "bezeichnung": "Bilgenöle aus der übrigen Schifffahrt",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 05 01",
+      "bezeichnung": "feste Abfälle aus Sandfanganlagen und Öl-/Wasserabscheidern",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 05 02",
+      "bezeichnung": "Schlämme aus Öl-/Wasserabscheidern",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 05 03",
+      "bezeichnung": "Schlämme aus Einlaufschächten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 05 06",
+      "bezeichnung": "Öle aus Öl-/Wasserabscheidern",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 05 07",
+      "bezeichnung": "öliges Wasser aus Öl-/Wasserabscheidern",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 05 08",
+      "bezeichnung": "Abfallgemische aus Sandfanganlagen und Öl-/Wasserabscheidern",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 07 01",
+      "bezeichnung": "Heizöl und Diesel",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 07 02",
+      "bezeichnung": "Benzin",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 07 03",
+      "bezeichnung": "andere Brennstoffe (einschließlich Gemische)",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 08 01",
+      "bezeichnung": "Schlämme oder Emulsionen aus Entsalzern",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 08 02",
+      "bezeichnung": "andere Emulsionen",
+      "gefaehrlich": true
+    },
+    {
+      "code": "13 08 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": true
+    },
+    {
+      "code": "14 06 01",
+      "bezeichnung": "Fluorchlorkohlenwasserstoffe, HFCKW, HFKW",
+      "gefaehrlich": true
+    },
+    {
+      "code": "14 06 02",
+      "bezeichnung": "andere halogenierte Lösemittel und Lösemittelgemische",
+      "gefaehrlich": true
+    },
+    {
+      "code": "14 06 03",
+      "bezeichnung": "andere Lösemittel und Lösemittelgemische",
+      "gefaehrlich": true
+    },
+    {
+      "code": "14 06 04",
+      "bezeichnung": "Schlämme oder feste Abfälle, die halogenierte Lösemittel enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "14 06 05",
+      "bezeichnung": "Schlämme oder feste Abfälle, die andere Lösemittel enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "15 01 01",
+      "bezeichnung": "Verpackungen aus Papier und Pappe",
+      "gefaehrlich": false
+    },
+    {
+      "code": "15 01 02",
+      "bezeichnung": "Verpackungen aus Kunststoff",
+      "gefaehrlich": false
+    },
+    {
+      "code": "15 01 03",
+      "bezeichnung": "Verpackungen aus Holz",
+      "gefaehrlich": false
+    },
+    {
+      "code": "15 01 04",
+      "bezeichnung": "Verpackungen aus Metall",
+      "gefaehrlich": false
+    },
+    {
+      "code": "15 01 05",
+      "bezeichnung": "Verbundverpackungen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "15 01 06",
+      "bezeichnung": "gemischte Verpackungen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "15 01 07",
+      "bezeichnung": "Verpackungen aus Glas",
+      "gefaehrlich": false
+    },
+    {
+      "code": "15 01 09",
+      "bezeichnung": "Verpackungen aus Textilien",
+      "gefaehrlich": false
+    },
+    {
+      "code": "15 01 10",
+      "bezeichnung": "Verpackungen, die Rückstände gefährlicher Stoffe enthalten oder durch gefährliche Stoffe verunreinigt sind",
+      "gefaehrlich": true
+    },
+    {
+      "code": "15 01 11",
+      "bezeichnung": "Verpackungen aus Metall, die eine gefährliche feste poröse Matrix (z.B. Asbest) enthalten, einschließlich geleerter Druckbehältnisse",
+      "gefaehrlich": true
+    },
+    {
+      "code": "15 02 02",
+      "bezeichnung": "Aufsaug- und Filtermaterialien (einschließlich Ölfilter a. n. g.), Wischtücher und Schutzkleidung, die durch gefährliche Stoffe verunreinigt sind",
+      "gefaehrlich": true
+    },
+    {
+      "code": "15 02 03",
+      "bezeichnung": "Aufsaug- und Filtermaterialien, Wischtücher und Schutzkleidung mit Ausnahme derjenigen, die unter 15 02 02 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "16 01 03",
+      "bezeichnung": "Altreifen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "16 01 04",
+      "bezeichnung": "Altfahrzeuge",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 01 06",
+      "bezeichnung": "Altfahrzeuge, die weder Flüssigkeiten noch andere gefährliche Bestandteile enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "16 01 07",
+      "bezeichnung": "Ölfilter",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 01 08",
+      "bezeichnung": "quecksilberhaltige Bauteile",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 01 09",
+      "bezeichnung": "Bauteile, die PCB enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 01 10",
+      "bezeichnung": "explosive Bauteile (z.B. aus Airbags)",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 01 11",
+      "bezeichnung": "asbesthaltige Bremsbeläge",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 01 12",
+      "bezeichnung": "Bremsbeläge mit Ausnahme derjenigen, die unter 16 01 11 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "16 01 13",
+      "bezeichnung": "Bremsflüssigkeiten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 01 14",
+      "bezeichnung": "Frostschutzmittel, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 01 15",
+      "bezeichnung": "Frostschutzmittel mit Ausnahme derjenigen, die unter 16 01 14 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "16 01 16",
+      "bezeichnung": "Flüssiggasbehälter",
+      "gefaehrlich": false
+    },
+    {
+      "code": "16 01 17",
+      "bezeichnung": "Eisenmetalle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "16 01 18",
+      "bezeichnung": "Nichteisenmetalle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "16 01 19",
+      "bezeichnung": "Kunststoffe",
+      "gefaehrlich": false
+    },
+    {
+      "code": "16 01 20",
+      "bezeichnung": "Glas",
+      "gefaehrlich": false
+    },
+    {
+      "code": "16 01 21",
+      "bezeichnung": "gefährliche Bauteile mit Ausnahme derjenigen, die unter 16 01 07 bis 16 01 11, 16 01 13 und 16 01 14 fallen",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 01 22",
+      "bezeichnung": "Bauteile a.n.g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "16 01 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "16 02 09",
+      "bezeichnung": "Transformatoren und Kondensatoren, die PCB enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 02 10",
+      "bezeichnung": "gebrauchte Geräte, die PCB enthalten oder damit verunreinigt sind, mit Ausnahme derjenigen, die unter 16 02 09 fallen",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 02 11",
+      "bezeichnung": "gebrauchte Geräte, die Fluorchlorkohlenwasserstoffe, HFCKW oder HFKW enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 02 12",
+      "bezeichnung": "gebrauchte Geräte, die freies Asbest enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 02 13",
+      "bezeichnung": "gefährliche Bauteile enthaltende gebrauchte Geräte mit Ausnahme derjenigen, die unter 16 02 09 bis 16 02 12 fallen",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 02 14",
+      "bezeichnung": "gebrauchte Geräte mit Ausnahme derjenigen, die unter 16 02 09 bis 16 02 13 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "16 02 15",
+      "bezeichnung": "aus gebrauchten Geräten entfernte gefährliche Bauteile",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 02 16",
+      "bezeichnung": "aus gebrauchten Geräten entfernte Bauteile mit Ausnahme derjenigen, die unter 16 02 15 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "16 03 03",
+      "bezeichnung": "anorganische Abfälle, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 03 04",
+      "bezeichnung": "anorganische Abfälle mit Ausnahme derjenigen, die unter 16 03 03 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "16 03 05",
+      "bezeichnung": "organische Abfälle, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 03 06",
+      "bezeichnung": "organische Abfälle mit Ausnahme derjenigen, die unter 16 03 05 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "16 03 07",
+      "bezeichnung": "metallisches Quecksilber",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 04 01",
+      "bezeichnung": "Munitionsabfälle",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 04 02",
+      "bezeichnung": "Feuerwerkskörperabfälle",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 04 03",
+      "bezeichnung": "andere Explosivabfälle",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 05 04",
+      "bezeichnung": "gefährliche Stoffe enthaltende Gase in Druckbehältern (einschließlich Halonen)",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 05 05",
+      "bezeichnung": "Gase in Druckbehältern mit Ausnahme derjenigen, die unter 16 05 04 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "16 05 06",
+      "bezeichnung": "Laborchemikalien, die aus gefährlichen Stoffen bestehen oder solche enthalten, einschließlich Gemische von Laborchemikalien",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 05 07",
+      "bezeichnung": "gebrauchte anorganische Chemikalien, die aus gefährlichen Stoffen bestehen oder solche enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 05 08",
+      "bezeichnung": "gebrauchte organische Chemikalien, die aus gefährlichen Stoffen bestehen oder solche enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 05 09",
+      "bezeichnung": "gebrauchte Chemikalien mit Ausnahme derjenigen, die unter 16 05 06, 16 05 07 oder 16 05 08 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "16 06 01",
+      "bezeichnung": "Bleibatterien",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 06 02",
+      "bezeichnung": "Ni-Cd-Batterien",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 06 03",
+      "bezeichnung": "Quecksilber enthaltende Batterien",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 06 04",
+      "bezeichnung": "Alkalibatterien (außer 16 06 03)",
+      "gefaehrlich": false
+    },
+    {
+      "code": "16 06 05",
+      "bezeichnung": "andere Batterien und Akkumulatoren",
+      "gefaehrlich": false
+    },
+    {
+      "code": "16 06 06",
+      "bezeichnung": "getrennt gesammelte Elektrolyte aus Batterien und Akkumulatoren",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 07 08",
+      "bezeichnung": "ölhaltige Abfälle",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 07 09",
+      "bezeichnung": "Abfälle, die sonstige gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 07 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "16 08 01",
+      "bezeichnung": "gebrauchte Katalysatoren, die Gold, Silber, Rhenium, Rhodium, Palladium, Iridium oder Platin enthalten (außer 16 08 07)",
+      "gefaehrlich": false
+    },
+    {
+      "code": "16 08 02",
+      "bezeichnung": "gebrauchte Katalysatoren, die gefährliche Übergangsmetalle oder deren Verbindungen enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 08 03",
+      "bezeichnung": "gebrauchte Katalysatoren, die Übergangsmetalle oder deren Verbindungen enthalten, a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "16 08 04",
+      "bezeichnung": "gebrauchte Katalysatoren von Crackprozessen (außer 16 08 07)",
+      "gefaehrlich": false
+    },
+    {
+      "code": "16 08 05",
+      "bezeichnung": "gebrauchte Katalysatoren, die Phosphorsäure enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 08 06",
+      "bezeichnung": "gebrauchte Flüssigkeiten, die als Katalysatoren verwendet wurden",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 08 07",
+      "bezeichnung": "gebrauchte Katalysatoren, die durch gefährliche Stoffe verunreinigt sind",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 09 01",
+      "bezeichnung": "Permanganate, z.B. Kaliumpermanganat",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 09 02",
+      "bezeichnung": "Chromate, z.B. Kaliumchromat, Kalium- oder Natriumdichromat",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 09 03",
+      "bezeichnung": "Peroxide, z.B. Wasserstoffperoxid",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 09 04",
+      "bezeichnung": "oxidierende Stoffe a. n. g.",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 10 01",
+      "bezeichnung": "wässrige flüssige Abfälle, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 10 02",
+      "bezeichnung": "wässrige flüssige Abfälle mit Ausnahme derjenigen, die unter 16 10 01 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "16 10 03",
+      "bezeichnung": "wässrige Konzentrate, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 10 04",
+      "bezeichnung": "wässrige Konzentrate mit Ausnahme derjenigen, die unter 16 10 03 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "16 11 01",
+      "bezeichnung": "Auskleidungen und feuerfeste Materialien auf Kohlenstoffbasis aus metallurgischen Prozessen, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 11 02",
+      "bezeichnung": "Auskleidungen und feuerfeste Materialien auf Kohlenstoffbasis aus metallurgischen Prozessen mit Ausnahme derjenigen, die unter 16 11 01 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "16 11 03",
+      "bezeichnung": "andere Auskleidungen und feuerfeste Materialien aus metallurgischen Prozessen, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 11 04",
+      "bezeichnung": "andere Auskleidungen und feuerfeste Materialien aus metallurgischen Prozessen mit Ausnahme derjenigen, die unter 16 11 03 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "16 11 05",
+      "bezeichnung": "Auskleidungen und feuerfeste Materialien aus nichtmetallurgischen Prozessen, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "16 11 06",
+      "bezeichnung": "Auskleidungen und feuerfeste Materialien aus nichtmetallurgischen Prozessen mit Ausnahme derjenigen, die unter 16 11 05 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "17 01 01",
+      "bezeichnung": "Beton",
+      "gefaehrlich": false
+    },
+    {
+      "code": "17 01 02",
+      "bezeichnung": "Ziegel",
+      "gefaehrlich": false
+    },
+    {
+      "code": "17 01 03",
+      "bezeichnung": "Fliesen und Keramik",
+      "gefaehrlich": false
+    },
+    {
+      "code": "17 01 06",
+      "bezeichnung": "Gemische aus oder getrennte Fraktionen von Beton, Ziegeln, Fliesen und Keramik, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "17 01 07",
+      "bezeichnung": "Gemische aus Beton, Ziegeln, Fliesen und Keramik mit Ausnahme derjenigen, die unter 17 01 06 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "17 02 01",
+      "bezeichnung": "Holz",
+      "gefaehrlich": false
+    },
+    {
+      "code": "17 02 02",
+      "bezeichnung": "Glas",
+      "gefaehrlich": false
+    },
+    {
+      "code": "17 02 03",
+      "bezeichnung": "Kunststoff",
+      "gefaehrlich": false
+    },
+    {
+      "code": "17 02 04",
+      "bezeichnung": "Glas, Kunststoff und Holz, die gefährliche Stoffe enthalten oder durch gefährliche Stoffe verunreinigt sind",
+      "gefaehrlich": true
+    },
+    {
+      "code": "17 03 01",
+      "bezeichnung": "kohlenteerhaltige Bitumengemische",
+      "gefaehrlich": true
+    },
+    {
+      "code": "17 03 02",
+      "bezeichnung": "Bitumengemische mit Ausnahme derjenigen, die unter 17 03 01 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "17 03 03",
+      "bezeichnung": "Kohlenteer und teerhaltige Produkte",
+      "gefaehrlich": true
+    },
+    {
+      "code": "17 04 01",
+      "bezeichnung": "Kupfer, Bronze, Messing",
+      "gefaehrlich": false
+    },
+    {
+      "code": "17 04 02",
+      "bezeichnung": "Aluminium",
+      "gefaehrlich": false
+    },
+    {
+      "code": "17 04 03",
+      "bezeichnung": "Blei",
+      "gefaehrlich": false
+    },
+    {
+      "code": "17 04 04",
+      "bezeichnung": "Zink",
+      "gefaehrlich": false
+    },
+    {
+      "code": "17 04 05",
+      "bezeichnung": "Eisen und Stahl",
+      "gefaehrlich": false
+    },
+    {
+      "code": "17 04 06",
+      "bezeichnung": "Zinn",
+      "gefaehrlich": false
+    },
+    {
+      "code": "17 04 07",
+      "bezeichnung": "gemischte Metalle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "17 04 09",
+      "bezeichnung": "Metallabfälle, die durch gefährliche Stoffe verunreinigt sind",
+      "gefaehrlich": true
+    },
+    {
+      "code": "17 04 10",
+      "bezeichnung": "Kabel, die Öl, Kohlenteer oder andere gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "17 04 11",
+      "bezeichnung": "Kabel mit Ausnahme derjenigen, die unter 17 04 10 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "17 05 03",
+      "bezeichnung": "Boden und Steine, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "17 05 04",
+      "bezeichnung": "Boden und Steine mit Ausnahme derjenigen, die unter 17 05 03 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "17 05 05",
+      "bezeichnung": "Baggergut, das gefährliche Stoffe enthält",
+      "gefaehrlich": true
+    },
+    {
+      "code": "17 05 06",
+      "bezeichnung": "Baggergut mit Ausnahme desjenigen, das unter 17 05 05 fällt",
+      "gefaehrlich": false
+    },
+    {
+      "code": "17 05 07",
+      "bezeichnung": "Gleisschotter, der gefährliche Stoffe enthält",
+      "gefaehrlich": true
+    },
+    {
+      "code": "17 05 08",
+      "bezeichnung": "Gleisschotter mit Ausnahme desjenigen, der unter 17 05 07 fällt",
+      "gefaehrlich": false
+    },
+    {
+      "code": "17 06 01",
+      "bezeichnung": "Dämmmaterial, das Asbest enthält",
+      "gefaehrlich": true
+    },
+    {
+      "code": "17 06 03",
+      "bezeichnung": "anderes Dämmmaterial, das aus gefährlichen Stoffen besteht oder solche Stoffe enthält",
+      "gefaehrlich": true
+    },
+    {
+      "code": "17 06 04",
+      "bezeichnung": "Dämmmaterial mit Ausnahme desjenigen, das unter 17 06 01 und 17 06 03 fällt",
+      "gefaehrlich": false
+    },
+    {
+      "code": "17 06 05",
+      "bezeichnung": "asbesthaltige Baustoffe",
+      "gefaehrlich": true
+    },
+    {
+      "code": "17 08 01",
+      "bezeichnung": "Baustoffe auf Gipsbasis, die durch gefährliche Stoffe verunreinigt sind",
+      "gefaehrlich": true
+    },
+    {
+      "code": "17 08 02",
+      "bezeichnung": "Baustoffe auf Gipsbasis mit Ausnahme derjenigen, die unter 17 08 01 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "17 09 01",
+      "bezeichnung": "Bau- und Abbruchabfälle, die Quecksilber enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "17 09 02",
+      "bezeichnung": "Bau- und Abbruchabfälle, die PCB enthalten (z.B. PCB-haltige Dichtungsmassen, PCB-haltige Bodenbeläge auf Harzbasis, PCB-haltige Isolierverglasungen, PCB-haltige Kondensatoren)",
+      "gefaehrlich": true
+    },
+    {
+      "code": "17 09 03",
+      "bezeichnung": "sonstige Bau- und Abbruchabfälle (einschließlich gemischte Abfälle), die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "17 09 04",
+      "bezeichnung": "gemischte Bau- und Abbruchabfälle mit Ausnahme derjenigen, die unter 17 09 01, 17 09 02 und 17 09 03 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "18 01 01",
+      "bezeichnung": "spitze oder scharfe Gegenstände (außer 18 01 03)",
+      "gefaehrlich": false
+    },
+    {
+      "code": "18 01 02",
+      "bezeichnung": "Körperteile und Organe, einschließlich Blutbeutel und Blutkonserven (außer 18 01 03)",
+      "gefaehrlich": false
+    },
+    {
+      "code": "18 01 03",
+      "bezeichnung": "Abfälle, an deren Sammlung und Entsorgung aus infektionspräventiver Sicht besondere Anforderungen gestellt werden",
+      "gefaehrlich": true
+    },
+    {
+      "code": "18 01 04",
+      "bezeichnung": "Abfälle, an deren Sammlung und Entsorgung aus infektionspräventiver Sicht keine besonderen Anforderungen gestellt werden (z. B. Wund- und Gipsverbände, Wäsche, Einwegkleidung, Windeln)",
+      "gefaehrlich": false
+    },
+    {
+      "code": "18 01 06",
+      "bezeichnung": "Chemikalien, die aus gefährlichen Stoffen bestehen oder solche enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "18 01 07",
+      "bezeichnung": "Chemikalien mit Ausnahme derjenigen, die unter 18 01 06 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "18 01 08",
+      "bezeichnung": "zytotoxische und zytostatische Arzneimittel",
+      "gefaehrlich": true
+    },
+    {
+      "code": "18 01 09",
+      "bezeichnung": "Arzneimittel mit Ausnahme derjenigen, die unter 18 01 08 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "18 01 10",
+      "bezeichnung": "Amalgamabfälle aus der Zahnmedizin",
+      "gefaehrlich": true
+    },
+    {
+      "code": "18 02 01",
+      "bezeichnung": "spitze oder scharfe Gegenstände mit Ausnahme derjenigen, die unter 18 02 02 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "18 02 02",
+      "bezeichnung": "Abfälle, an deren Sammlung und Entsorgung aus infektionspräventiver Sicht besondere Anforderungen gestellt werden",
+      "gefaehrlich": true
+    },
+    {
+      "code": "18 02 03",
+      "bezeichnung": "Abfälle, an deren Sammlung und Entsorgung aus infektionspräventiver Sicht keine besonderen Anforderungen gestellt werden",
+      "gefaehrlich": false
+    },
+    {
+      "code": "18 02 05",
+      "bezeichnung": "Chemikalien, die aus gefährlichen Stoffen bestehen oder solche enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "18 02 06",
+      "bezeichnung": "Chemikalien mit Ausnahme derjenigen, die unter 18 02 05 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "18 02 07",
+      "bezeichnung": "zytotoxische und zytostatische Arzneimittel",
+      "gefaehrlich": true
+    },
+    {
+      "code": "18 02 08",
+      "bezeichnung": "Arzneimittel mit Ausnahme derjenigen, die unter 18 02 07 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 01 02",
+      "bezeichnung": "Eisenteile, aus der Rost- und Kesselasche entfernt",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 01 05",
+      "bezeichnung": "Filterkuchen aus der Abgasbehandlung",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 01 06",
+      "bezeichnung": "wässrige flüssige Abfälle aus der Abgasbehandlung und andere wässrige flüssige Abfälle",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 01 07",
+      "bezeichnung": "feste Abfälle aus der Abgasbehandlung",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 01 10",
+      "bezeichnung": "gebrauchte Aktivkohle aus der Abgasbehandlung",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 01 11",
+      "bezeichnung": "Rost- und Kesselaschen sowie Schlacken, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 01 12",
+      "bezeichnung": "Rost- und Kesselaschen sowie Schlacken mit Ausnahme derjenigen, die unter 19 01 11 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 01 13",
+      "bezeichnung": "Filterstaub, der gefährliche Stoffe enthält",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 01 14",
+      "bezeichnung": "Filterstaub mit Ausnahme desjenigen, der unter 19 01 13 fällt",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 01 15",
+      "bezeichnung": "Kesselstaub, der gefährliche Stoffe enthält",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 01 16",
+      "bezeichnung": "Kesselstaub mit Ausnahme desjenigen, der unter 19 01 15 fällt",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 01 17",
+      "bezeichnung": "Pyrolyseabfälle, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 01 18",
+      "bezeichnung": "Pyrolyseabfälle mit Ausnahme derjenigen, die unter 19 01 17 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 01 19",
+      "bezeichnung": "Sande aus der Wirbelschichtfeuerung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 01 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 02 03",
+      "bezeichnung": "vorgemischte Abfälle, die ausschließlich aus nicht gefährlichen Abfällen bestehen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 02 04",
+      "bezeichnung": "vorgemischte Abfälle, die wenigstens einen gefährlichen Abfall enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 02 05",
+      "bezeichnung": "Schlämme aus der physikalisch-chemischen Behandlung, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 02 06",
+      "bezeichnung": "Schlämme aus der physikalisch-chemischen Behandlung mit Ausnahme derjenigen, die unter 19 02 05 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 02 07",
+      "bezeichnung": "Öl und Konzentrate aus Abtrennprozessen",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 02 08",
+      "bezeichnung": "flüssige brennbare Abfälle, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 02 09",
+      "bezeichnung": "feste brennbare Abfälle, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 02 10",
+      "bezeichnung": "brennbare Abfälle mit Ausnahme derjenigen, die unter 19 02 08 und 19 02 09 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 02 11",
+      "bezeichnung": "sonstige Abfälle, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 02 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 03 04",
+      "bezeichnung": "als gefährlich eingestufte teilweise stabilisierte Abfälle, mit Ausnahme derjenigen, die unter 19 03 08 fallen",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 03 05",
+      "bezeichnung": "stabilisierte Abfälle mit Ausnahme derjenigen, die unter 19 03 04 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 03 06",
+      "bezeichnung": "als gefährlich eingestufte verfestigte Abfälle",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 03 07",
+      "bezeichnung": "verfestigte Abfälle mit Ausnahme derjenigen, die unter 19 03 06 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 03 08",
+      "bezeichnung": "teilweise stabilisiertes Quecksilber",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 04 01",
+      "bezeichnung": "verglaste Abfälle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 04 02",
+      "bezeichnung": "Filterstaub und andere Abfälle aus der Abgasbehandlung",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 04 03",
+      "bezeichnung": "nicht verglaste Festphase",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 04 04",
+      "bezeichnung": "wässrige flüssige Abfälle aus dem Tempern",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 05 01",
+      "bezeichnung": "nicht kompostierte Fraktion von Siedlungs- und ähnlichen Abfällen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 05 02",
+      "bezeichnung": "nicht kompostierte Fraktion von tierischen und pflanzlichen Abfällen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 05 03",
+      "bezeichnung": "nicht spezifikationsgerechter Kompost",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 05 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 06 03",
+      "bezeichnung": "Flüssigkeiten aus der anaeroben Behandlung von Siedlungsabfällen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 06 04",
+      "bezeichnung": "Gärrückstand/-schlamm aus der anaeroben Behandlung von Siedlungsabfällen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 06 05",
+      "bezeichnung": "Flüssigkeiten aus der anaeroben Behandlung von tierischen und pflanzlichen Abfällen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 06 06",
+      "bezeichnung": "Gärrückstand/-schlamm aus der anaeroben Behandlung von tierischen und pflanzlichen Abfällen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 06 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 07 02",
+      "bezeichnung": "Deponiesickerwasser, das gefährliche Stoffe enthält",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 07 03",
+      "bezeichnung": "Deponiesickerwasser mit Ausnahme desjenigen, das unter 19 07 02 fällt",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 08 01",
+      "bezeichnung": "Sieb- und Rechenrückstände",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 08 02",
+      "bezeichnung": "Sandfangrückstände",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 08 05",
+      "bezeichnung": "Schlämme aus der Behandlung von kommunalem Abwasser",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 08 06",
+      "bezeichnung": "gesättigte oder verbrauchte Ionenaustauscherharze",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 08 07",
+      "bezeichnung": "Lösungen und Schlämme aus der Regeneration von Ionenaustauschern",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 08 08",
+      "bezeichnung": "schwermetallhaltige Abfälle aus Membransystemen",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 08 09",
+      "bezeichnung": "Fett- und Ölmischungen aus Ölabscheidern, die ausschließlich Speiseöle und -fette enthalten",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 08 10",
+      "bezeichnung": "Fett- und Ölmischungen aus Ölabscheidern mit Ausnahme derjenigen, die unter 19 08 09 fallen",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 08 11",
+      "bezeichnung": "Schlämme aus der biologischen Behandlung von industriellem Abwasser, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 08 12",
+      "bezeichnung": "Schlämme aus der biologischen Behandlung von industriellem Abwasser mit Ausnahme derjenigen, die unter 19 08 11 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 08 13",
+      "bezeichnung": "Schlämme aus einer anderen Behandlung von industriellem Abwasser, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 08 14",
+      "bezeichnung": "Schlämme aus einer anderen Behandlung von industriellem Abwasser mit Ausnahme derjenigen, die unter 19 08 13 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 08 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 09 01",
+      "bezeichnung": "feste Abfälle aus der Erstfiltration und Siebrückstände",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 09 02",
+      "bezeichnung": "Schlämme aus der Wasserklärung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 09 03",
+      "bezeichnung": "Schlämme aus der Dekarbonatisierung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 09 04",
+      "bezeichnung": "gebrauchte Aktivkohle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 09 05",
+      "bezeichnung": "gesättigte oder gebrauchte Ionenaustauscherharze",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 09 06",
+      "bezeichnung": "Lösungen und Schlämme aus der Regeneration von Ionenaustauschern",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 09 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 10 01",
+      "bezeichnung": "Eisen- und Stahlabfälle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 10 02",
+      "bezeichnung": "NE-Metall-Abfälle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 10 03",
+      "bezeichnung": "Schredderleichtfraktionen und Staub, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 10 04",
+      "bezeichnung": "Schredderleichtfraktionen und Staub mit Ausnahme derjenigen, die unter 19 10 03 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 10 05",
+      "bezeichnung": "andere Fraktionen, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 10 06",
+      "bezeichnung": "andere Fraktionen mit Ausnahme derjenigen, die unter 19 10 05 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 11 01",
+      "bezeichnung": "gebrauchte Filtertone",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 11 02",
+      "bezeichnung": "Säureteere",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 11 03",
+      "bezeichnung": "wässrige flüssige Abfälle",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 11 04",
+      "bezeichnung": "Abfälle aus der Brennstoffreinigung mit Basen",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 11 05",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 11 06",
+      "bezeichnung": "Schlämme aus der betriebseigenen Abwasserbehandlung mit Ausnahme derjenigen, die unter 19 11 05 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 11 07",
+      "bezeichnung": "Abfälle aus der Abgasreinigung",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 11 99",
+      "bezeichnung": "Abfälle a. n. g.",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 12 01",
+      "bezeichnung": "Papier und Pappe",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 12 02",
+      "bezeichnung": "Eisenmetalle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 12 03",
+      "bezeichnung": "Nichteisenmetalle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 12 04",
+      "bezeichnung": "Kunststoff und Gummi",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 12 05",
+      "bezeichnung": "Glas",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 12 06",
+      "bezeichnung": "Holz, das gefährliche Stoffe enthält",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 12 07",
+      "bezeichnung": "Holz mit Ausnahme desjenigen, das unter 19 12 06 fällt",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 12 08",
+      "bezeichnung": "Textilien",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 12 09",
+      "bezeichnung": "Mineralien (z.B. Sand, Steine)",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 12 10",
+      "bezeichnung": "brennbare Abfälle (Brennstoffe aus Abfällen)",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 12 11",
+      "bezeichnung": "sonstige Abfälle (einschließlich Materialmischungen) aus der mechanischen Behandlung von Abfällen, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 12 12",
+      "bezeichnung": "sonstige Abfälle (einschließlich Materialmischungen) aus der mechanischen Behandlung von Abfällen mit Ausnahme derjenigen, die unter 19 12 11 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 13 01",
+      "bezeichnung": "feste Abfälle aus der Sanierung von Böden, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 13 02",
+      "bezeichnung": "feste Abfälle aus der Sanierung von Böden mit Ausnahme derjenigen, die unter 19 13 01 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 13 03",
+      "bezeichnung": "Schlämme aus der Sanierung von Böden, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 13 04",
+      "bezeichnung": "Schlämme aus der Sanierung von Böden mit Ausnahme derjenigen, die unter 19 13 03 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 13 05",
+      "bezeichnung": "Schlämme aus der Sanierung von Grundwasser, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 13 06",
+      "bezeichnung": "Schlämme aus der Sanierung von Grundwasser mit Ausnahme derjenigen, die unter 19 13 05 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "19 13 07",
+      "bezeichnung": "wässrige flüssige Abfälle und wässrige Konzentrate aus der Sanierung von Grundwasser, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "19 13 08",
+      "bezeichnung": "wässrige flüssige Abfälle und wässrige Konzentrate aus der Sanierung von Grundwasser mit Ausnahme derjenigen, die unter 19 13 07 fallen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "20 01 01",
+      "bezeichnung": "Papier und Pappe",
+      "gefaehrlich": false
+    },
+    {
+      "code": "20 01 02",
+      "bezeichnung": "Glas",
+      "gefaehrlich": false
+    },
+    {
+      "code": "20 01 08",
+      "bezeichnung": "biologisch abbaubare Küchen- und Kantinenabfälle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "20 01 10",
+      "bezeichnung": "Bekleidung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "20 01 11",
+      "bezeichnung": "Textilien",
+      "gefaehrlich": false
+    },
+    {
+      "code": "20 01 13",
+      "bezeichnung": "Lösemittel",
+      "gefaehrlich": true
+    },
+    {
+      "code": "20 01 14",
+      "bezeichnung": "Säuren",
+      "gefaehrlich": true
+    },
+    {
+      "code": "20 01 15",
+      "bezeichnung": "Laugen",
+      "gefaehrlich": true
+    },
+    {
+      "code": "20 01 17",
+      "bezeichnung": "Fotochemikalien",
+      "gefaehrlich": true
+    },
+    {
+      "code": "20 01 19",
+      "bezeichnung": "Pestizide",
+      "gefaehrlich": true
+    },
+    {
+      "code": "20 01 21",
+      "bezeichnung": "Leuchtstoffröhren und andere quecksilberhaltige Abfälle",
+      "gefaehrlich": true
+    },
+    {
+      "code": "20 01 23",
+      "bezeichnung": "gebrauchte Geräte, die Fluorchlorkohlenwasserstoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "20 01 26",
+      "bezeichnung": "Öle und Fette mit Ausnahme derjenigen, die unter 20 01 25 fallen",
+      "gefaehrlich": true
+    },
+    {
+      "code": "20 01 27",
+      "bezeichnung": "Farben, Druckfarben, Klebstoffe und Kunstharze, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "20 01 29",
+      "bezeichnung": "Reinigungsmittel, die gefährliche Stoffe enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "20 01 31",
+      "bezeichnung": "zytotoxische und zytostatische Arzneimittel",
+      "gefaehrlich": true
+    },
+    {
+      "code": "20 01 33",
+      "bezeichnung": "Batterien und Akkumulatoren, die unter 16 06 01, 16 06 02 oder 16 06 03 fallen, sowie gemischte Batterien und Akkumulatoren, die solche Batterien enthalten",
+      "gefaehrlich": true
+    },
+    {
+      "code": "20 01 35",
+      "bezeichnung": "gebrauchte elektrische und elektronische Geräte, die gefährliche Bauteile enthalten, mit Ausnahme derjenigen, die unter 20 01 21 und 20 01 23 fallen",
+      "gefaehrlich": true
+    },
+    {
+      "code": "20 01 37",
+      "bezeichnung": "Holz, das gefährliche Stoffe enthält",
+      "gefaehrlich": true
+    },
+    {
+      "code": "20 01 39",
+      "bezeichnung": "Kunststoffe",
+      "gefaehrlich": false
+    },
+    {
+      "code": "20 01 40",
+      "bezeichnung": "Metalle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "20 01 41",
+      "bezeichnung": "Abfälle aus der Reinigung von Schornsteinen",
+      "gefaehrlich": false
+    },
+    {
+      "code": "20 02 01",
+      "bezeichnung": "biologisch abbaubare Abfälle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "20 02 02",
+      "bezeichnung": "Boden und Steine",
+      "gefaehrlich": false
+    },
+    {
+      "code": "20 02 03",
+      "bezeichnung": "andere nicht biologisch abbaubare Abfälle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "20 03 01",
+      "bezeichnung": "gemischte Siedlungsabfälle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "20 03 02",
+      "bezeichnung": "Marktabfälle",
+      "gefaehrlich": false
+    },
+    {
+      "code": "20 03 03",
+      "bezeichnung": "Straßenkehricht",
+      "gefaehrlich": false
+    },
+    {
+      "code": "20 03 04",
+      "bezeichnung": "Fäkalschlamm",
+      "gefaehrlich": false
+    },
+    {
+      "code": "20 03 06",
+      "bezeichnung": "Abfälle aus der Kanalreinigung",
+      "gefaehrlich": false
+    },
+    {
+      "code": "20 03 07",
+      "bezeichnung": "Sperrmüll",
+      "gefaehrlich": false
+    },
+    {
+      "code": "20 03 99",
+      "bezeichnung": "Siedlungsabfälle a. n. g.",
+      "gefaehrlich": false
+    }
+  ]
+}
