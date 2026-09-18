@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, vorgesetzterGuard } from './core/auth.guard.js';
+import { authGuard, mitarbeiterGuard, vorgesetzterGuard } from './core/auth.guard.js';
 
 export const routes: Routes = [
   {
@@ -20,6 +20,12 @@ export const routes: Routes = [
     canActivate: [authGuard, vorgesetzterGuard],
     loadComponent: () =>
       import('./features/mitarbeiter-anlegen/mitarbeiter-anlegen.js').then((m) => m.MitarbeiterAnlegen),
+  },
+  {
+    path: 'wareneintrag-erfassen',
+    canActivate: [authGuard, mitarbeiterGuard],
+    loadComponent: () =>
+      import('./features/wareneintrag-erfassen/wareneintrag-erfassen.js').then((m) => m.WareneintragErfassen),
   },
   {
     path: '',

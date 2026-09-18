@@ -21,7 +21,7 @@
     "test:debug": "vitest --inspect-brk --no-file-parallelism",
     "test:e2e": "vitest run --config ./vitest.config.e2e.ts",
     "db:migrate": "prisma migrate deploy",
-    "db:seed": "tsx prisma/seed-standorte.ts && tsx prisma/seed-initial-vorgesetzter.ts"
+    "db:seed": "tsx prisma/seed-standorte.ts && tsx prisma/seed-avv-codes.ts && tsx prisma/seed-initial-vorgesetzter.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1135.0",
@@ -37,6 +37,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
     "dotenv": "^18.0.0",
+    "multer": "^2.4.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "pg": "^8.23.0",
@@ -52,6 +53,7 @@
     "@nestjs/testing": "^12.0.1",
     "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.0",
+    "@types/multer": "^2.2.0",
     "@types/node": "^24.0.0",
     "@types/passport-jwt": "^4.0.1",
     "@types/pg": "^8.23.1",

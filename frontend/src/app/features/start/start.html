@@ -4,6 +4,9 @@
   @if (authService.rolle() === 'VORGESETZTER') {
     <a mat-button routerLink="/mitarbeiter-anlegen">Mitarbeiter anlegen</a>
   }
+  @if (authService.rolle() === 'MITARBEITER') {
+    <a mat-button routerLink="/wareneintrag-erfassen">Wareneintrag erfassen</a>
+  }
   <button mat-button (click)="logout()">Logout</button>
 </mat-toolbar>
 

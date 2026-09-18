@@ -16,6 +16,7 @@ model Standort {
   id     String @id @default(uuid())
   name   String @unique
   nutzer Nutzer[]
+  wareneintraege Wareneintrag[]
 
   @@map("standorte")
 }
@@ -42,7 +43,41 @@ model Nutzer {
   erstelltVon   Nutzer? @relation("NutzerErstelltVon", fields: [erstelltVonId], references: [id])
   erstellteNutzer Nutzer[] @relation("NutzerErstelltVon")
 
+  wareneintraege Wareneintrag[]
+
   erstelltAm DateTime @default(now()) @map("erstellt_am")
 
   @@map("nutzer")
+}
+
+model AvvCode {
+  id             String         @id @default(uuid())
+  code           String         @unique
+  bezeichnung    String
+  gefaehrlich    Boolean
+  wareneintraege Wareneintrag[]
+
+  @@map("avv_codes")
+}
+
+model Wareneintrag {
+  id     String @id @default(uuid())
+  fotoUrl String @map("foto_url")
+
+  avvCodeId String  @map("avv_code_id")
+  avvCode   AvvCode @relation(fields: [avvCodeId], references: [id])
+
+  freitext String
+
+  // Standort als Kopie des Nutzer-Standorts zum Erfassungszeitpunkt, siehe
+  // ADR-0004 – deshalb zusätzlich zu erfasstVonId, nicht nur darüber ableitbar.
+  erfasstVonId String @map("erfasst_von_id")
+  erfasstVon   Nutzer @relation(fields: [erfasstVonId], references: [id])
+
+  standortId String   @map("standort_id")
+  standort   Standort @relation(fields: [standortId], references: [id])
+
+  erstelltAm DateTime @default(now()) @map("erstellt_am")
+
+  @@map("wareneintraege")
 }

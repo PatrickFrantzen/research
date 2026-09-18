@@ -1,0 +1,54 @@
+<div class="seite">
+  <mat-card class="karte">
+    <h1>Wareneintrag erfassen</h1>
+
+    @if (angelegt()) {
+      <p>Wareneintrag wurde angelegt.</p>
+      <div class="aktionen">
+        <a routerLink="/">Zurück zur Startseite</a>
+        <button matButton="filled" type="button" (click)="weitererEintrag()">Weiteren Eintrag erfassen</button>
+      </div>
+    } @else {
+      <form (ngSubmit)="submit()">
+        <input #fotoInput type="file" accept="image/*" capture="environment" (change)="onFotoAusgewaehlt($event)" hidden />
+        <button matButton="outlined" type="button" (click)="fotoInput.click()">
+          {{ foto ? 'Anderes Foto aufnehmen' : 'Foto aufnehmen' }}
+        </button>
+        @if (fotoVorschauUrl(); as url) {
+          <img [src]="url" alt="Foto-Vorschau" class="foto-vorschau" />
+        }
+
+        <mat-form-field appearance="outline">
+          <mat-label>AVV-Code</mat-label>
+          <input
+            matInput
+            name="avvSuche"
+            [matAutocomplete]="avvAuto"
+            [(ngModel)]="avvSucheAnzeige"
+            (ngModelChange)="onAvvSucheEingabe($event)"
+            required
+          />
+          <mat-autocomplete #avvAuto="matAutocomplete" (optionSelected)="onAvvCodeAusgewaehlt($event)">
+            @for (avvCode of avvTreffer.value(); track avvCode.id) {
+              <mat-option [value]="avvCode">{{ avvCode.code }} – {{ avvCode.bezeichnung }}</mat-option>
+            }
+          </mat-autocomplete>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Freitext</mat-label>
+          <textarea matInput name="freitext" [(ngModel)]="freitext" rows="4" required></textarea>
+        </mat-form-field>
+
+        @if (fehler()) {
+          <p class="fehler">{{ fehler() }}</p>
+        }
+
+        <div class="aktionen">
+          <a routerLink="/">Abbrechen</a>
+          <button matButton="filled" type="submit" [disabled]="!kannAbsenden || wirdGeladen()">Absenden</button>
+        </div>
+      </form>
+    }
+  </mat-card>
+</div>
