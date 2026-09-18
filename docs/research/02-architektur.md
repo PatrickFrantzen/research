@@ -84,6 +84,11 @@ wareneintraege    (id, foto_url, avv_code_id → avv_codes, freitext,
                     erstellt_am)
 ```
 
+`wareneintraege.standort_id` wird beim Anlegen als **Kopie** des
+Nutzer-Standorts zum Erfassungszeitpunkt geschrieben (kein reiner Join über
+`erfasst_von_id`) – siehe
+[ADR-0004](../adr/0004-standort-am-wareneintrag-als-snapshot.md).
+
 ### 4.2 Such-/Filterstrategie (zentraler Performance-Punkt)
 
 Die Kombination "AVV-Filter + Volltextsuche im Freitext" ist explizit als
