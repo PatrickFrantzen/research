@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { Injectable } from '@nestjs/common';
 import { loadEnv } from '../config/env.js';
 
@@ -30,5 +30,9 @@ export class ObjectStorageService {
       }),
     );
     return key;
+  }
+
+  async deleteFoto(key: string): Promise<void> {
+    await this.s3.send(new DeleteObjectCommand({ Bucket: this.env.objectStorage.bucket, Key: key }));
   }
 }

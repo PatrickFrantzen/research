@@ -1,10 +1,13 @@
 import {
   Body,
   Controller,
+  Delete,
   FileTypeValidator,
   Get,
   MaxFileSizeValidator,
+  Param,
   ParseFilePipe,
+  Patch,
   Post,
   Query,
   Req,
@@ -20,6 +23,7 @@ import { RolesGuard } from '../auth/roles.guard.js';
 import type { AuthenticatedRequest } from '../auth/jwt.strategy.js';
 import { Rolle } from '../generated/prisma/enums.js';
 import { CreateWareneintragDto } from './dto/create-wareneintrag.dto.js';
+import { UpdateWareneintragDto } from './dto/update-wareneintrag.dto.js';
 import { WareneintragService } from './wareneintrag.service.js';
 
 const FOTO_MAX_GROESSE_BYTES = 10 * 1024 * 1024; // 10 MB
@@ -52,5 +56,31 @@ export class WareneintragController {
     @Body() dto: CreateWareneintragDto,
   ) {
     return this.wareneintragService.create(request.user.id, foto, dto);
+  }
+
+  @Patch(':id')
+  @Roles(Rolle.VORGESETZTER)
+  @UseInterceptors(FileInterceptor('foto', { storage: memoryStorage() }))
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateWareneintragDto,
+    @UploadedFile(
+      new ParseFilePipe({
+        fileIsRequired: false,
+        validators: [
+          new FileTypeValidator({ fileType: /^image\//, fallbackToMimetype: true }),
+          new MaxFileSizeValidator({ maxSize: FOTO_MAX_GROESSE_BYTES }),
+        ],
+      }),
+    )
+    foto?: Express.Multer.File,
+  ) {
+    return this.wareneintragService.update(id, dto, foto);
+  }
+
+  @Delete(':id')
+  @Roles(Rolle.VORGESETZTER)
+  async remove(@Param('id') id: string) {
+    return this.wareneintragService.remove(id);
   }
 }

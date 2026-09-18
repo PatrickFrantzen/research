@@ -89,4 +89,67 @@ describe('WareneintragService', () => {
       },
     });
   });
+
+  describe('update', () => {
+    it('updates avvCodeId and freitext without touching the photo when no new foto is given', async () => {
+      const prisma = {
+        wareneintrag: { update: vi.fn().mockResolvedValue({ id: 'wareneintrag-1' }) },
+      };
+      const objectStorage = { uploadFoto: vi.fn(), deleteFoto: vi.fn() };
+      const service = new WareneintragService(prisma as never, objectStorage as never);
+
+      await service.update('wareneintrag-1', { avvCodeId: 'avv-2', freitext: 'Aktualisierter Text' });
+
+      expect(objectStorage.uploadFoto).not.toHaveBeenCalled();
+      expect(objectStorage.deleteFoto).not.toHaveBeenCalled();
+      expect(prisma.wareneintrag.update).toHaveBeenCalledWith({
+        where: { id: 'wareneintrag-1' },
+        data: { avvCodeId: 'avv-2', freitext: 'Aktualisierter Text' },
+      });
+    });
+
+    it('replaces the photo when a new foto is given, deleting the old one', async () => {
+      const prisma = {
+        wareneintrag: {
+          findUniqueOrThrow: vi.fn().mockResolvedValue({ id: 'wareneintrag-1', fotoUrl: 'wareneintraege/alt' }),
+          update: vi.fn().mockResolvedValue({ id: 'wareneintrag-1' }),
+        },
+      };
+      const objectStorage = {
+        uploadFoto: vi.fn().mockResolvedValue('wareneintraege/neu'),
+        deleteFoto: vi.fn().mockResolvedValue(undefined),
+      };
+      const service = new WareneintragService(prisma as never, objectStorage as never);
+      const foto = { buffer: Buffer.from('neu'), mimetype: 'image/png' } as Express.Multer.File;
+
+      await service.update('wareneintrag-1', { avvCodeId: 'avv-2', freitext: 'Aktualisierter Text' }, foto);
+
+      expect(prisma.wareneintrag.findUniqueOrThrow).toHaveBeenCalledWith({ where: { id: 'wareneintrag-1' } });
+      expect(objectStorage.deleteFoto).toHaveBeenCalledWith('wareneintraege/alt');
+      expect(objectStorage.uploadFoto).toHaveBeenCalledWith(foto.buffer, 'image/png');
+      expect(prisma.wareneintrag.update).toHaveBeenCalledWith({
+        where: { id: 'wareneintrag-1' },
+        data: { avvCodeId: 'avv-2', freitext: 'Aktualisierter Text', fotoUrl: 'wareneintraege/neu' },
+      });
+    });
+  });
+
+  describe('remove', () => {
+    it('deletes the Wareneintrag and its photo from the object storage', async () => {
+      const prisma = {
+        wareneintrag: {
+          findUniqueOrThrow: vi.fn().mockResolvedValue({ id: 'wareneintrag-1', fotoUrl: 'wareneintraege/foto-1' }),
+          delete: vi.fn().mockResolvedValue({ id: 'wareneintrag-1' }),
+        },
+      };
+      const objectStorage = { deleteFoto: vi.fn().mockResolvedValue(undefined) };
+      const service = new WareneintragService(prisma as never, objectStorage as never);
+
+      await service.remove('wareneintrag-1');
+
+      expect(prisma.wareneintrag.findUniqueOrThrow).toHaveBeenCalledWith({ where: { id: 'wareneintrag-1' } });
+      expect(objectStorage.deleteFoto).toHaveBeenCalledWith('wareneintraege/foto-1');
+      expect(prisma.wareneintrag.delete).toHaveBeenCalledWith({ where: { id: 'wareneintrag-1' } });
+    });
+  });
 });

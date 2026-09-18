@@ -3,6 +3,7 @@ import { Prisma } from '../generated/prisma/client.js';
 import { ObjectStorageService } from '../object-storage/object-storage.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateWareneintragDto } from './dto/create-wareneintrag.dto.js';
+import { UpdateWareneintragDto } from './dto/update-wareneintrag.dto.js';
 
 @Injectable()
 export class WareneintragService {
@@ -48,5 +49,31 @@ export class WareneintragService {
         standortId: nutzer.standortId,
       },
     });
+  }
+
+  async update(id: string, dto: UpdateWareneintragDto, foto?: Express.Multer.File) {
+    if (!foto) {
+      return this.prisma.wareneintrag.update({
+        where: { id },
+        data: { avvCodeId: dto.avvCodeId, freitext: dto.freitext },
+      });
+    }
+
+    // Altes Foto ersetzen: erst neues hochladen, dann altes im Objektspeicher
+    // entfernen, um verwaiste Referenzen bei einem Fehlschlag zu vermeiden.
+    const bestehend = await this.prisma.wareneintrag.findUniqueOrThrow({ where: { id } });
+    const fotoUrl = await this.objectStorage.uploadFoto(foto.buffer, foto.mimetype);
+    await this.objectStorage.deleteFoto(bestehend.fotoUrl);
+
+    return this.prisma.wareneintrag.update({
+      where: { id },
+      data: { avvCodeId: dto.avvCodeId, freitext: dto.freitext, fotoUrl },
+    });
+  }
+
+  async remove(id: string) {
+    const wareneintrag = await this.prisma.wareneintrag.findUniqueOrThrow({ where: { id } });
+    await this.objectStorage.deleteFoto(wareneintrag.fotoUrl);
+    return this.prisma.wareneintrag.delete({ where: { id } });
   }
 }
