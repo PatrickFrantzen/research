@@ -44,6 +44,12 @@ Wissen und Fehlerquellen (siehe dortige README) sind übertragbar:
 
 - **Backend**: NestJS (Node/TypeScript)
 - **Frontend**: Angular, als **PWA** (Progressive Web App)
+- **UI-Framework**: Angular Material – wie bei `waste-connect-v2` bereits im
+  Einsatz, gute Mobile/Touch-Unterstützung (wichtig für das
+  Foto-Erfassungsformular), offizielles Angular-Ökosystem. Bewusst **ohne**
+  Bootstrap parallel (das lief bei `waste-connect-v2` zusätzlich mit) –
+  ein UI-System reicht für den reduzierten Funktionsumfang und hält das
+  Bundle schlanker
 - **Datenbank**: PostgreSQL (Begründung siehe Abschnitt 4)
 - **Fotospeicher**: S3-kompatible Objektspeicher-Abstraktion (Abschnitt 5)
 
