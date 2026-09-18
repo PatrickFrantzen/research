@@ -1,0 +1,38 @@
+<div class="seite">
+  <mat-card class="karte">
+    <h1>Einstellungen</h1>
+
+    <form (ngSubmit)="submit()">
+      <mat-form-field appearance="outline">
+        <mat-label>Vorname</mat-label>
+        <input matInput name="vorname" [(ngModel)]="vorname" required />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Nachname</mat-label>
+        <input matInput name="nachname" [(ngModel)]="nachname" required />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Standort</mat-label>
+        <mat-select name="standortId" [(ngModel)]="standortId" required>
+          @for (standort of standorte.value(); track standort.id) {
+            <mat-option [value]="standort.id">{{ standort.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      @if (gespeichert()) {
+        <p class="erfolg">Änderungen gespeichert.</p>
+      }
+      @if (fehler()) {
+        <p class="fehler">{{ fehler() }}</p>
+      }
+
+      <div class="aktionen">
+        <a routerLink="/">Zurück zur Startseite</a>
+        <button matButton="filled" type="submit" [disabled]="wirdGeladen()">Speichern</button>
+      </div>
+    </form>
+  </mat-card>
+</div>

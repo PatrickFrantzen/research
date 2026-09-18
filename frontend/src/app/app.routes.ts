@@ -33,6 +33,11 @@ export const routes: Routes = [
       import('./features/wareneintrag-erfassen/wareneintrag-erfassen.js').then((m) => m.WareneintragErfassen),
   },
   {
+    path: 'einstellungen',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/einstellungen/einstellungen.js').then((m) => m.Einstellungen),
+  },
+  {
     path: '',
     canActivate: [authGuard],
     loadComponent: () => import('./features/start/start.js').then((m) => m.Start),
