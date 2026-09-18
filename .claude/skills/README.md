@@ -2,7 +2,16 @@
   Herkunft der hier vendorten Skills, damit Aktualität/Lizenz nachvollziehbar bleiben.
 -->
 
-# Matt-Pocock-Skills (vendort)
+# Vendorte Skills
+
+## ponytail
+
+Übernommen aus `waste-connect-v2` (`backend/.claude/skills/ponytail`), dort
+bereits im Einsatz. Erzwingt die schlankeste funktionierende Lösung
+(YAGNI, Stdlib/Bordmittel vor Zusatzcode) – repo-weit nützlich, nicht nur
+für Backend-Code, deshalb hier auf Repo-Root-Ebene statt unter `backend/`.
+
+## Matt-Pocock-Skills (vendort)
 
 Quelle: [github.com/mattpocock/skills](https://github.com/mattpocock/skills),
 Lizenz: MIT (siehe Original-Repo).
