@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { firstValueFrom } from 'rxjs';
+import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
 
 interface Standort {
   id: string;
@@ -69,8 +70,8 @@ export class Einstellungen {
         }),
       );
       this.gespeichert.set(true);
-    } catch {
-      this.fehler.set('Änderungen konnten nicht gespeichert werden.');
+    } catch (error) {
+      this.fehler.set(extrahiereFehlermeldung(error, 'Änderungen konnten nicht gespeichert werden.'));
     } finally {
       this.wirdGeladen.set(false);
     }

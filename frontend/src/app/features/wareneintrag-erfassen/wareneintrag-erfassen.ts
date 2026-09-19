@@ -8,6 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
+import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
 
 interface AvvCode {
   id: string;
@@ -99,8 +100,8 @@ export class WareneintragErfassen {
 
       const result = await firstValueFrom(this.http.post<Wareneintrag>('/api/v1/wareneintraege', formData));
       this.angelegt.set(result);
-    } catch {
-      this.fehler.set('Wareneintrag konnte nicht angelegt werden.');
+    } catch (error) {
+      this.fehler.set(extrahiereFehlermeldung(error, 'Wareneintrag konnte nicht angelegt werden.'));
     } finally {
       this.wirdGeladen.set(false);
     }

@@ -8,6 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
+import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
 
 interface Standort {
   id: string;
@@ -66,8 +67,8 @@ export class MitarbeiterAnlegen {
       this.nachname = '';
       this.email = '';
       this.standortId = '';
-    } catch {
-      this.fehler.set('Account konnte nicht angelegt werden.');
+    } catch (error) {
+      this.fehler.set(extrahiereFehlermeldung(error, 'Account konnte nicht angelegt werden.'));
     } finally {
       this.wirdGeladen.set(false);
     }
