@@ -23,17 +23,32 @@ export class WareneintragService {
   ) {}
 
   async findAll(filter: { avvCodeId?: string; suche?: string }) {
-    if (!filter.suche) {
-      return this.prisma.wareneintrag.findMany({
-        where: filter.avvCodeId ? { avvCodeId: filter.avvCodeId } : undefined,
-        orderBy: { erstelltAm: 'desc' },
-      });
-    }
+    const { suche, avvCodeId } = filter;
+    const treffer = suche ? await this.sucheMitVolltext({ avvCodeId, suche }) : await this.listeAlle({ avvCodeId });
+    return Promise.all(
+      treffer.map(async (wareneintrag) => ({
+        ...wareneintrag,
+        // fotoUrl ist in der DB nur der Object-Storage-Key (ADR-0003), keine
+        // abrufbare URL. Erst hier, unmittelbar vor der Auslieferung an den
+        // Client, in eine zeitlich begrenzt gültige URL übersetzen, statt den
+        // Bucket öffentlich lesbar zu machen (Issue #45).
+        fotoUrl: await this.objectStorage.getSignedUrl(wareneintrag.fotoUrl),
+      })),
+    );
+  }
 
-    // Volltextsuche über die generierte tsvector-Spalte (GIN-indiziert), kein
-    // LIKE-Scan, siehe Issue #4.
+  private listeAlle(filter: { avvCodeId?: string }) {
+    return this.prisma.wareneintrag.findMany({
+      where: filter.avvCodeId ? { avvCodeId: filter.avvCodeId } : undefined,
+      orderBy: { erstelltAm: 'desc' },
+    });
+  }
+
+  // Volltextsuche über die generierte tsvector-Spalte (GIN-indiziert), kein
+  // LIKE-Scan, siehe Issue #4.
+  private sucheMitVolltext(filter: { avvCodeId?: string; suche: string }) {
     const avvFilter = filter.avvCodeId ? Prisma.sql`AND avv_code_id = ${filter.avvCodeId}` : Prisma.empty;
-    return this.prisma.$queryRaw`
+    return this.prisma.$queryRaw<{ id: string; fotoUrl: string }[]>`
       SELECT
         id, foto_url AS "fotoUrl", avv_code_id AS "avvCodeId", freitext,
         erfasst_von_id AS "erfasstVonId", standort_id AS "standortId", erstellt_am AS "erstelltAm"

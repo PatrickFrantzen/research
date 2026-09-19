@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const sendMock = vi.fn();
+const getSignedUrlMock = vi.fn();
 
 vi.mock('@aws-sdk/client-s3', () => ({
   S3Client: vi.fn().mockImplementation(function S3ClientMock() {
@@ -12,6 +13,13 @@ vi.mock('@aws-sdk/client-s3', () => ({
   DeleteObjectCommand: vi.fn().mockImplementation(function DeleteObjectCommandMock(input: unknown) {
     return input;
   }),
+  GetObjectCommand: vi.fn().mockImplementation(function GetObjectCommandMock(input: unknown) {
+    return input;
+  }),
+}));
+
+vi.mock('@aws-sdk/s3-request-presigner', () => ({
+  getSignedUrl: getSignedUrlMock,
 }));
 
 process.env['DATABASE_URL'] = 'postgres://user:pass@localhost:5432/db';
@@ -27,6 +35,7 @@ const { ObjectStorageService } = await import('./object-storage.service.js');
 describe('ObjectStorageService', () => {
   beforeEach(() => {
     sendMock.mockReset();
+    getSignedUrlMock.mockReset();
   });
 
   it('uploads the photo under a generated key and returns the object reference', async () => {
@@ -49,5 +58,19 @@ describe('ObjectStorageService', () => {
     expect(sendMock).toHaveBeenCalledWith(
       expect.objectContaining({ Bucket: 'bucket', Key: 'wareneintraege/foto-1' }),
     );
+  });
+
+  it('returns a time-limited, presigned GET URL for the given key', async () => {
+    getSignedUrlMock.mockResolvedValue('https://minio.local/bucket/wareneintraege/foto-1?signed=1');
+    const service = new ObjectStorageService();
+
+    const url = await service.getSignedUrl('wareneintraege/foto-1');
+
+    expect(url).toBe('https://minio.local/bucket/wareneintraege/foto-1?signed=1');
+    expect(getSignedUrlMock).toHaveBeenCalledOnce();
+    const [, command, options] = getSignedUrlMock.mock.calls[0];
+    expect(command).toEqual(expect.objectContaining({ Bucket: 'bucket', Key: 'wareneintraege/foto-1' }));
+    expect(options).toEqual(expect.objectContaining({ expiresIn: expect.any(Number) }));
+    expect(options.expiresIn).toBeGreaterThan(0);
   });
 });
