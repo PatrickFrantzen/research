@@ -31,3 +31,27 @@ Advisories in der Sache zu beheben.
 Bei jedem Prisma-Minor/Patch-Update erneut `npm audit --omit=dev prüfen`;
 sobald eine Version ohne diese transitiven Pakete verfügbar ist, aktualisieren
 und diese Datei entfernen.
+
+---
+
+# Bewusst akzeptierte Sicherheits-Tradeoffs
+
+## Passwort-Denyliste ist symbolisch, kein Leak-Datenbank-Abgleich (Issue #42)
+
+`backend/src/auth/dto/haeufiges-passwort.validator.ts` prüft neue Passwörter
+nur gegen eine kleine, hartkodierte Liste (6 Einträge) offensichtlicher
+Schwachpasswörter, nicht gegen einen echten Breach-Corpus wie
+Have-I-Been-Pwned (HIBP).
+
+**Entscheidung (2026-09-19):** Bewusst kein HIBP-Check. Ein solcher Check
+würde bei jedem Passwort-Setzen einen externen API-Call einführen –
+Verfügbarkeits-, Latenz- und Datenschutz-Tradeoff, der für dieses kleine,
+lokal betriebene Tool nicht gerechtfertigt ist (auch mit k-Anonymity sendet
+man einen SHA1-Hash-Präfix des Passworts an einen Drittanbieter). Die
+Mindestlänge von 12 Zeichen (Issue #33) ist der wirksamere Hebel gegen
+Brute-Force; die Denyliste ist nur eine Grundhärtung gegen die
+offensichtlichsten Fälle.
+
+**Nachverfolgung:** Falls die Nutzerzahl/das Risikoprofil wächst (z.B.
+Business-Kunden mit höheren Compliance-Anforderungen), diese Entscheidung
+neu bewerten.
