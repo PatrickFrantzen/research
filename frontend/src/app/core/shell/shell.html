@@ -1,0 +1,55 @@
+@if (istVorgesetzter) {
+  <mat-toolbar color="primary" class="desktop-toolbar">
+    <span class="titel">RESEARCH</span>
+    <span class="spacer"></span>
+    <a mat-button routerLink="/wareneintraege" routerLinkActive="aktiv">Wareneinträge</a>
+    <a mat-button routerLink="/wareneintrag-erfassen" routerLinkActive="aktiv">Wareneintrag erfassen</a>
+    <a mat-button routerLink="/mitarbeiter-anlegen" routerLinkActive="aktiv">Mitarbeiter anlegen</a>
+    <a mat-button routerLink="/einstellungen" routerLinkActive="aktiv">Einstellungen</a>
+    <button mat-button type="button" (click)="logout()">Logout</button>
+  </mat-toolbar>
+
+  <mat-toolbar color="primary" class="mobile-titelleiste vorgesetzter-mobil-titel">
+    <span class="titel">RESEARCH</span>
+  </mat-toolbar>
+} @else {
+  <mat-toolbar color="primary" class="mobile-titelleiste">
+    <span class="titel">RESEARCH</span>
+  </mat-toolbar>
+}
+
+<div class="inhalt" [class.vorgesetzter-inhalt]="istVorgesetzter">
+  <router-outlet />
+</div>
+
+@if (istVorgesetzter) {
+  <nav class="bottom-nav vorgesetzter-bottom-nav">
+    <a routerLink="/wareneintraege" routerLinkActive="aktiv" class="bottom-nav-item">
+      <mat-icon>list_alt</mat-icon>
+      <span>Wareneinträge</span>
+    </a>
+    <a routerLink="/wareneintrag-erfassen" routerLinkActive="aktiv" class="bottom-nav-item">
+      <mat-icon>add_circle</mat-icon>
+      <span>Erfassen</span>
+    </a>
+    <button type="button" class="bottom-nav-item" (click)="mehrOeffnen()">
+      <mat-icon>more_horiz</mat-icon>
+      <span>Mehr</span>
+    </button>
+  </nav>
+} @else {
+  <nav class="bottom-nav mitarbeiter-bottom-nav">
+    <a routerLink="/wareneintrag-erfassen" routerLinkActive="aktiv" class="bottom-nav-item">
+      <mat-icon>add_circle</mat-icon>
+      <span>Erfassen</span>
+    </a>
+    <a routerLink="/einstellungen" routerLinkActive="aktiv" class="bottom-nav-item">
+      <mat-icon>settings</mat-icon>
+      <span>Einstellungen</span>
+    </a>
+    <button type="button" class="bottom-nav-item" (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      <span>Logout</span>
+    </button>
+  </nav>
+}

@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Router, UrlTree } from '@angular/router';
-import { authGuard, mitarbeiterGuard, vorgesetzterGuard } from './auth.guard.js';
+import { authGuard, kannWareneintragErfassenGuard, startseiteRedirectGuard, vorgesetzterGuard } from './auth.guard.js';
 import { AuthService } from './auth.service.js';
 
 describe('auth guards', () => {
@@ -45,16 +45,35 @@ describe('auth guards', () => {
     });
   });
 
-  describe('mitarbeiterGuard', () => {
+  describe('kannWareneintragErfassenGuard', () => {
     it('allows access for role MITARBEITER', () => {
       authService.rolle = () => 'MITARBEITER';
-      expect(runGuard(mitarbeiterGuard)).toBe(true);
+      expect(runGuard(kannWareneintragErfassenGuard)).toBe(true);
     });
 
-    it('redirects to / for any other role', () => {
+    it('allows access for role VORGESETZTER (Vertretungsfall)', () => {
       authService.rolle = () => 'VORGESETZTER';
-      const result = runGuard(mitarbeiterGuard);
+      expect(runGuard(kannWareneintragErfassenGuard)).toBe(true);
+    });
+
+    it('redirects to / when no role is set', () => {
+      authService.rolle = () => null;
+      const result = runGuard(kannWareneintragErfassenGuard);
       expect(result).toEqual(router.createUrlTree(['/']));
+    });
+  });
+
+  describe('startseiteRedirectGuard', () => {
+    it('redirects VORGESETZTER to /wareneintraege', () => {
+      authService.rolle = () => 'VORGESETZTER';
+      const result = runGuard(startseiteRedirectGuard);
+      expect(result).toEqual(router.createUrlTree(['/wareneintraege']));
+    });
+
+    it('redirects MITARBEITER to /wareneintrag-erfassen', () => {
+      authService.rolle = () => 'MITARBEITER';
+      const result = runGuard(startseiteRedirectGuard);
+      expect(result).toEqual(router.createUrlTree(['/wareneintrag-erfassen']));
     });
   });
 });
