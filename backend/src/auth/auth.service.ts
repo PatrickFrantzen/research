@@ -64,6 +64,8 @@ export class AuthService {
         mussPasswortSetzen: false,
         passwortSetzenToken: null,
         passwortSetzenTokenAblauf: null,
+        // Invalidiert zuvor ausgestellte Tokens, siehe JwtStrategy (Issue #40).
+        passwortGeaendertAm: new Date(),
       },
     });
   }

@@ -152,5 +152,20 @@ describe('AuthService', () => {
         }),
       });
     });
+
+    it('records when the password was changed, invalidating previously issued tokens – Issue #40', async () => {
+      const { service, prisma } = buildService();
+      prisma.nutzer.findUnique.mockResolvedValue({
+        id: 'nutzer-1',
+        passwortSetzenTokenAblauf: new Date(Date.now() + 1000 * 60),
+      });
+      const vorher = new Date();
+
+      await service.passwortSetzen('gueltig', 'neuesPasswort1');
+
+      const data = prisma.nutzer.update.mock.calls[0][0].data as { passwortGeaendertAm: Date };
+      expect(data.passwortGeaendertAm).toBeInstanceOf(Date);
+      expect(data.passwortGeaendertAm.getTime()).toBeGreaterThanOrEqual(vorher.getTime());
+    });
   });
 });

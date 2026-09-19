@@ -31,7 +31,14 @@ class DummyController {
 describe('Cookie-basierte Auth + CSRF (Issue #24)', () => {
   let app: INestApplication;
   const passwortHash = bcrypt.hashSync('geheim1234567', 4);
-  const nutzer = { id: 'nutzer-1', email: 'chef@research.local', rolle: Rolle.VORGESETZTER, passwortHash, mussPasswortSetzen: false };
+  const nutzer = {
+    id: 'nutzer-1',
+    email: 'chef@research.local',
+    rolle: Rolle.VORGESETZTER,
+    passwortHash,
+    mussPasswortSetzen: false,
+    passwortGeaendertAm: new Date(0),
+  };
 
   beforeAll(async () => {
     process.env['JWT_SECRET'] = 'test-secret';

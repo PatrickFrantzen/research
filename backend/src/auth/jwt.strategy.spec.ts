@@ -50,4 +50,28 @@ describe('JwtStrategy', () => {
 
     expect(user.rolle).toBe(Rolle.VORGESETZTER);
   });
+
+  describe('Invalidierung nach Passwortänderung (Issue #40)', () => {
+    it('rejects a token issued before the last password change', async () => {
+      const { strategy, prisma } = buildStrategy();
+      const passwortGeaendertAm = new Date('2026-01-02T00:00:00Z');
+      prisma.nutzer.findUnique.mockResolvedValue({ id: 'nutzer-1', rolle: Rolle.MITARBEITER, passwortGeaendertAm });
+      const iatVorDerAenderung = Math.floor(new Date('2026-01-01T00:00:00Z').getTime() / 1000);
+
+      await expect(
+        strategy.validate({ sub: 'nutzer-1', rolle: Rolle.MITARBEITER, iat: iatVorDerAenderung }),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
+    });
+
+    it('accepts a token issued after the last password change', async () => {
+      const { strategy, prisma } = buildStrategy();
+      const passwortGeaendertAm = new Date('2026-01-02T00:00:00Z');
+      prisma.nutzer.findUnique.mockResolvedValue({ id: 'nutzer-1', rolle: Rolle.MITARBEITER, passwortGeaendertAm });
+      const iatNachDerAenderung = Math.floor(new Date('2026-01-03T00:00:00Z').getTime() / 1000);
+
+      await expect(
+        strategy.validate({ sub: 'nutzer-1', rolle: Rolle.MITARBEITER, iat: iatNachDerAenderung }),
+      ).resolves.toEqual({ id: 'nutzer-1', rolle: Rolle.MITARBEITER });
+    });
+  });
 });
