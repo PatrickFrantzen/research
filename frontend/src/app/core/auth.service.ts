@@ -7,6 +7,7 @@ export type Rolle = 'MITARBEITER' | 'VORGESETZTER';
 interface JwtPayload {
   sub: string;
   rolle: Rolle;
+  exp?: number;
 }
 
 interface LoginResponse {
@@ -16,20 +17,48 @@ interface LoginResponse {
 
 const TOKEN_STORAGE_KEY = 'research.accessToken';
 
-function decodeJwtPayload(token: string): JwtPayload {
-  const [, payload] = token.split('.');
-  return JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+// Robust gegen kaputte/manipulierte Tokens: liefert null statt zu werfen
+// (Issue #28) – ein defektes Token darf die App nicht abstürzen lassen.
+function decodeJwtPayload(token: string): JwtPayload | null {
+  try {
+    const [, payload] = token.split('.');
+    if (!payload) {
+      return null;
+    }
+    return JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+  } catch {
+    return null;
+  }
+}
+
+function istTokenGueltig(token: string): boolean {
+  const payload = decodeJwtPayload(token);
+  if (!payload) {
+    return false;
+  }
+  return payload.exp === undefined || payload.exp * 1000 > Date.now();
+}
+
+function initialesToken(): string | null {
+  const gespeichert = sessionStorage.getItem(TOKEN_STORAGE_KEY);
+  if (gespeichert && istTokenGueltig(gespeichert)) {
+    return gespeichert;
+  }
+  if (gespeichert) {
+    sessionStorage.removeItem(TOKEN_STORAGE_KEY);
+  }
+  return null;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
 
-  private readonly tokenSignal = signal<string | null>(sessionStorage.getItem(TOKEN_STORAGE_KEY));
+  private readonly tokenSignal = signal<string | null>(initialesToken());
 
   readonly rolle = computed<Rolle | null>(() => {
     const token = this.tokenSignal();
-    return token ? decodeJwtPayload(token).rolle : null;
+    return token ? (decodeJwtPayload(token)?.rolle ?? null) : null;
   });
 
   readonly istEingeloggt = computed(() => this.tokenSignal() !== null);

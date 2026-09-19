@@ -7,8 +7,10 @@ services:
       DATABASE_URL: postgres://research:research@postgres:5432/research
       OBJECT_STORAGE_ENDPOINT: http://minio:9000
       OBJECT_STORAGE_REGION: us-east-1
-      OBJECT_STORAGE_ACCESS_KEY_ID: research
-      OBJECT_STORAGE_SECRET_ACCESS_KEY: research-secret
+      # Dedizierter, auf den Fotos-Bucket beschränkter User statt
+      # MinIO-Root-Credentials (Issue #36) – angelegt von minio-init.
+      OBJECT_STORAGE_ACCESS_KEY_ID: research-app
+      OBJECT_STORAGE_SECRET_ACCESS_KEY: research-app-secret
       OBJECT_STORAGE_BUCKET: research-fotos
       JWT_SECRET: ${JWT_SECRET:-local-dev-secret-change-me}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
@@ -49,7 +51,7 @@ services:
         condition: service_healthy
 
   minio:
-    image: quay.io/minio/minio:latest
+    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z.hotfix.7aa24e772
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: research
@@ -62,15 +64,22 @@ services:
       timeout: 5s
       retries: 10
 
+  # Legt den Bucket an und einen dedizierten, auf genau diesen Bucket
+  # beschränkten App-User – die App selbst bekommt nie die MinIO-Root-
+  # Credentials zu sehen (Issue #36).
   minio-init:
-    image: quay.io/minio/mc:latest
+    image: quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z-cpuv1
     depends_on:
       minio:
         condition: service_healthy
     entrypoint: >
       sh -c "
         mc alias set local http://minio:9000 research research-secret &&
-        mc mb --ignore-existing local/research-fotos
+        mc mb --ignore-existing local/research-fotos &&
+        (mc admin user add local research-app research-app-secret || true) &&
+        echo '{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"s3:GetObject\",\"s3:PutObject\",\"s3:DeleteObject\",\"s3:ListBucket\"],\"Resource\":[\"arn:aws:s3:::research-fotos\",\"arn:aws:s3:::research-fotos/*\"]}]}' > /tmp/research-app-policy.json &&
+        mc admin policy create local research-app-policy /tmp/research-app-policy.json &&
+        mc admin policy attach local research-app-policy --user research-app
       "
 
 volumes:

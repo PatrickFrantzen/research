@@ -1,9 +1,9 @@
-import { randomBytes } from 'node:crypto';
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { Mailer } from '../mailer/mailer.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { erzeugePasswortSetzenToken, hashPasswortSetzenToken } from './passwort-setzen-token.js';
 
 const PASSWORT_VERGESSEN_GUELTIGKEIT_MS = 60 * 60 * 1000; // 1 Stunde
 
@@ -32,20 +32,22 @@ export class AuthService {
       return;
     }
 
-    const token = randomBytes(32).toString('hex');
+    const { rawToken, hashedToken } = erzeugePasswortSetzenToken();
     await this.prisma.nutzer.update({
       where: { id: nutzer.id },
       data: {
-        passwortSetzenToken: token,
+        passwortSetzenToken: hashedToken,
         passwortSetzenTokenAblauf: new Date(Date.now() + PASSWORT_VERGESSEN_GUELTIGKEIT_MS),
       },
     });
 
-    await this.mailer.sendPasswortSetzenLink(email, `/passwort-setzen?token=${token}`);
+    await this.mailer.sendPasswortSetzenLink(email, `/passwort-setzen?token=${rawToken}`);
   }
 
   async passwortSetzen(token: string, neuesPasswort: string): Promise<void> {
-    const nutzer = await this.prisma.nutzer.findUnique({ where: { passwortSetzenToken: token } });
+    const nutzer = await this.prisma.nutzer.findUnique({
+      where: { passwortSetzenToken: hashPasswortSetzenToken(token) },
+    });
     if (!nutzer || !nutzer.passwortSetzenTokenAblauf || nutzer.passwortSetzenTokenAblauf < new Date()) {
       throw new BadRequestException('Link ist ungültig oder abgelaufen.');
     }

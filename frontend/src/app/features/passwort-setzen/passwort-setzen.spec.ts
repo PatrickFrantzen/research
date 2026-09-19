@@ -62,4 +62,15 @@ describe('PasswortSetzen', () => {
       'Link ist ungültig oder abgelaufen.',
     );
   });
+
+  it('removes the reset token from the visible URL/browser history right after reading it', async () => {
+    authService.passwortSetzen.and.resolveTo();
+    await setup('reset-token-123');
+    router = TestBed.inject(Router);
+    spyOn(router, 'navigate').and.resolveTo(true);
+
+    TestBed.createComponent(PasswortSetzen);
+
+    expect(router.navigate).toHaveBeenCalledWith([], jasmine.objectContaining({ queryParams: {}, replaceUrl: true }));
+  });
 });

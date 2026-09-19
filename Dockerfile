@@ -40,6 +40,10 @@ COPY --from=frontend-build /workspace/frontend/dist /app/frontend/dist
 # AVV-Stammdaten für prisma/seed-avv-codes.ts (liest ../../data/avv/avv-liste.json
 # relativ zu backend/prisma/, siehe data/avv/README.md).
 COPY data/avv /app/data/avv
+# Least-Privilege statt root im Container (Issue #36). Das node-Basisimage
+# bringt bereits einen unprivilegierten "node"-User mit.
+RUN chown -R node:node /app
+USER node
 ENV NODE_ENV=production
 EXPOSE 3000
 CMD ["node", "dist/main.js"]

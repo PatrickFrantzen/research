@@ -6,6 +6,9 @@ import { AuthService } from './auth.service.js';
 // Payload: { sub: 'nutzer-1', rolle: 'VORGESETZTER' }
 const VORGESETZTER_TOKEN =
   'eyJhbGciOiJub25lIn0.eyJzdWIiOiJudXR6ZXItMSIsInJvbGxlIjoiVk9SR0VTRVRaVEVSIn0.sig';
+// Payload: { sub: 'nutzer-1', rolle: 'VORGESETZTER', exp: 1 } – 1970, immer abgelaufen
+const ABGELAUFENER_TOKEN =
+  'eyJhbGciOiJub25lIn0.eyJzdWIiOiJudXR6ZXItMSIsInJvbGxlIjoiVk9SR0VTRVRaVEVSIiwiZXhwIjoxfQ.sig';
 
 describe('AuthService', () => {
   let httpMock: HttpTestingController;
@@ -52,6 +55,24 @@ describe('AuthService', () => {
     expect(service.istEingeloggt()).toBe(true);
     expect(service.rolle()).toBe('VORGESETZTER');
     expect(sessionStorage.getItem('research.accessToken')).toBe(VORGESETZTER_TOKEN);
+  });
+
+  it('treats an expired token in sessionStorage as logged out and clears it (Issue #28)', () => {
+    sessionStorage.setItem('research.accessToken', ABGELAUFENER_TOKEN);
+    const service = TestBed.inject(AuthService);
+
+    expect(service.istEingeloggt()).toBe(false);
+    expect(service.rolle()).toBeNull();
+    expect(sessionStorage.getItem('research.accessToken')).toBeNull();
+  });
+
+  it('treats a malformed token in sessionStorage as logged out instead of throwing (Issue #28)', () => {
+    sessionStorage.setItem('research.accessToken', 'kaputter-token');
+
+    expect(() => TestBed.inject(AuthService)).not.toThrow();
+    const service = TestBed.inject(AuthService);
+    expect(service.istEingeloggt()).toBe(false);
+    expect(sessionStorage.getItem('research.accessToken')).toBeNull();
   });
 
   it('clears the session on logout', () => {

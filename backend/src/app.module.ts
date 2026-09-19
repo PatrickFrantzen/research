@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { AuthModule } from './auth/auth.module.js';
@@ -17,6 +19,9 @@ const frontendDistPath = path.resolve(
 
 @Module({
   imports: [
+    // Globales Rate-Limit gegen Brute-Force/Credential-Stuffing (Issue #31).
+    // Einzelne Auth-Endpunkte verschärfen dies per @Throttle(...).
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 60 }]),
     ServeStaticModule.forRoot({
       rootPath: frontendDistPath,
       exclude: ['/api/{*splat}'],
@@ -29,5 +34,6 @@ const frontendDistPath = path.resolve(
     AvvModule,
     WareneintragModule,
   ],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

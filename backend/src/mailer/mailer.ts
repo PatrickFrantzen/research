@@ -10,7 +10,9 @@ export abstract class Mailer {
 export class ConsoleMailer extends Mailer {
   private readonly logger = new Logger(ConsoleMailer.name);
 
-  async sendPasswortSetzenLink(empfaenger: string, link: string): Promise<void> {
-    this.logger.log(`Passwort-setzen-Link für ${empfaenger}: ${link}`);
+  async sendPasswortSetzenLink(empfaenger: string, _link: string): Promise<void> {
+    // Der Link enthält den Roh-Reset-Token und darf nie geloggt werden
+    // (Issue #30) – Logzugriff würde sonst zur Kontoübernahme reichen.
+    this.logger.log(`Passwort-setzen-Link wurde an ${empfaenger} versendet.`);
   }
 }

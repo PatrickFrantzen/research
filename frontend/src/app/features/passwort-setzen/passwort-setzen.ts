@@ -26,6 +26,14 @@ export class PasswortSetzen {
   protected readonly erfolgreich = signal(false);
   protected readonly wirdGeladen = signal(false);
 
+  constructor() {
+    // Reset-Token nicht in URL/Browser-Historie/Referrer/Screenshots stehen
+    // lassen, sobald er ausgelesen wurde (Issue #25).
+    if (this.token) {
+      void this.router.navigate([], { relativeTo: this.route, queryParams: {}, replaceUrl: true });
+    }
+  }
+
   async submit(): Promise<void> {
     this.fehler.set(null);
     this.wirdGeladen.set(true);

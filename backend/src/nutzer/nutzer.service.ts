@@ -1,7 +1,8 @@
-import { randomBytes, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { Rolle } from '../generated/prisma/enums.js';
+import { erzeugePasswortSetzenToken } from '../auth/passwort-setzen-token.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateMitarbeiterDto } from './dto/create-mitarbeiter.dto.js';
 import { UpdateEigeneDatenDto } from './dto/update-eigene-daten.dto.js';
@@ -27,7 +28,7 @@ export class NutzerService {
     // Platzhalter-Passwort: unbrauchbar, bis der Mitarbeiter über den
     // Initial-Zugang sein eigenes Passwort setzt.
     const platzhalterPasswortHash = await bcrypt.hash(randomUUID(), 12);
-    const token = randomBytes(32).toString('hex');
+    const { rawToken, hashedToken } = erzeugePasswortSetzenToken();
 
     const nutzer = await this.prisma.nutzer.create({
       data: {
@@ -38,7 +39,7 @@ export class NutzerService {
         rolle: Rolle.MITARBEITER,
         passwortHash: platzhalterPasswortHash,
         mussPasswortSetzen: true,
-        passwortSetzenToken: token,
+        passwortSetzenToken: hashedToken,
         passwortSetzenTokenAblauf: new Date(Date.now() + INITIAL_ZUGANG_GUELTIGKEIT_MS),
         erstelltVonId,
       },
@@ -50,7 +51,7 @@ export class NutzerService {
       nachname: nutzer.nachname,
       email: nutzer.email,
       standortId: nutzer.standortId,
-      passwortSetzenLink: `/passwort-setzen?token=${token}`,
+      passwortSetzenLink: `/passwort-setzen?token=${rawToken}`,
     };
   }
 
