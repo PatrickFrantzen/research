@@ -17,6 +17,10 @@ function istProduktion(): boolean {
   return process.env['NODE_ENV'] === 'production';
 }
 
+// Path muss "/" sein, nicht auf "/api" eingeschränkt: die Cookie-Path-
+// Regel gilt auch für document.cookie-Lesezugriffe, nicht nur für welche
+// Requests den Cookie automatisch mitschicken. Die App läuft unter "/",
+// mit Path=/api hätte das Frontend-JS das CSRF-Cookie nie sehen können.
 // Kein maxAge/expires gesetzt: Session-Cookie, verschwindet beim
 // Schließen des Browsers – entspricht dem bisherigen sessionStorage-Verhalten.
 function setzeAuthCookies(res: Response, accessToken: string): void {
@@ -24,7 +28,7 @@ function setzeAuthCookies(res: Response, accessToken: string): void {
     httpOnly: true,
     secure: istProduktion(),
     sameSite: 'strict',
-    path: '/api',
+    path: '/',
   });
   // Nicht HttpOnly: das Frontend-JS muss den Wert lesen können, um ihn als
   // CSRF-Header mitzuschicken (Double-Submit-Cookie-Pattern, Issue #24).
@@ -32,13 +36,13 @@ function setzeAuthCookies(res: Response, accessToken: string): void {
     httpOnly: false,
     secure: istProduktion(),
     sameSite: 'strict',
-    path: '/api',
+    path: '/',
   });
 }
 
 function loescheAuthCookies(res: Response): void {
-  res.clearCookie(ACCESS_TOKEN_COOKIE, { path: '/api' });
-  res.clearCookie(CSRF_COOKIE, { path: '/api' });
+  res.clearCookie(ACCESS_TOKEN_COOKIE, { path: '/' });
+  res.clearCookie(CSRF_COOKIE, { path: '/' });
 }
 
 @Controller('auth')
