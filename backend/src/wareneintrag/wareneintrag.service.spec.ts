@@ -67,6 +67,12 @@ describe('WareneintragService', () => {
     });
   });
 
+  // Minimaler gültiger PNG-Header, den `file-type` als image/png erkennt.
+  const PNG_BYTES = Buffer.from([
+    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00,
+    0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06, 0x00, 0x00, 0x00, 0x1f, 0x15, 0xc4, 0x89,
+  ]);
+
   it('creates a Wareneintrag with the foto reference and the current Nutzer-Standort as snapshot', async () => {
     const prisma = {
       nutzer: { findUniqueOrThrow: vi.fn().mockResolvedValue({ id: 'nutzer-1', standortId: 'standort-1' }) },
@@ -88,6 +94,21 @@ describe('WareneintragService', () => {
         standortId: 'standort-1',
       },
     });
+  });
+
+  it('uploads with the actually detected image type, not the client-declared (possibly spoofed) mimetype', async () => {
+    const prisma = {
+      nutzer: { findUniqueOrThrow: vi.fn().mockResolvedValue({ id: 'nutzer-1', standortId: 'standort-1' }) },
+      wareneintrag: { create: vi.fn().mockResolvedValue({ id: 'wareneintrag-1' }) },
+    };
+    const objectStorage = { uploadFoto: vi.fn().mockResolvedValue('wareneintraege/foto-1') };
+    const service = new WareneintragService(prisma as never, objectStorage as never);
+
+    // Client behauptet text/html, die Bytes sind aber ein echtes PNG.
+    const foto = { buffer: PNG_BYTES, mimetype: 'text/html' } as Express.Multer.File;
+    await service.create('nutzer-1', foto, { avvCodeId: 'avv-1', freitext: 'Bauschutt am Eingang' });
+
+    expect(objectStorage.uploadFoto).toHaveBeenCalledWith(foto.buffer, 'image/png');
   });
 
   describe('update', () => {
@@ -131,6 +152,25 @@ describe('WareneintragService', () => {
         where: { id: 'wareneintrag-1' },
         data: { avvCodeId: 'avv-2', freitext: 'Aktualisierter Text', fotoUrl: 'wareneintraege/neu' },
       });
+    });
+
+    it('uploads the replacement photo with the actually detected type, not the declared mimetype', async () => {
+      const prisma = {
+        wareneintrag: {
+          findUniqueOrThrow: vi.fn().mockResolvedValue({ id: 'wareneintrag-1', fotoUrl: 'wareneintraege/alt' }),
+          update: vi.fn().mockResolvedValue({ id: 'wareneintrag-1' }),
+        },
+      };
+      const objectStorage = {
+        uploadFoto: vi.fn().mockResolvedValue('wareneintraege/neu'),
+        deleteFoto: vi.fn().mockResolvedValue(undefined),
+      };
+      const service = new WareneintragService(prisma as never, objectStorage as never);
+      const foto = { buffer: PNG_BYTES, mimetype: 'application/octet-stream' } as Express.Multer.File;
+
+      await service.update('wareneintrag-1', { avvCodeId: 'avv-2', freitext: 'Aktualisierter Text' }, foto);
+
+      expect(objectStorage.uploadFoto).toHaveBeenCalledWith(foto.buffer, 'image/png');
     });
   });
 
