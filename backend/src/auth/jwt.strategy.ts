@@ -40,6 +40,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       // Explizit fixieren statt dem Default zu vertrauen: verhindert
       // Algorithm-Confusion-Angriffe (Issue #34).
       algorithms: ['HS256'],
+      // Nur Tokens akzeptieren, die von diesem Backend für dieses Frontend
+      // ausgestellt wurden (Issue #34).
+      issuer: loadEnv().auth.jwtIssuer,
+      audience: loadEnv().auth.jwtAudience,
     });
   }
 

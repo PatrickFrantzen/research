@@ -10,6 +10,8 @@ export interface EnvConfig {
   auth: {
     jwtSecret: string;
     jwtExpiresIn: string;
+    jwtIssuer: string;
+    jwtAudience: string;
   };
   redis: {
     url: string;
@@ -52,6 +54,11 @@ export function loadEnv(): EnvConfig {
     auth: {
       jwtSecret: requiredSecret('JWT_SECRET', KNOWN_DEFAULT_JWT_SECRETS),
       jwtExpiresIn: process.env['JWT_EXPIRES_IN'] ?? '8h',
+      // Explizit geprüft in JwtStrategy: verhindert, dass ein mit einem
+      // anderen Zweck/System ausgestelltes, aber zufällig gültig signiertes
+      // Token akzeptiert wird (Issue #34).
+      jwtIssuer: process.env['JWT_ISSUER'] ?? 'research-backend',
+      jwtAudience: process.env['JWT_AUDIENCE'] ?? 'research-frontend',
     },
     // Geteilter Rate-Limit-Zähler über mehrere App-Instanzen hinweg (Issue #41).
     redis: {

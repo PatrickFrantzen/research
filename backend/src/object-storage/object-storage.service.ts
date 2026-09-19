@@ -1,7 +1,13 @@
 import { randomUUID } from 'node:crypto';
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Injectable } from '@nestjs/common';
 import { loadEnv } from '../config/env.js';
+
+// Wie lange eine über getSignedUrl() ausgestellte Foto-URL abrufbar bleibt,
+// bevor sie erneut generiert werden muss. Lang genug für eine Session in der
+// Wareneintrag-Liste, aber nicht dauerhaft/unbegrenzt gültig (Issue #45).
+const SIGNIERTE_URL_GUELTIGKEIT_SEKUNDEN = 15 * 60;
 
 // S3-kompatible Objektspeicher-Abstraktion für Fotos, siehe ADR-0003.
 // Lokal/Docker: MinIO; beim Kunden austauschbar gegen echten S3-Zugang, ohne
@@ -34,5 +40,12 @@ export class ObjectStorageService {
 
   async deleteFoto(key: string): Promise<void> {
     await this.s3.send(new DeleteObjectCommand({ Bucket: this.env.objectStorage.bucket, Key: key }));
+  }
+
+  // Liefert eine zeitlich begrenzt gültige GET-URL für den gegebenen Key,
+  // statt den Bucket öffentlich lesbar zu machen (Issue #45).
+  async getSignedUrl(key: string): Promise<string> {
+    const command = new GetObjectCommand({ Bucket: this.env.objectStorage.bucket, Key: key });
+    return getSignedUrl(this.s3, command, { expiresIn: SIGNIERTE_URL_GUELTIGKEIT_SEKUNDEN });
   }
 }

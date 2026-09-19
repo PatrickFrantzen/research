@@ -16,6 +16,25 @@ describe('WareneintragService', () => {
       });
     });
 
+    it('replaces the stored object-storage key with a time-limited, retrievable URL – Issue #45', async () => {
+      const prisma = {
+        wareneintrag: {
+          findMany: vi
+            .fn()
+            .mockResolvedValue([{ id: 'wareneintrag-1', fotoUrl: 'wareneintraege/foto-1', freitext: 'x' }]),
+        },
+      };
+      const objectStorage = { getSignedUrl: vi.fn().mockResolvedValue('https://minio.local/signed-foto-1') };
+      const service = new WareneintragService(prisma as never, objectStorage as never);
+
+      const ergebnis = await service.findAll({});
+
+      expect(objectStorage.getSignedUrl).toHaveBeenCalledWith('wareneintraege/foto-1');
+      expect(ergebnis).toEqual([
+        { id: 'wareneintrag-1', fotoUrl: 'https://minio.local/signed-foto-1', freitext: 'x' },
+      ]);
+    });
+
     it('filters by avvCodeId when given', async () => {
       const prisma = { wareneintrag: { findMany: vi.fn().mockResolvedValue([]) } };
       const service = new WareneintragService(prisma as never, {} as never);
@@ -46,6 +65,19 @@ describe('WareneintragService', () => {
       expect(sql).toContain('"fotoUrl"');
       expect(sql).toContain('"avvCodeId"');
       expect(sql).toContain('"erstelltAm"');
+    });
+
+    it('replaces the stored object-storage key with a signed URL for full-text search results too – Issue #45', async () => {
+      const prisma = {
+        $queryRaw: vi.fn().mockResolvedValue([{ id: 'wareneintrag-1', fotoUrl: 'wareneintraege/foto-1' }]),
+      };
+      const objectStorage = { getSignedUrl: vi.fn().mockResolvedValue('https://minio.local/signed-foto-1') };
+      const service = new WareneintragService(prisma as never, objectStorage as never);
+
+      const ergebnis = await service.findAll({ suche: 'Bauschutt' });
+
+      expect(objectStorage.getSignedUrl).toHaveBeenCalledWith('wareneintraege/foto-1');
+      expect(ergebnis).toEqual([{ id: 'wareneintrag-1', fotoUrl: 'https://minio.local/signed-foto-1' }]);
     });
 
     it('combines the avvCodeId filter with the full-text search', async () => {

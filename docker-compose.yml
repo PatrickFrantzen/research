@@ -14,6 +14,8 @@ services:
       OBJECT_STORAGE_BUCKET: research-fotos
       JWT_SECRET: ${JWT_SECRET:-local-dev-secret-change-me}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
+      JWT_ISSUER: ${JWT_ISSUER:-research-backend}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-research-frontend}
       REDIS_URL: redis://redis:6379
     depends_on:
       postgres:
