@@ -5,14 +5,13 @@
     @if (angelegt()) {
       <p>Wareneintrag wurde angelegt.</p>
       <div class="aktionen">
-        <a routerLink="/">Zurück zur Startseite</a>
         <button matButton="filled" type="button" (click)="weitererEintrag()">Weiteren Eintrag erfassen</button>
       </div>
     } @else {
       <form (ngSubmit)="submit()">
-        <input #fotoInput type="file" accept="image/*" capture="environment" (change)="onFotoAusgewaehlt($event)" hidden />
+        <input #fotoInput type="file" accept="image/*" (change)="onFotoAusgewaehlt($event)" hidden />
         <button matButton="outlined" type="button" (click)="fotoInput.click()">
-          {{ foto ? 'Anderes Foto aufnehmen' : 'Foto aufnehmen' }}
+          {{ foto ? 'Anderes Foto auswählen' : 'Foto aufnehmen oder auswählen' }}
         </button>
         @if (fotoVorschauUrl(); as url) {
           <img [src]="url" alt="Foto-Vorschau" class="foto-vorschau" />

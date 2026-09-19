@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth.service.js';
+import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
 
 @Component({
   selector: 'app-passwort-setzen',
@@ -32,8 +33,8 @@ export class PasswortSetzen {
       await this.authService.passwortSetzen(this.token, this.neuesPasswort);
       this.erfolgreich.set(true);
       setTimeout(() => this.router.navigateByUrl('/login'), 2000);
-    } catch {
-      this.fehler.set('Link ist ungültig oder abgelaufen.');
+    } catch (error) {
+      this.fehler.set(extrahiereFehlermeldung(error, 'Link ist ungültig oder abgelaufen.'));
     } finally {
       this.wirdGeladen.set(false);
     }

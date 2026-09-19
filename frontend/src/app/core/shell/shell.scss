@@ -1,0 +1,75 @@
+$breakpoint-desktop: 768px;
+$bottom-nav-hoehe: 64px;
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.titel {
+  font-weight: 500;
+}
+
+.aktiv {
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.desktop-toolbar {
+  display: none;
+}
+
+.inhalt {
+  padding-bottom: $bottom-nav-hoehe;
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  height: $bottom-nav-hoehe;
+  background: white;
+  box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.bottom-nav-item {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  color: inherit;
+  cursor: pointer;
+
+  &.aktiv {
+    text-decoration: none;
+    color: var(--mat-sys-primary, #ed1c24);
+  }
+}
+
+// Gibt der Tastatur den vollen Bildschirm, statt die Bottom-Nav darüber
+// schweben zu lassen.
+.inhalt:has(input:focus, textarea:focus) + .mitarbeiter-bottom-nav {
+  display: none;
+}
+
+@media (min-width: $breakpoint-desktop) {
+  .desktop-toolbar {
+    display: flex;
+  }
+
+  .vorgesetzter-mobil-titel,
+  .vorgesetzter-bottom-nav {
+    display: none;
+  }
+
+  .vorgesetzter-inhalt {
+    padding-bottom: 0;
+  }
+}

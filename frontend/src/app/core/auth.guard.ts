@@ -14,8 +14,18 @@ export const vorgesetzterGuard: CanActivateFn = () => {
   return authService.rolle() === 'VORGESETZTER' ? true : router.createUrlTree(['/']);
 };
 
-export const mitarbeiterGuard: CanActivateFn = () => {
+// Erfassen ist die Kernaufgabe des Mitarbeiters, aber auch der Vorgesetzte
+// darf im Vertretungsfall Wareneinträge anlegen.
+export const kannWareneintragErfassenGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
-  return authService.rolle() === 'MITARBEITER' ? true : router.createUrlTree(['/']);
+  const rolle = authService.rolle();
+  return rolle === 'MITARBEITER' || rolle === 'VORGESETZTER' ? true : router.createUrlTree(['/']);
+};
+
+export const startseiteRedirectGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+  const ziel = authService.rolle() === 'VORGESETZTER' ? '/wareneintraege' : '/wareneintrag-erfassen';
+  return router.createUrlTree([ziel]);
 };

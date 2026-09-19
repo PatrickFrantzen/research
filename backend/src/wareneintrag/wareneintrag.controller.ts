@@ -39,8 +39,11 @@ export class WareneintragController {
     return this.wareneintragService.findAll({ avvCodeId, suche });
   }
 
+  // Erfassen ist die Kernaufgabe des Mitarbeiters, aber auch der
+  // Vorgesetzte darf im Vertretungsfall Wareneinträge anlegen (siehe
+  // Frontend-Guard `kannWareneintragErfassenGuard`).
   @Post()
-  @Roles(Rolle.MITARBEITER)
+  @Roles(Rolle.MITARBEITER, Rolle.VORGESETZTER)
   @UseInterceptors(FileInterceptor('foto', { storage: memoryStorage() }))
   async create(
     @Req() request: AuthenticatedRequest,

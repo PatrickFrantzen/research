@@ -6,8 +6,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
+import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
 
 interface Standort {
   id: string;
@@ -23,7 +23,7 @@ interface EigeneDaten {
 
 @Component({
   selector: 'app-einstellungen',
-  imports: [FormsModule, MatButtonModule, MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule, RouterLink],
+  imports: [FormsModule, MatButtonModule, MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   templateUrl: './einstellungen.html',
   styleUrl: './einstellungen.scss',
 })
@@ -70,8 +70,8 @@ export class Einstellungen {
         }),
       );
       this.gespeichert.set(true);
-    } catch {
-      this.fehler.set('Änderungen konnten nicht gespeichert werden.');
+    } catch (error) {
+      this.fehler.set(extrahiereFehlermeldung(error, 'Änderungen konnten nicht gespeichert werden.'));
     } finally {
       this.wirdGeladen.set(false);
     }
