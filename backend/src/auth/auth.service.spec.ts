@@ -41,7 +41,11 @@ describe('AuthService', () => {
 
       const result = await service.login('chef@research.local', 'geheim123');
 
-      expect(result).toEqual({ accessToken: 'signed-token', mussPasswortSetzen: false });
+      expect(result).toEqual({
+        accessToken: 'signed-token',
+        mussPasswortSetzen: false,
+        rolle: Rolle.VORGESETZTER,
+      });
       expect(jwtService.signAsync).toHaveBeenCalledWith({ sub: 'nutzer-1', rolle: Rolle.VORGESETZTER });
     });
 
