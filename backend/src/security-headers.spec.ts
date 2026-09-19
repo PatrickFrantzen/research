@@ -7,6 +7,7 @@ function buildEnv(overrides: Partial<EnvConfig['objectStorage']> = {}): EnvConfi
     databaseUrl: 'postgresql://localhost/test',
     objectStorage: {
       endpoint: 'http://localhost:9000',
+      publicEndpoint: 'http://localhost:9000',
       region: 'us-east-1',
       accessKeyId: 'access',
       secretAccessKey: 'secret',
@@ -35,12 +36,27 @@ describe('buildHelmetOptions', () => {
     expect(directives['fontSrc']).toContain('https://fonts.gstatic.com');
   });
 
-  it('allows the configured object storage origin for images, derived from env', () => {
-    const options = buildHelmetOptions(buildEnv({ endpoint: 'https://s3.example.com' }));
+  it('allows the configured object storage origin for images, derived from the public endpoint', () => {
+    const options = buildHelmetOptions(buildEnv({ publicEndpoint: 'https://s3.example.com' }));
     const directives = (options.contentSecurityPolicy as { directives: Record<string, string[]> }).directives;
 
     expect(directives['imgSrc']).toContain('https://s3.example.com');
     expect(directives['connectSrc']).toContain('https://s3.example.com');
+  });
+
+  it('derives the CSP origin from the public endpoint, not the internal one used server-to-server', () => {
+    const options = buildHelmetOptions(buildEnv({ endpoint: 'http://minio:9000', publicEndpoint: 'http://localhost:9000' }));
+    const directives = (options.contentSecurityPolicy as { directives: Record<string, string[]> }).directives;
+
+    expect(directives['imgSrc']).toContain('http://localhost:9000');
+    expect(directives['imgSrc']).not.toContain('http://minio:9000');
+  });
+
+  it('allows blob: image sources for the local foto preview before upload', () => {
+    const options = buildHelmetOptions(buildEnv());
+    const directives = (options.contentSecurityPolicy as { directives: Record<string, string[]> }).directives;
+
+    expect(directives['imgSrc']).toContain('blob:');
   });
 
   it('sets a strict referrer policy', () => {

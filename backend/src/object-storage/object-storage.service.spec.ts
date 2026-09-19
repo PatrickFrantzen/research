@@ -23,7 +23,8 @@ vi.mock('@aws-sdk/s3-request-presigner', () => ({
 }));
 
 process.env['DATABASE_URL'] = 'postgres://user:pass@localhost:5432/db';
-process.env['OBJECT_STORAGE_ENDPOINT'] = 'http://localhost:9000';
+process.env['OBJECT_STORAGE_ENDPOINT'] = 'http://minio:9000';
+process.env['OBJECT_STORAGE_PUBLIC_ENDPOINT'] = 'http://localhost:9000';
 process.env['OBJECT_STORAGE_ACCESS_KEY_ID'] = 'access';
 process.env['OBJECT_STORAGE_SECRET_ACCESS_KEY'] = 'secret';
 process.env['OBJECT_STORAGE_BUCKET'] = 'bucket';
@@ -72,5 +73,16 @@ describe('ObjectStorageService', () => {
     expect(command).toEqual(expect.objectContaining({ Bucket: 'bucket', Key: 'wareneintraege/foto-1' }));
     expect(options).toEqual(expect.objectContaining({ expiresIn: expect.any(Number) }));
     expect(options.expiresIn).toBeGreaterThan(0);
+  });
+
+  it('signs GET URLs against the public endpoint, not the internal one used for upload/delete', async () => {
+    const { S3Client } = await import('@aws-sdk/client-s3');
+    getSignedUrlMock.mockResolvedValue('http://localhost:9000/bucket/wareneintraege/foto-1?signed=1');
+    new ObjectStorageService();
+
+    const endpoints = vi.mocked(S3Client).mock.calls.map(([config]) => (config as { endpoint: string }).endpoint);
+
+    expect(endpoints).toContain('http://minio:9000');
+    expect(endpoints).toContain('http://localhost:9000');
   });
 });

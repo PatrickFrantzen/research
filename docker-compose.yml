@@ -4,8 +4,18 @@ services:
     ports:
       - "3000:3000"
     environment:
+      # Dieses Compose-Setup läuft ohne Reverse-Proxy/TLS direkt auf
+      # http://localhost:3000 (siehe README.md, docs/research/02-architektur.md).
+      # Das Dockerfile setzt NODE_ENV=production standardmäßig (für den
+      # echten Produktivbetrieb hinter einem TLS-terminierenden Reverse-Proxy
+      # des Kunden) – das würde hier lokal "Secure"-Cookies erzeugen, die der
+      # Browser über HTTP verwirft und den Login-Cookie sofort verliert.
+      NODE_ENV: development
       DATABASE_URL: postgres://research:research@postgres:5432/research
       OBJECT_STORAGE_ENDPOINT: http://minio:9000
+      # Browser ruft Foto-URLs direkt auf, kennt "minio" als Docker-internen
+      # Hostnamen aber nicht – siehe minio-Port-Mapping unten.
+      OBJECT_STORAGE_PUBLIC_ENDPOINT: ${OBJECT_STORAGE_PUBLIC_ENDPOINT:-http://localhost:9000}
       OBJECT_STORAGE_REGION: us-east-1
       # Dedizierter, auf den Fotos-Bucket beschränkter User statt
       # MinIO-Root-Credentials (Issue #36) – angelegt von minio-init.
@@ -68,6 +78,8 @@ services:
   minio:
     image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z.hotfix.7aa24e772
     command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
     environment:
       MINIO_ROOT_USER: research
       MINIO_ROOT_PASSWORD: research-secret
