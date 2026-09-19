@@ -5,7 +5,7 @@ import { AuthService } from './auth.service.js';
 // Nur relative Aufrufe und absolute Same-Origin-Aufrufe unter /api/ gelten
 // als eigene API. Verhindert, dass das Bearer-Token versehentlich an
 // externe Ziele geschickt wird (Issue #27).
-function istEigeneApi(url: string): boolean {
+export function istEigeneApi(url: string): boolean {
   if (url.startsWith('/api/')) {
     return true;
   }
