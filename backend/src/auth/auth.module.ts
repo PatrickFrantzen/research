@@ -18,7 +18,10 @@ const passportModule = PassportModule.register({ defaultStrategy: 'jwt' });
         const env = loadEnv();
         return {
           secret: env.auth.jwtSecret,
-          signOptions: { expiresIn: env.auth.jwtExpiresIn as `${number}${'s' | 'm' | 'h' | 'd'}` },
+          signOptions: {
+            expiresIn: env.auth.jwtExpiresIn as `${number}${'s' | 'm' | 'h' | 'd'}`,
+            algorithm: 'HS256',
+          },
         };
       },
     }),
