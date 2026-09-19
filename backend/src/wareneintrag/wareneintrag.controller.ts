@@ -28,6 +28,27 @@ import { WareneintragService } from './wareneintrag.service.js';
 
 const FOTO_MAX_GROESSE_BYTES = 10 * 1024 * 1024; // 10 MB
 
+// Enges Whitelisting statt `/^image\//`: verhindert riskante Subtypen wie
+// image/svg+xml (kann Script enthalten) und erzwingt echte
+// Magic-Number-Prüfung statt client-kontrolliertem MIME-Type (Issue #32).
+const ERLAUBTE_FOTO_TYPEN = /^(image\/jpeg|image\/png|image\/webp)$/;
+
+// Multer bricht den Stream ab, sobald das Limit überschritten wird, statt
+// die komplette (potenziell riesige) Datei erst in den RAM zu puffern.
+const FOTO_UPLOAD_OPTIONS = { storage: memoryStorage(), limits: { fileSize: FOTO_MAX_GROESSE_BYTES } };
+
+function fotoValidators(fileIsRequired: boolean) {
+  return new ParseFilePipe({
+    fileIsRequired,
+    validators: [
+      // fallbackToMimetype: false – bei nicht erkennbarem Dateisignatur wird
+      // abgelehnt statt dem client-kontrollierten MIME-Type zu vertrauen.
+      new FileTypeValidator({ fileType: ERLAUBTE_FOTO_TYPEN, fallbackToMimetype: false }),
+      new MaxFileSizeValidator({ maxSize: FOTO_MAX_GROESSE_BYTES }),
+    ],
+  });
+}
+
 @Controller('wareneintraege')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class WareneintragController {
@@ -44,17 +65,10 @@ export class WareneintragController {
   // Frontend-Guard `kannWareneintragErfassenGuard`).
   @Post()
   @Roles(Rolle.MITARBEITER, Rolle.VORGESETZTER)
-  @UseInterceptors(FileInterceptor('foto', { storage: memoryStorage() }))
+  @UseInterceptors(FileInterceptor('foto', FOTO_UPLOAD_OPTIONS))
   async create(
     @Req() request: AuthenticatedRequest,
-    @UploadedFile(
-      new ParseFilePipe({
-        validators: [
-          new FileTypeValidator({ fileType: /^image\//, fallbackToMimetype: true }),
-          new MaxFileSizeValidator({ maxSize: FOTO_MAX_GROESSE_BYTES }),
-        ],
-      }),
-    )
+    @UploadedFile(fotoValidators(true))
     foto: Express.Multer.File,
     @Body() dto: CreateWareneintragDto,
   ) {
@@ -63,19 +77,11 @@ export class WareneintragController {
 
   @Patch(':id')
   @Roles(Rolle.VORGESETZTER)
-  @UseInterceptors(FileInterceptor('foto', { storage: memoryStorage() }))
+  @UseInterceptors(FileInterceptor('foto', FOTO_UPLOAD_OPTIONS))
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateWareneintragDto,
-    @UploadedFile(
-      new ParseFilePipe({
-        fileIsRequired: false,
-        validators: [
-          new FileTypeValidator({ fileType: /^image\//, fallbackToMimetype: true }),
-          new MaxFileSizeValidator({ maxSize: FOTO_MAX_GROESSE_BYTES }),
-        ],
-      }),
-    )
+    @UploadedFile(fotoValidators(false))
     foto?: Express.Multer.File,
   ) {
     return this.wareneintragService.update(id, dto, foto);
