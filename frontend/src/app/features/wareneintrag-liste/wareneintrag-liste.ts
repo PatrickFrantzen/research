@@ -20,6 +20,7 @@ interface Wareneintrag {
   fotoUrl: string;
   freitext: string;
   erstelltAm: string;
+  avvCode: Pick<AvvCode, 'code'>;
 }
 
 // Verzögerung, bevor Filteränderungen die Liste neu laden – analog zur
@@ -69,6 +70,12 @@ export class WareneintragListe {
     const avvCode = event.option.value as AvvCode;
     this.avvCodeId.set(avvCode.id);
     this.avvSucheAnzeige = `${avvCode.code} – ${avvCode.bezeichnung}`;
+  }
+
+  onAvvSucheFokus(): void {
+    if (!this.avvCodeId()) return;
+    this.avvSucheAnzeige = '';
+    this.avvSuchbegriff.set('');
   }
 
   onSucheEingabe(wert: string): void {

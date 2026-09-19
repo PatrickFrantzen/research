@@ -10,6 +10,7 @@
         [matAutocomplete]="avvAuto"
         [(ngModel)]="avvSucheAnzeige"
         (ngModelChange)="onAvvSucheEingabe($event)"
+        (focus)="onAvvSucheFokus()"
       />
       <mat-autocomplete #avvAuto="matAutocomplete" (optionSelected)="onAvvCodeAusgewaehlt($event)">
         @for (avvCode of avvTreffer.value(); track avvCode.id) {
@@ -29,7 +30,8 @@
       <mat-card class="karte">
         <img [src]="wareneintrag.fotoUrl" alt="Foto des Wareneintrags" />
         <p>{{ wareneintrag.freitext }}</p>
-        <p class="datum">{{ wareneintrag.erstelltAm | date: 'short' }}</p>
+        <p>AVV-Code: {{ wareneintrag.avvCode.code }}</p>
+        <p class="datum">{{ wareneintrag.erstelltAm | date: 'dd.MM.yyyy, HH:mm' }}</p>
       </mat-card>
     } @empty {
       <p>Keine Wareneinträge gefunden.</p>

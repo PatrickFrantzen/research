@@ -12,8 +12,31 @@ describe('WareneintragService', () => {
 
       expect(prisma.wareneintrag.findMany).toHaveBeenCalledWith({
         where: undefined,
+        include: { avvCode: { select: { code: true } } },
         orderBy: { erstelltAm: 'desc' },
       });
+    });
+
+    it('returns the assigned AVV-Code for every listed Wareneintrag', async () => {
+      const prisma = {
+        wareneintrag: {
+          findMany: vi.fn().mockImplementation((args: { include?: unknown }) =>
+            Promise.resolve([
+              {
+                id: 'wareneintrag-1',
+                fotoUrl: 'wareneintraege/foto-1',
+                ...(args.include ? { avvCode: { code: '17 01 01' } } : {}),
+              },
+            ]),
+          ),
+        },
+      };
+      const objectStorage = { getSignedUrl: vi.fn().mockResolvedValue('https://minio.local/foto-1') };
+      const service = new WareneintragService(prisma as never, objectStorage as never);
+
+      const ergebnis = await service.findAll({});
+
+      expect(ergebnis[0]).toMatchObject({ avvCode: { code: '17 01 01' } });
     });
 
     it('replaces the stored object-storage key with a time-limited, retrievable URL – Issue #45', async () => {
@@ -43,6 +66,7 @@ describe('WareneintragService', () => {
 
       expect(prisma.wareneintrag.findMany).toHaveBeenCalledWith({
         where: { avvCodeId: 'avv-1' },
+        include: { avvCode: { select: { code: true } } },
         orderBy: { erstelltAm: 'desc' },
       });
     });
@@ -65,6 +89,48 @@ describe('WareneintragService', () => {
       expect(sql).toContain('"fotoUrl"');
       expect(sql).toContain('"avvCodeId"');
       expect(sql).toContain('"erstelltAm"');
+    });
+
+    it('finds a Wareneintrag when the search term is only the beginning of a word', async () => {
+      const prisma = {
+        $queryRaw: vi.fn().mockImplementation((strings: TemplateStringsArray, ...values: unknown[]) => {
+          const sql = strings.join('?');
+          const usesPrefixSearch = sql.includes("to_tsquery('german'") && values.includes('tes:*');
+          return usesPrefixSearch
+            ? [{ id: 'wareneintrag-1', fotoUrl: 'wareneintraege/foto-1', freitext: 'test' }]
+            : [];
+        }),
+      };
+      const objectStorage = { getSignedUrl: vi.fn().mockResolvedValue('https://minio.local/foto-1') };
+      const service = new WareneintragService(prisma as never, objectStorage as never);
+
+      const ergebnis = await service.findAll({ suche: 'tes' });
+
+      expect(ergebnis).toEqual([
+        { id: 'wareneintrag-1', fotoUrl: 'https://minio.local/foto-1', freitext: 'test' },
+      ]);
+    });
+
+    it('returns the assigned AVV-Code for filtered search results too', async () => {
+      const prisma = {
+        $queryRaw: vi.fn().mockImplementation((strings: TemplateStringsArray) => {
+          const sql = strings.join('?');
+          const selectsAvvCode = sql.includes('JOIN avv_codes') && sql.includes('json_build_object');
+          return Promise.resolve([
+            {
+              id: 'wareneintrag-1',
+              fotoUrl: 'wareneintraege/foto-1',
+              ...(selectsAvvCode ? { avvCode: { code: '17 01 01' } } : {}),
+            },
+          ]);
+        }),
+      };
+      const objectStorage = { getSignedUrl: vi.fn().mockResolvedValue('https://minio.local/foto-1') };
+      const service = new WareneintragService(prisma as never, objectStorage as never);
+
+      const ergebnis = await service.findAll({ suche: 'tes' });
+
+      expect(ergebnis[0]).toMatchObject({ avvCode: { code: '17 01 01' } });
     });
 
     it('replaces the stored object-storage key with a signed URL for full-text search results too – Issue #45', async () => {

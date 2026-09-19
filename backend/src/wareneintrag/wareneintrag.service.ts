@@ -40,6 +40,7 @@ export class WareneintragService {
   private listeAlle(filter: { avvCodeId?: string }) {
     return this.prisma.wareneintrag.findMany({
       where: filter.avvCodeId ? { avvCodeId: filter.avvCodeId } : undefined,
+      include: { avvCode: { select: { code: true } } },
       orderBy: { erstelltAm: 'desc' },
     });
   }
@@ -48,12 +49,18 @@ export class WareneintragService {
   // LIKE-Scan, siehe Issue #4.
   private sucheMitVolltext(filter: { avvCodeId?: string; suche: string }) {
     const avvFilter = filter.avvCodeId ? Prisma.sql`AND avv_code_id = ${filter.avvCodeId}` : Prisma.empty;
+    const praefixSuche = (filter.suche.match(/[\p{L}\p{N}]+/gu) ?? []).map((wort) => `${wort}:*`).join(' & ');
     return this.prisma.$queryRaw<{ id: string; fotoUrl: string }[]>`
       SELECT
-        id, foto_url AS "fotoUrl", avv_code_id AS "avvCodeId", freitext,
-        erfasst_von_id AS "erfasstVonId", standort_id AS "standortId", erstellt_am AS "erstelltAm"
+        wareneintraege.id, foto_url AS "fotoUrl", avv_code_id AS "avvCodeId", freitext,
+        erfasst_von_id AS "erfasstVonId", standort_id AS "standortId", erstellt_am AS "erstelltAm",
+        json_build_object('code', avv_codes.code) AS "avvCode"
       FROM wareneintraege
-      WHERE freitext_tsv @@ websearch_to_tsquery('german', ${filter.suche})
+      JOIN avv_codes ON avv_codes.id = wareneintraege.avv_code_id
+      WHERE freitext_tsv @@ (
+        websearch_to_tsquery('german', ${filter.suche})
+        || to_tsquery('german', ${praefixSuche})
+      )
       ${avvFilter}
       ORDER BY erstellt_am DESC
     `;
