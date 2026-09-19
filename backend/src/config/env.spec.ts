@@ -58,6 +58,20 @@ describe('loadEnv', () => {
     expect(loadEnv().auth.jwtExpiresIn).toBe('1h');
   });
 
+  it('defaults JWT_ISSUER and JWT_AUDIENCE for local development when not set', () => {
+    const env = loadEnv();
+    expect(env.auth.jwtIssuer).toBe('research-backend');
+    expect(env.auth.jwtAudience).toBe('research-frontend');
+  });
+
+  it('uses JWT_ISSUER and JWT_AUDIENCE when set', () => {
+    process.env['JWT_ISSUER'] = 'custom-issuer';
+    process.env['JWT_AUDIENCE'] = 'custom-audience';
+    const env = loadEnv();
+    expect(env.auth.jwtIssuer).toBe('custom-issuer');
+    expect(env.auth.jwtAudience).toBe('custom-audience');
+  });
+
   it('throws when a required variable is missing', () => {
     delete process.env['DATABASE_URL'];
     expect(() => loadEnv()).toThrow('Missing required environment variable: DATABASE_URL');

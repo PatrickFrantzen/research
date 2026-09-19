@@ -42,6 +42,8 @@ describe('Cookie-basierte Auth + CSRF (Issue #24)', () => {
 
   beforeAll(async () => {
     process.env['JWT_SECRET'] = 'test-secret';
+    process.env['JWT_ISSUER'] = 'test-issuer';
+    process.env['JWT_AUDIENCE'] = 'test-audience';
     process.env['DATABASE_URL'] ??= 'postgresql://localhost/test';
     process.env['OBJECT_STORAGE_ENDPOINT'] ??= 'http://localhost:9000';
     process.env['OBJECT_STORAGE_ACCESS_KEY_ID'] ??= 'access';
@@ -52,7 +54,10 @@ describe('Cookie-basierte Auth + CSRF (Issue #24)', () => {
       imports: [
         ThrottlerModule.forRoot([{ ttl: 60_000, limit: 60 }]),
         PassportModule.register({ defaultStrategy: 'jwt' }),
-        JwtModule.register({ secret: 'test-secret', signOptions: { algorithm: 'HS256' } }),
+        JwtModule.register({
+          secret: 'test-secret',
+          signOptions: { algorithm: 'HS256', issuer: 'test-issuer', audience: 'test-audience' },
+        }),
       ],
       controllers: [AuthController, DummyController],
       providers: [

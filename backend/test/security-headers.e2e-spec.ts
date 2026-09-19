@@ -26,7 +26,7 @@ describe('Security-Header (Issue #26)', () => {
         secretAccessKey: 'secret',
         bucket: 'bucket',
       },
-      auth: { jwtSecret: 'secret', jwtExpiresIn: '8h' },
+      auth: { jwtSecret: 'secret', jwtExpiresIn: '8h', jwtIssuer: 'test-issuer', jwtAudience: 'test-audience' },
       redis: { url: 'redis://localhost:6379' },
     };
     const moduleRef = await Test.createTestingModule({ controllers: [DummyController] }).compile();

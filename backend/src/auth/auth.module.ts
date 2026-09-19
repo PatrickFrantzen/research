@@ -21,6 +21,10 @@ const passportModule = PassportModule.register({ defaultStrategy: 'jwt' });
           signOptions: {
             expiresIn: env.auth.jwtExpiresIn as `${number}${'s' | 'm' | 'h' | 'd'}`,
             algorithm: 'HS256',
+            // Muss zu den Optionen passen, die JwtStrategy beim Verifizieren
+            // erzwingt (Issue #34).
+            issuer: env.auth.jwtIssuer,
+            audience: env.auth.jwtAudience,
           },
         };
       },

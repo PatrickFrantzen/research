@@ -13,7 +13,7 @@ function buildEnv(overrides: Partial<EnvConfig['objectStorage']> = {}): EnvConfi
       bucket: 'bucket',
       ...overrides,
     },
-    auth: { jwtSecret: 'secret', jwtExpiresIn: '8h' },
+    auth: { jwtSecret: 'secret', jwtExpiresIn: '8h', jwtIssuer: 'test-issuer', jwtAudience: 'test-audience' },
     redis: { url: 'redis://localhost:6379' },
   };
 }
