@@ -29,4 +29,21 @@ describe('authInterceptor', () => {
     expect(forwarded).toBe(req);
     expect(forwarded.headers.has('Authorization')).toBe(false);
   });
+
+  it('does not attach the token to requests outside the own API (Issue #27)', () => {
+    const req = new HttpRequest('GET', 'https://evil.example/steal');
+    const { next } = runInterceptor('token-123', req);
+
+    const forwarded = next.calls.mostRecent().args[0] as HttpRequest<unknown>;
+    expect(forwarded).toBe(req);
+    expect(forwarded.headers.has('Authorization')).toBe(false);
+  });
+
+  it('still attaches the token to absolute same-origin API URLs', () => {
+    const req = new HttpRequest('GET', `${window.location.origin}/api/v1/wareneintraege`);
+    const { next } = runInterceptor('token-123', req);
+
+    const forwarded = next.calls.mostRecent().args[0] as HttpRequest<unknown>;
+    expect(forwarded.headers.get('Authorization')).toBe('Bearer token-123');
+  });
 });
