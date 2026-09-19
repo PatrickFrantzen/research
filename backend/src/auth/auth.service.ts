@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { Mailer } from '../mailer/mailer.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { Rolle } from '../generated/prisma/enums.js';
 import { erzeugePasswortSetzenToken, hashPasswortSetzenToken } from './passwort-setzen-token.js';
 
 const PASSWORT_VERGESSEN_GUELTIGKEIT_MS = 60 * 60 * 1000; // 1 Stunde
@@ -15,14 +16,17 @@ export class AuthService {
     private readonly mailer: Mailer,
   ) {}
 
-  async login(email: string, passwort: string): Promise<{ accessToken: string; mussPasswortSetzen: boolean }> {
+  async login(
+    email: string,
+    passwort: string,
+  ): Promise<{ accessToken: string; mussPasswortSetzen: boolean; rolle: Rolle }> {
     const nutzer = await this.prisma.nutzer.findUnique({ where: { email } });
     if (!nutzer || !(await bcrypt.compare(passwort, nutzer.passwortHash))) {
       throw new UnauthorizedException('E-Mail oder Passwort ungültig.');
     }
 
     const accessToken = await this.jwtService.signAsync({ sub: nutzer.id, rolle: nutzer.rolle });
-    return { accessToken, mussPasswortSetzen: nutzer.mussPasswortSetzen };
+    return { accessToken, mussPasswortSetzen: nutzer.mussPasswortSetzen, rolle: nutzer.rolle };
   }
 
   async passwortVergessen(email: string): Promise<void> {

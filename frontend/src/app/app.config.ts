@@ -1,7 +1,9 @@
 import { provideHttpClient, withInterceptors, withXhr } from '@angular/common/http';
 import {
   ApplicationConfig,
+  inject,
   isDevMode,
+  provideAppInitializer,
   provideBrowserGlobalErrorListeners,
   provideZoneChangeDetection,
 } from '@angular/core';
@@ -9,7 +11,8 @@ import { provideRouter } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
 
 import { routes } from './app.routes';
-import { authInterceptor } from './core/auth.interceptor';
+import { AuthService } from './core/auth.service';
+import { csrfInterceptor } from './core/csrf.interceptor';
 import { unauthorizedInterceptor } from './core/unauthorized.interceptor';
 
 export const appConfig: ApplicationConfig = {
@@ -17,7 +20,11 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(withXhr(), withInterceptors([authInterceptor, unauthorizedInterceptor])),
+    provideHttpClient(withXhr(), withInterceptors([csrfInterceptor, unauthorizedInterceptor])),
+    // Login-Status kommt aus dem HttpOnly-Cookie (Issue #24) und muss vor der
+    // ersten Routen-Auflösung feststehen, damit die Auth-Guards synchron
+    // entscheiden können.
+    provideAppInitializer(() => inject(AuthService).init()),
     // Cached App-Shell-Build für wiederholte Aufrufe, siehe Issue #7. Bewusst
     // ohne Offline-Formular-Puffer – siehe docs/research/02-architektur.md
     // Abschnitt 8, Punkt 3.

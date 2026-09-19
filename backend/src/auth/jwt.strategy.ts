@@ -1,10 +1,17 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
+import { Strategy } from 'passport-jwt';
 import type { Request } from 'express';
 import { loadEnv } from '../config/env.js';
 import { Rolle } from '../generated/prisma/enums.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { ACCESS_TOKEN_COOKIE } from './auth-cookies.js';
+
+// Token kommt aus dem HttpOnly-Cookie statt aus dem Authorization-Header,
+// damit clientseitiges JS ihn nie zu Gesicht bekommt (Issue #24).
+function extractJwtFromCookie(req: Request): string | null {
+  return (req.cookies?.[ACCESS_TOKEN_COOKIE] as string | undefined) ?? null;
+}
 
 export interface JwtPayload {
   sub: string;
@@ -24,7 +31,7 @@ export interface AuthenticatedRequest extends Request {
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private readonly prisma: PrismaService) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: extractJwtFromCookie,
       secretOrKey: loadEnv().auth.jwtSecret,
       // Explizit fixieren statt dem Default zu vertrauen: verhindert
       // Algorithm-Confusion-Angriffe (Issue #34).

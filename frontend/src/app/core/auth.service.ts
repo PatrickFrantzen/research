@@ -1,84 +1,57 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
 export type Rolle = 'MITARBEITER' | 'VORGESETZTER';
 
-interface JwtPayload {
-  sub: string;
-  rolle: Rolle;
-  exp?: number;
-}
-
 interface LoginResponse {
-  accessToken: string;
   mussPasswortSetzen: boolean;
+  rolle: Rolle;
 }
 
-const TOKEN_STORAGE_KEY = 'research.accessToken';
-
-// Robust gegen kaputte/manipulierte Tokens: liefert null statt zu werfen
-// (Issue #28) – ein defektes Token darf die App nicht abstürzen lassen.
-function decodeJwtPayload(token: string): JwtPayload | null {
-  try {
-    const [, payload] = token.split('.');
-    if (!payload) {
-      return null;
-    }
-    return JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
-  } catch {
-    return null;
-  }
+interface MeResponse {
+  rolle: Rolle;
 }
 
-function istTokenGueltig(token: string): boolean {
-  const payload = decodeJwtPayload(token);
-  if (!payload) {
-    return false;
-  }
-  return payload.exp === undefined || payload.exp * 1000 > Date.now();
-}
-
-function initialesToken(): string | null {
-  const gespeichert = sessionStorage.getItem(TOKEN_STORAGE_KEY);
-  if (gespeichert && istTokenGueltig(gespeichert)) {
-    return gespeichert;
-  }
-  if (gespeichert) {
-    sessionStorage.removeItem(TOKEN_STORAGE_KEY);
-  }
-  return null;
-}
-
+// Der Access-Token liegt seit Issue #24 in einem HttpOnly-Cookie und ist für
+// dieses Modul nicht lesbar/speicherbar – Login-Status kommt vom Server.
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
 
-  private readonly tokenSignal = signal<string | null>(initialesToken());
+  private readonly rolleSignal = signal<Rolle | null>(null);
+  private readonly istEingeloggtSignal = signal(false);
 
-  readonly rolle = computed<Rolle | null>(() => {
-    const token = this.tokenSignal();
-    return token ? (decodeJwtPayload(token)?.rolle ?? null) : null;
-  });
+  readonly rolle = this.rolleSignal.asReadonly();
+  readonly istEingeloggt = this.istEingeloggtSignal.asReadonly();
 
-  readonly istEingeloggt = computed(() => this.tokenSignal() !== null);
-
-  get accessToken(): string | null {
-    return this.tokenSignal();
+  // Beim App-Start aufgerufen (siehe app.config.ts, provideAppInitializer),
+  // bevor die erste Route aufgelöst wird – die Guards lesen danach nur noch
+  // die bereits gesetzten Signals.
+  async init(): Promise<void> {
+    try {
+      const response = await firstValueFrom(this.http.get<MeResponse>('/api/v1/auth/me'));
+      this.rolleSignal.set(response.rolle);
+      this.istEingeloggtSignal.set(true);
+    } catch {
+      this.rolleSignal.set(null);
+      this.istEingeloggtSignal.set(false);
+    }
   }
 
   async login(email: string, passwort: string): Promise<{ mussPasswortSetzen: boolean }> {
-    const response = await firstValueFrom(
-      this.http.post<LoginResponse>('/api/v1/auth/login', { email, passwort }),
-    );
-    sessionStorage.setItem(TOKEN_STORAGE_KEY, response.accessToken);
-    this.tokenSignal.set(response.accessToken);
+    const response = await firstValueFrom(this.http.post<LoginResponse>('/api/v1/auth/login', { email, passwort }));
+    this.rolleSignal.set(response.rolle);
+    this.istEingeloggtSignal.set(true);
     return { mussPasswortSetzen: response.mussPasswortSetzen };
   }
 
   logout(): void {
-    sessionStorage.removeItem(TOKEN_STORAGE_KEY);
-    this.tokenSignal.set(null);
+    this.rolleSignal.set(null);
+    this.istEingeloggtSignal.set(false);
+    // Best effort: lokaler Zustand ist sofort weg, unabhängig davon, ob der
+    // Request den Server erreicht.
+    void firstValueFrom(this.http.post('/api/v1/auth/logout', {})).catch(() => undefined);
   }
 
   async passwortVergessen(email: string): Promise<void> {

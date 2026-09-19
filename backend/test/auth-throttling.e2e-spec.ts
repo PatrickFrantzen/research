@@ -2,6 +2,7 @@ import { Test } from '@nestjs/testing';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -18,7 +19,11 @@ describe('Auth-Endpunkte: Rate-Limiting', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [ThrottlerModule.forRoot([{ ttl: 60_000, limit: 60 }]), JwtModule.register({ secret: 'test-secret' })],
+      imports: [
+        ThrottlerModule.forRoot([{ ttl: 60_000, limit: 60 }]),
+        PassportModule.register({ defaultStrategy: 'jwt' }),
+        JwtModule.register({ secret: 'test-secret' }),
+      ],
       controllers: [AuthController],
       providers: [
         AuthService,

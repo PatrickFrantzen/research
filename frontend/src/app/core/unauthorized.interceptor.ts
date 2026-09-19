@@ -3,7 +3,7 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { AuthService } from './auth.service.js';
-import { istEigeneApi } from './auth.interceptor.js';
+import { istEigeneApi } from './eigene-api.js';
 
 // Zentrale Behandlung abgelaufener/ungültiger Tokens: 401/403 von der
 // eigenen API räumen die Session auf und schicken zurück zum Login, statt
