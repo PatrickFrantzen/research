@@ -2,6 +2,7 @@ export interface EnvConfig {
   databaseUrl: string;
   objectStorage: {
     endpoint: string;
+    publicEndpoint: string;
     region: string;
     accessKeyId: string;
     secretAccessKey: string;
@@ -46,6 +47,10 @@ export function loadEnv(): EnvConfig {
     databaseUrl: required('DATABASE_URL'),
     objectStorage: {
       endpoint: required('OBJECT_STORAGE_ENDPOINT'),
+      // Docker-intern (z.B. "http://minio:9000") ist nur vom Backend aus
+      // erreichbar. Fotos-URLs gehen an den Browser, der einen von außen
+      // erreichbaren Host braucht – daher separat konfigurierbar.
+      publicEndpoint: process.env['OBJECT_STORAGE_PUBLIC_ENDPOINT'] ?? required('OBJECT_STORAGE_ENDPOINT'),
       region: process.env['OBJECT_STORAGE_REGION'] ?? 'us-east-1',
       accessKeyId: required('OBJECT_STORAGE_ACCESS_KEY_ID'),
       secretAccessKey: required('OBJECT_STORAGE_SECRET_ACCESS_KEY'),

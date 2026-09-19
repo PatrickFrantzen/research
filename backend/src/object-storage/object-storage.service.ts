@@ -25,6 +25,19 @@ export class ObjectStorageService {
     forcePathStyle: true,
   });
 
+  // Signiert mit dem öffentlich erreichbaren Endpoint, da der Browser (nicht
+  // das Backend) die URL aufruft. Lokal/Docker weicht das vom internen
+  // Endpoint oben ab (siehe OBJECT_STORAGE_PUBLIC_ENDPOINT).
+  private readonly s3Public = new S3Client({
+    endpoint: this.env.objectStorage.publicEndpoint,
+    region: this.env.objectStorage.region,
+    credentials: {
+      accessKeyId: this.env.objectStorage.accessKeyId,
+      secretAccessKey: this.env.objectStorage.secretAccessKey,
+    },
+    forcePathStyle: true,
+  });
+
   async uploadFoto(buffer: Buffer, mimeType: string): Promise<string> {
     const key = `wareneintraege/${randomUUID()}`;
     await this.s3.send(
@@ -46,6 +59,6 @@ export class ObjectStorageService {
   // statt den Bucket öffentlich lesbar zu machen (Issue #45).
   async getSignedUrl(key: string): Promise<string> {
     const command = new GetObjectCommand({ Bucket: this.env.objectStorage.bucket, Key: key });
-    return getSignedUrl(this.s3, command, { expiresIn: SIGNIERTE_URL_GUELTIGKEIT_SEKUNDEN });
+    return getSignedUrl(this.s3Public, command, { expiresIn: SIGNIERTE_URL_GUELTIGKEIT_SEKUNDEN });
   }
 }

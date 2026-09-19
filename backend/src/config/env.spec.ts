@@ -33,6 +33,7 @@ describe('loadEnv', () => {
 
     expect(env.databaseUrl).toBe(REQUIRED_VARS.DATABASE_URL);
     expect(env.objectStorage.endpoint).toBe(REQUIRED_VARS.OBJECT_STORAGE_ENDPOINT);
+    expect(env.objectStorage.publicEndpoint).toBe(REQUIRED_VARS.OBJECT_STORAGE_ENDPOINT);
     expect(env.objectStorage.accessKeyId).toBe(REQUIRED_VARS.OBJECT_STORAGE_ACCESS_KEY_ID);
     expect(env.objectStorage.secretAccessKey).toBe(REQUIRED_VARS.OBJECT_STORAGE_SECRET_ACCESS_KEY);
     expect(env.objectStorage.bucket).toBe(REQUIRED_VARS.OBJECT_STORAGE_BUCKET);
@@ -47,6 +48,11 @@ describe('loadEnv', () => {
   it('uses OBJECT_STORAGE_REGION when set', () => {
     process.env['OBJECT_STORAGE_REGION'] = 'eu-central-1';
     expect(loadEnv().objectStorage.region).toBe('eu-central-1');
+  });
+
+  it('uses OBJECT_STORAGE_PUBLIC_ENDPOINT when set, instead of falling back to the internal endpoint', () => {
+    process.env['OBJECT_STORAGE_PUBLIC_ENDPOINT'] = 'http://localhost:9000';
+    expect(loadEnv().objectStorage.publicEndpoint).toBe('http://localhost:9000');
   });
 
   it('defaults JWT_EXPIRES_IN to 8h when not set', () => {
