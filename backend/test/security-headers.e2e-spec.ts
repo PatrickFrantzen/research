@@ -27,6 +27,7 @@ describe('Security-Header (Issue #26)', () => {
         bucket: 'bucket',
       },
       auth: { jwtSecret: 'secret', jwtExpiresIn: '8h' },
+      redis: { url: 'redis://localhost:6379' },
     };
     const moduleRef = await Test.createTestingModule({ controllers: [DummyController] }).compile();
     app = moduleRef.createNestApplication();

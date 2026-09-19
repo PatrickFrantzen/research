@@ -16,6 +16,10 @@ function extractJwtFromCookie(req: Request): string | null {
 export interface JwtPayload {
   sub: string;
   rolle: Rolle;
+  // Von jsonwebtoken automatisch gesetzt (Sekunden seit Epoch), nicht selbst
+  // signiert. Optional, da Tests/Fremdcode Payloads ohne iat konstruieren
+  // können - siehe Vergleich unten.
+  iat?: number;
 }
 
 export interface AuthenticatedUser {
@@ -45,6 +49,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     // nicht aus dem (potenziell veralteten) Token-Claim.
     const nutzer = await this.prisma.nutzer.findUnique({ where: { id: payload.sub } });
     if (!nutzer) {
+      throw new UnauthorizedException();
+    }
+    // Token vor der letzten Passwortänderung ausgestellt? Dann ungültig,
+    // auch wenn es noch nicht abgelaufen ist (Issue #40).
+    if (payload.iat !== undefined && payload.iat * 1000 < nutzer.passwortGeaendertAm.getTime()) {
       throw new UnauthorizedException();
     }
     return { id: nutzer.id, rolle: nutzer.rolle };

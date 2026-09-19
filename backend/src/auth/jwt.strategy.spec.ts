@@ -7,6 +7,7 @@ process.env['OBJECT_STORAGE_ENDPOINT'] ??= 'http://localhost:9000';
 process.env['OBJECT_STORAGE_ACCESS_KEY_ID'] ??= 'access';
 process.env['OBJECT_STORAGE_SECRET_ACCESS_KEY'] ??= 'secret';
 process.env['OBJECT_STORAGE_BUCKET'] ??= 'bucket';
+process.env['REDIS_URL'] ??= 'redis://localhost:6379';
 process.env['JWT_SECRET'] ??= 'test-secret';
 
 const { JwtStrategy } = await import('./jwt.strategy.js');
@@ -48,5 +49,29 @@ describe('JwtStrategy', () => {
     const user = await strategy.validate({ sub: 'nutzer-1', rolle: Rolle.MITARBEITER });
 
     expect(user.rolle).toBe(Rolle.VORGESETZTER);
+  });
+
+  describe('Invalidierung nach Passwortänderung (Issue #40)', () => {
+    it('rejects a token issued before the last password change', async () => {
+      const { strategy, prisma } = buildStrategy();
+      const passwortGeaendertAm = new Date('2026-01-02T00:00:00Z');
+      prisma.nutzer.findUnique.mockResolvedValue({ id: 'nutzer-1', rolle: Rolle.MITARBEITER, passwortGeaendertAm });
+      const iatVorDerAenderung = Math.floor(new Date('2026-01-01T00:00:00Z').getTime() / 1000);
+
+      await expect(
+        strategy.validate({ sub: 'nutzer-1', rolle: Rolle.MITARBEITER, iat: iatVorDerAenderung }),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
+    });
+
+    it('accepts a token issued after the last password change', async () => {
+      const { strategy, prisma } = buildStrategy();
+      const passwortGeaendertAm = new Date('2026-01-02T00:00:00Z');
+      prisma.nutzer.findUnique.mockResolvedValue({ id: 'nutzer-1', rolle: Rolle.MITARBEITER, passwortGeaendertAm });
+      const iatNachDerAenderung = Math.floor(new Date('2026-01-03T00:00:00Z').getTime() / 1000);
+
+      await expect(
+        strategy.validate({ sub: 'nutzer-1', rolle: Rolle.MITARBEITER, iat: iatNachDerAenderung }),
+      ).resolves.toEqual({ id: 'nutzer-1', rolle: Rolle.MITARBEITER });
+    });
   });
 });

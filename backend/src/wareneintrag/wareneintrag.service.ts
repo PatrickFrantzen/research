@@ -1,9 +1,19 @@
 import { Injectable } from '@nestjs/common';
+import { fileTypeFromBuffer } from 'file-type';
 import { Prisma } from '../generated/prisma/client.js';
 import { ObjectStorageService } from '../object-storage/object-storage.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateWareneintragDto } from './dto/create-wareneintrag.dto.js';
 import { UpdateWareneintragDto } from './dto/update-wareneintrag.dto.js';
+
+// Nie den client-deklarierten MIME-Type an den Objektspeicher durchreichen:
+// die Upload-Validierung prüft zwar die Magic Bytes, aber `foto.mimetype`
+// bleibt trotzdem der ungeprüfte Header-Wert. Content-Type im Objektspeicher
+// muss dem tatsächlichen Inhalt entsprechen (Issue #43).
+async function erkannterBildTyp(buffer: Buffer, deklarierterTyp: string): Promise<string> {
+  const erkannt = await fileTypeFromBuffer(buffer);
+  return erkannt?.mime ?? deklarierterTyp;
+}
 
 @Injectable()
 export class WareneintragService {
@@ -38,7 +48,7 @@ export class WareneintragService {
     // Standort wird als Kopie des aktuellen Nutzer-Standorts geschrieben, nicht
     // nur über erfasstVonId live abgeleitet, siehe ADR-0004.
     const nutzer = await this.prisma.nutzer.findUniqueOrThrow({ where: { id: erfasstVonId } });
-    const fotoUrl = await this.objectStorage.uploadFoto(foto.buffer, foto.mimetype);
+    const fotoUrl = await this.objectStorage.uploadFoto(foto.buffer, await erkannterBildTyp(foto.buffer, foto.mimetype));
 
     return this.prisma.wareneintrag.create({
       data: {
@@ -62,7 +72,7 @@ export class WareneintragService {
     // Altes Foto ersetzen: erst neues hochladen, dann altes im Objektspeicher
     // entfernen, um verwaiste Referenzen bei einem Fehlschlag zu vermeiden.
     const bestehend = await this.prisma.wareneintrag.findUniqueOrThrow({ where: { id } });
-    const fotoUrl = await this.objectStorage.uploadFoto(foto.buffer, foto.mimetype);
+    const fotoUrl = await this.objectStorage.uploadFoto(foto.buffer, await erkannterBildTyp(foto.buffer, foto.mimetype));
     await this.objectStorage.deleteFoto(bestehend.fotoUrl);
 
     return this.prisma.wareneintrag.update({

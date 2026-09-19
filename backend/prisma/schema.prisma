@@ -32,6 +32,11 @@ model Nutzer {
 
   passwortHash String @map("passwort_hash")
 
+  // Zeitpunkt der letzten Passwortänderung. JwtStrategy lehnt Tokens ab,
+  // die vor diesem Zeitpunkt ausgestellt wurden (Invalidierung nach
+  // Passwortänderung/-Reset, siehe Issue #40).
+  passwortGeaendertAm DateTime @default(now()) @map("passwort_geaendert_am")
+
   // true bis der Nutzer sein eigenes Passwort gesetzt hat (Initial-Zugang)
   mussPasswortSetzen Boolean @default(true) @map("muss_passwort_setzen")
 

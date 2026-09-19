@@ -31,7 +31,14 @@ class DummyController {
 describe('Cookie-basierte Auth + CSRF (Issue #24)', () => {
   let app: INestApplication;
   const passwortHash = bcrypt.hashSync('geheim1234567', 4);
-  const nutzer = { id: 'nutzer-1', email: 'chef@research.local', rolle: Rolle.VORGESETZTER, passwortHash, mussPasswortSetzen: false };
+  const nutzer = {
+    id: 'nutzer-1',
+    email: 'chef@research.local',
+    rolle: Rolle.VORGESETZTER,
+    passwortHash,
+    mussPasswortSetzen: false,
+    passwortGeaendertAm: new Date(0),
+  };
 
   beforeAll(async () => {
     process.env['JWT_SECRET'] = 'test-secret';
@@ -40,6 +47,7 @@ describe('Cookie-basierte Auth + CSRF (Issue #24)', () => {
     process.env['OBJECT_STORAGE_ACCESS_KEY_ID'] ??= 'access';
     process.env['OBJECT_STORAGE_SECRET_ACCESS_KEY'] ??= 'secret';
     process.env['OBJECT_STORAGE_BUCKET'] ??= 'bucket';
+    process.env['REDIS_URL'] ??= 'redis://localhost:6379';
     const moduleRef = await Test.createTestingModule({
       imports: [
         ThrottlerModule.forRoot([{ ttl: 60_000, limit: 60 }]),
