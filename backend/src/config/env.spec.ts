@@ -60,4 +60,30 @@ describe('loadEnv', () => {
     delete process.env['DATABASE_URL'];
     expect(() => loadEnv()).toThrow('Missing required environment variable: DATABASE_URL');
   });
+
+  describe('fail-closed on known default secrets in production', () => {
+    it('rejects a known default JWT_SECRET in production', () => {
+      process.env['NODE_ENV'] = 'production';
+      process.env['JWT_SECRET'] = 'local-dev-secret-change-me';
+      expect(() => loadEnv()).toThrow(/JWT_SECRET.*insecure default/i);
+    });
+
+    it('rejects the .env.example placeholder JWT_SECRET in production', () => {
+      process.env['NODE_ENV'] = 'production';
+      process.env['JWT_SECRET'] = 'change-me-to-a-long-random-string';
+      expect(() => loadEnv()).toThrow(/JWT_SECRET.*insecure default/i);
+    });
+
+    it('allows the same default JWT_SECRET outside production', () => {
+      process.env['NODE_ENV'] = 'development';
+      process.env['JWT_SECRET'] = 'local-dev-secret-change-me';
+      expect(() => loadEnv()).not.toThrow();
+    });
+
+    it('allows a strong JWT_SECRET in production', () => {
+      process.env['NODE_ENV'] = 'production';
+      process.env['JWT_SECRET'] = 'a-sufficiently-long-random-production-secret-value';
+      expect(() => loadEnv()).not.toThrow();
+    });
+  });
 });

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { Rolle } from '../generated/prisma/enums.js';
+import { hashPasswortSetzenToken } from '../auth/passwort-setzen-token.js';
 import { NutzerService } from './nutzer.service.js';
 
 describe('NutzerService', () => {
@@ -29,6 +30,9 @@ describe('NutzerService', () => {
     expect(createArgs.passwortSetzenToken).toBeTypeOf('string');
 
     expect(result.passwortSetzenLink).toContain('/passwort-setzen?token=');
+    const rawToken = result.passwortSetzenLink.split('token=')[1];
+    // Persisted value must be the hash of the raw token handed to the Vorgesetzter, not the raw token itself.
+    expect(createArgs.passwortSetzenToken).toBe(hashPasswortSetzenToken(rawToken));
     expect(result.email).toBe('max@research.local');
   });
 

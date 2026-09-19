@@ -6,6 +6,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import * as bcrypt from 'bcrypt';
 import { PrismaClient } from '../src/generated/prisma/client.js';
 import { Rolle } from '../src/generated/prisma/enums.js';
+import { assertNichtDefaultBootstrapPasswort } from './seed-initial-vorgesetzter-guard.js';
 
 function required(name: string): string {
   const value = process.env[name];
@@ -27,6 +28,7 @@ async function main(): Promise<void> {
 
     const email = required('INITIAL_VORGESETZTER_EMAIL');
     const passwort = required('INITIAL_VORGESETZTER_PASSWORT');
+    assertNichtDefaultBootstrapPasswort(passwort, process.env['NODE_ENV']);
     const standortName = process.env['INITIAL_VORGESETZTER_STANDORT'] ?? 'Hauptsitz';
 
     const standort = await prisma.standort.findUniqueOrThrow({ where: { name: standortName } });

@@ -1,8 +1,13 @@
+import { createHash } from 'node:crypto';
 import { UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Rolle } from '../generated/prisma/enums.js';
 import { AuthService } from './auth.service.js';
+
+function sha256(value: string): string {
+  return createHash('sha256').update(value).digest('hex');
+}
 
 function buildService() {
   const prisma = {
@@ -64,17 +69,23 @@ describe('AuthService', () => {
   });
 
   describe('passwortVergessen', () => {
-    it('sets a reset token and sends it for an existing user', async () => {
+    it('sets a hashed reset token and sends the raw token to the user', async () => {
       const { service, prisma, mailer } = buildService();
       prisma.nutzer.findUnique.mockResolvedValue({ id: 'nutzer-1' });
 
       await service.passwortVergessen('max@research.local');
 
       expect(prisma.nutzer.update).toHaveBeenCalledOnce();
+      const persistedToken = prisma.nutzer.update.mock.calls[0][0].data.passwortSetzenToken as string;
       expect(mailer.sendPasswortSetzenLink).toHaveBeenCalledWith(
         'max@research.local',
         expect.stringContaining('/passwort-setzen?token='),
       );
+      const [, sentLink] = mailer.sendPasswortSetzenLink.mock.calls[0] as [string, string];
+      const rawToken = new URLSearchParams(sentLink.split('?')[1]).get('token')!;
+      // Persisted value must be the SHA-256 hash of the raw token, not the raw token itself.
+      expect(persistedToken).toBe(sha256(rawToken));
+      expect(persistedToken).not.toBe(rawToken);
     });
 
     it('does nothing observable for an unknown email (no account enumeration)', async () => {
@@ -88,6 +99,20 @@ describe('AuthService', () => {
   });
 
   describe('passwortSetzen', () => {
+    it('looks up the user by the hash of the provided raw token, not the raw token', async () => {
+      const { service, prisma } = buildService();
+      prisma.nutzer.findUnique.mockResolvedValue({
+        id: 'nutzer-1',
+        passwortSetzenTokenAblauf: new Date(Date.now() + 1000 * 60),
+      });
+
+      await service.passwortSetzen('mein-roh-token', 'neuesPasswort1');
+
+      expect(prisma.nutzer.findUnique).toHaveBeenCalledWith({
+        where: { passwortSetzenToken: sha256('mein-roh-token') },
+      });
+    });
+
     it('rejects an unknown token', async () => {
       const { service, prisma } = buildService();
       prisma.nutzer.findUnique.mockResolvedValue(null);
