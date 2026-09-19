@@ -1,0 +1,15 @@
+# Reverse Proxy für Produktivbetrieb: TLS via Let's Encrypt automatisch
+# (Caddy fordert/erneuert Zertifikate selbst, DOMAIN muss per DNS-A-Record
+# auf den Server zeigen). Siehe docs/research/03-docker-deployment-optionen.md
+# Go-live-Checkliste Punkt 1: App und Fotos-Endpoint brauchen beide HTTPS.
+
+{$DOMAIN} {
+	reverse_proxy app:3000
+}
+
+# Fotos: MinIO bleibt intern (kein Host-Port), Browser lädt Foto-URLs über
+# diese Subdomain per presigned URL (forcePathStyle, siehe
+# object-storage.service.ts). DNS-A-Record für FILES_DOMAIN ebenfalls nötig.
+{$FILES_DOMAIN} {
+	reverse_proxy minio:9000
+}

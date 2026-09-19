@@ -5,8 +5,24 @@ $bottom-nav-hoehe: 64px;
   flex: 1 1 auto;
 }
 
-.titel {
-  font-weight: 500;
+.desktop-toolbar,
+.mobile-titelleiste {
+  background: var(--mat-sys-surface-container-low);
+  color: var(--mat-sys-on-surface);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.marken-link {
+  display: inline-flex;
+  align-items: center;
+  height: 56px;
+  min-width: 0;
+}
+
+.marke {
+  display: block;
+  width: min(210px, 54vw);
+  height: 46px;
 }
 
 .aktiv {

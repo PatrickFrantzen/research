@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="RE-SEARCH">
+  <!-- Compact, transparent browser icon derived from the wordmark. -->
+  <rect x="4" y="4" width="56" height="56" rx="10" fill="#e30613"/>
+  <path d="M17 18h13.5c7.7 0 12.5 3.5 12.5 9.6 0 4-2.1 6.8-5.9 8.2L44 47H34.2l-6.1-9.2H25V47h-8V18Zm8 6.5v7.1h5.1c3.1 0 4.8-1.2 4.8-3.6 0-2.3-1.7-3.5-4.8-3.5H25Z" fill="#fff"/>
+  <path d="M42.5 14.5 48 9" stroke="#80a51b" stroke-width="3.4" stroke-linecap="round"/>
+  <path d="M47.6 8.8c3.8.1 6.6 1.2 8.4 3.4-3.5 1.1-6.4.7-8.4-3.4Z" fill="#80a51b"/>
+</svg>

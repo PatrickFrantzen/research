@@ -1,0 +1,125 @@
+# Produktiv-/Demo-Deployment auf einem Linux-VPS (z.B. IONOS VPS S+).
+# Unterschied zu docker-compose.yml: kein Port-Publishing für app/minio
+# (nur Caddy ist öffentlich erreichbar), NODE_ENV=production,
+# TLS-Reverse-Proxy inklusive. Alle Secrets kommen aus ".env" (siehe
+# .env.prod.example) statt aus unsicheren Defaults.
+#
+# Start: docker compose -f docker-compose.prod.yml up -d
+# Siehe docs/research/03-docker-deployment-optionen.md für die
+# Go-live-Checkliste (Backups, Firewall, Secrets).
+
+services:
+  caddy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+      FILES_DOMAIN: ${FILES_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - app
+
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://research:${POSTGRES_PASSWORD}@postgres:5432/research
+      OBJECT_STORAGE_ENDPOINT: http://minio:9000
+      OBJECT_STORAGE_PUBLIC_ENDPOINT: https://${FILES_DOMAIN}
+      OBJECT_STORAGE_REGION: us-east-1
+      OBJECT_STORAGE_ACCESS_KEY_ID: research-app
+      OBJECT_STORAGE_SECRET_ACCESS_KEY: ${MINIO_APP_SECRET}
+      OBJECT_STORAGE_BUCKET: research-fotos
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
+      JWT_ISSUER: ${JWT_ISSUER:-research-backend}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-research-frontend}
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+  redis:
+    image: redis:8.8.2-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: research
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: research
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U research -d research"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build: .
+    environment:
+      DATABASE_URL: postgres://research:${POSTGRES_PASSWORD}@postgres:5432/research
+      INITIAL_VORGESETZTER_EMAIL: ${INITIAL_VORGESETZTER_EMAIL}
+      INITIAL_VORGESETZTER_PASSWORT: ${INITIAL_VORGESETZTER_PASSWORT}
+      INITIAL_VORGESETZTER_STANDORT: Hauptsitz
+    entrypoint: sh -c "npx prisma migrate deploy && npm run db:seed"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  minio:
+    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z.hotfix.7aa24e772
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: research
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio-init:
+    image: quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z-cpuv1
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      sh -c "
+        mc alias set local http://minio:9000 research ${MINIO_ROOT_PASSWORD} &&
+        mc mb --ignore-existing local/research-fotos &&
+        (mc admin user add local research-app ${MINIO_APP_SECRET} || true) &&
+        echo '{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"s3:GetObject\",\"s3:PutObject\",\"s3:DeleteObject\",\"s3:ListBucket\"],\"Resource\":[\"arn:aws:s3:::research-fotos\",\"arn:aws:s3:::research-fotos/*\"]}]}' > /tmp/research-app-policy.json &&
+        mc admin policy create local research-app-policy /tmp/research-app-policy.json &&
+        mc admin policy attach local research-app-policy --user research-app
+      "
+
+volumes:
+  postgres-data:
+  minio-data:
+  caddy-data:
+  caddy-config:

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 175" role="img" aria-labelledby="title description">
+  <title id="title">RE-SEARCH</title>
+  <desc id="description">RE-SEARCH – Transparente Entsorgungswege</desc>
+  <!-- Transparent background. Brand colours are approximated from the supplied reference. -->
+  <rect x="26" y="16" width="748" height="104" rx="2" fill="#e30613"/>
+  <text x="400" y="98" text-anchor="middle" fill="#fff" font-family="Arial Black, Arial, Helvetica, sans-serif" font-size="75" font-weight="900" letter-spacing="-3">RE-SEARCH</text>
+  <text x="738" y="48" text-anchor="middle" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">®</text>
+  <text x="400" y="160" text-anchor="middle" fill="#243746" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" letter-spacing="5.5">TRANSPARENTE ENTSORGUNGSWEGE</text>
+</svg>

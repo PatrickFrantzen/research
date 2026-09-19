@@ -29,6 +29,10 @@ describe('Shell', () => {
     expect(text).toContain('Einstellungen');
     expect(text).toContain('Logout');
     expect(text).not.toContain('Mitarbeiter anlegen');
+    const logo = fixture.nativeElement.querySelector('.marke') as HTMLImageElement | null;
+    expect(logo?.getAttribute('src')).toBe(
+      'brand/re-search-header.svg',
+    );
   });
 
   it('shows the desktop toolbar and the Vorgesetzter bottom nav (Liste, Erfassen, Mehr) for role VORGESETZTER', () => {

@@ -1,6 +1,8 @@
 @if (istVorgesetzter) {
-  <mat-toolbar color="primary" class="desktop-toolbar">
-    <span class="titel">RESEARCH</span>
+  <mat-toolbar class="desktop-toolbar">
+    <a class="marken-link" routerLink="/" aria-label="RE-SEARCH Startseite">
+      <img class="marke" src="brand/re-search-header.svg" alt="RE-SEARCH – Transparente Entsorgungswege" />
+    </a>
     <span class="spacer"></span>
     <a mat-button routerLink="/wareneintraege" routerLinkActive="aktiv">Wareneinträge</a>
     <a mat-button routerLink="/wareneintrag-erfassen" routerLinkActive="aktiv">Wareneintrag erfassen</a>
@@ -9,12 +11,16 @@
     <button mat-button type="button" (click)="logout()">Logout</button>
   </mat-toolbar>
 
-  <mat-toolbar color="primary" class="mobile-titelleiste vorgesetzter-mobil-titel">
-    <span class="titel">RESEARCH</span>
+  <mat-toolbar class="mobile-titelleiste vorgesetzter-mobil-titel">
+    <a class="marken-link" routerLink="/" aria-label="RE-SEARCH Startseite">
+      <img class="marke" src="brand/re-search-header.svg" alt="RE-SEARCH – Transparente Entsorgungswege" />
+    </a>
   </mat-toolbar>
 } @else {
-  <mat-toolbar color="primary" class="mobile-titelleiste">
-    <span class="titel">RESEARCH</span>
+  <mat-toolbar class="mobile-titelleiste">
+    <a class="marken-link" routerLink="/" aria-label="RE-SEARCH Startseite">
+      <img class="marke" src="brand/re-search-header.svg" alt="RE-SEARCH – Transparente Entsorgungswege" />
+    </a>
   </mat-toolbar>
 }
 

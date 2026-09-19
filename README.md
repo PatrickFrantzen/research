@@ -44,3 +44,19 @@ und MinIO, spielt Migrationen + Stammdaten-Seed ein (fester Standort
 Für Backend-Entwicklung ohne Container siehe `backend/.env.example`
 (Datenbank/Objektspeicher/Auth-Zugangsdaten für `npm run start:dev`,
 `npx prisma migrate dev`, `npm run db:seed`).
+
+### Hot Reload statt Container-Neustart
+
+Nur die Infrastruktur (Postgres/MinIO/Redis) läuft im Container, App läuft
+nativ mit Watch-Modus:
+
+```
+docker compose up postgres minio minio-init redis migrate
+cd backend && npm run start:dev   # nest --watch, reagiert auf Code-Änderungen
+cd frontend && npm start          # ng serve mit Proxy auf localhost:3000/api
+```
+
+Frontend erreichbar unter http://localhost:4200, Backend weiter unter
+http://localhost:3000. `frontend/proxy.conf.json` leitet `/api`-Requests an
+den Nest-Server weiter, damit Cookies/Same-Origin-Verhalten wie im
+Produktiv-Setup funktionieren.

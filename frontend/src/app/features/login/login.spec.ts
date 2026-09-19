@@ -59,4 +59,14 @@ describe('Login', () => {
     expect((component as unknown as { fehler: () => string | null }).fehler()).toBe('E-Mail oder Passwort ungültig.');
     expect(router.navigateByUrl).not.toHaveBeenCalled();
   });
+
+  it('shows the large RE-SEARCH wordmark above the login form', () => {
+    const fixture = TestBed.createComponent(Login);
+    fixture.detectChanges();
+
+    const logo = fixture.nativeElement.querySelector('.login-logo') as HTMLImageElement | null;
+
+    expect(logo?.getAttribute('src')).toBe('brand/re-search-large.svg');
+    expect(logo?.alt).toBe('RE-SEARCH – Transparente Entsorgungswege');
+  });
 });

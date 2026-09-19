@@ -5,6 +5,27 @@
 // Learn more about theming and how to use it for your application's
 // custom components at https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
+@use '@fontsource/material-icons';
+
+// mat-icon setzt die Klasse .material-icons, deren Ligatur-Regeln sonst
+// Googles CDN-Stylesheet mitliefert. @fontsource/material-icons enthält nur
+// das @font-face, daher hier ergänzt (Google Material Icons Referenz-CSS).
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
 
 html {
   height: 100%;

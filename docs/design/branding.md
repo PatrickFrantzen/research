@@ -25,6 +25,26 @@ Quelle: Login-Mockup vom Kunden (RE-SEARCH), erhalten 2026-09-18.
 - Claim darunter: "TRANSPARENTE ENTSORGUNGSWEGE", Großbuchstaben, dunkles Blaugrau
 - Footer-Zeile im Mockup ("© PrintByPatrickDE 2026") ist vermutlich ein Wasserzeichen des Mockup-Erstellers, kein Produkt-Bestandteil
 
+## Bereitgestellte Assets
+
+- `frontend/public/brand/re-search-header.svg`: kompakte Wortmarke für den Header
+- `frontend/public/brand/re-search-large.svg`: großzügige Wortmarke für Login und Impressum
+- `frontend/public/brand/re-search-favicon.svg`: reduzierte Browser-Kennung
+- `frontend/public/brand/re-search-app-icon.svg`: skalierbares PWA-App-Symbol
+- `frontend/public/icons/re-search-app-192.png` und `re-search-app-512.png`: PNG-Fallbacks für die PWA-Installation
+
+Alle neuen Logo-Dateien haben einen transparenten Hintergrund. Die verwendeten Farbwerte
+sind weiterhin Annäherungen an das gelieferte Mockup und sollten bei Vorliegen offizieller
+Markenvorgaben ersetzt werden.
+
+### Aktuelle Verwendung
+
+- Der angemeldete Bereich verwendet die kompakte Wortmarke in der Desktop- und Mobil-Kopfleiste.
+- Die Login-Seite verwendet die große Wortmarke oberhalb der Anmeldekarte.
+- Favicon und PWA-Manifest referenzieren die zugehörigen Icon-Dateien.
+- Eine Impressumsseite gibt es derzeit noch nicht; sobald sie angelegt wird, ist
+  `re-search-large.svg` dafür vorgesehen.
+
 ## Layout-Elemente (Login-Card)
 
 - Zentrierte Card auf grauem/metallischem Hintergrund, dezenter Schatten

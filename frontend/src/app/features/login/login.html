@@ -1,33 +1,37 @@
-<div class="login-seite">
-  <mat-card class="login-karte">
-    <h1>RESEARCH</h1>
+<main class="login-seite" aria-labelledby="login-ueberschrift">
+  <div class="login-inhalt">
+    <img class="login-logo" src="brand/re-search-large.svg" alt="RE-SEARCH – Transparente Entsorgungswege" />
 
-    <form (ngSubmit)="submit()">
-      <mat-form-field appearance="outline">
-        <mat-label>E-Mail</mat-label>
-        <input matInput type="email" name="email" [(ngModel)]="email" required autocomplete="username" />
-      </mat-form-field>
+    <mat-card class="login-karte">
+      <h1 id="login-ueberschrift">Anmelden</h1>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Passwort</mat-label>
-        <input
-          matInput
-          type="password"
-          name="passwort"
-          [(ngModel)]="passwort"
-          required
-          autocomplete="current-password"
-        />
-      </mat-form-field>
+      <form (ngSubmit)="submit()">
+        <mat-form-field appearance="outline">
+          <mat-label>E-Mail</mat-label>
+          <input matInput type="email" name="email" [(ngModel)]="email" required autocomplete="username" />
+        </mat-form-field>
 
-      @if (fehler()) {
-        <p class="fehler">{{ fehler() }}</p>
-      }
+        <mat-form-field appearance="outline">
+          <mat-label>Passwort</mat-label>
+          <input
+            matInput
+            type="password"
+            name="passwort"
+            [(ngModel)]="passwort"
+            required
+            autocomplete="current-password"
+          />
+        </mat-form-field>
 
-      <div class="aktionen">
-        <a routerLink="/passwort-vergessen">Passwort vergessen</a>
-        <button matButton="filled" type="submit" [disabled]="wirdGeladen()">Login</button>
-      </div>
-    </form>
-  </mat-card>
-</div>
+        @if (fehler()) {
+          <p class="fehler">{{ fehler() }}</p>
+        }
+
+        <div class="aktionen">
+          <a routerLink="/passwort-vergessen">Passwort vergessen</a>
+          <button matButton="filled" type="submit" [disabled]="wirdGeladen()">Login</button>
+        </div>
+      </form>
+    </mat-card>
+  </div>
+</main>
