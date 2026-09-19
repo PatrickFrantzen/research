@@ -11,6 +11,9 @@ export interface EnvConfig {
     jwtSecret: string;
     jwtExpiresIn: string;
   };
+  redis: {
+    url: string;
+  };
 }
 
 // Bekannte Platzhalterwerte aus docker-compose.yml/.env.example. Wenn diese in
@@ -49,6 +52,10 @@ export function loadEnv(): EnvConfig {
     auth: {
       jwtSecret: requiredSecret('JWT_SECRET', KNOWN_DEFAULT_JWT_SECRETS),
       jwtExpiresIn: process.env['JWT_EXPIRES_IN'] ?? '8h',
+    },
+    // Geteilter Rate-Limit-Zähler über mehrere App-Instanzen hinweg (Issue #41).
+    redis: {
+      url: required('REDIS_URL'),
     },
   };
 }

@@ -40,6 +40,7 @@ describe('Cookie-basierte Auth + CSRF (Issue #24)', () => {
     process.env['OBJECT_STORAGE_ACCESS_KEY_ID'] ??= 'access';
     process.env['OBJECT_STORAGE_SECRET_ACCESS_KEY'] ??= 'secret';
     process.env['OBJECT_STORAGE_BUCKET'] ??= 'bucket';
+    process.env['REDIS_URL'] ??= 'redis://localhost:6379';
     const moduleRef = await Test.createTestingModule({
       imports: [
         ThrottlerModule.forRoot([{ ttl: 60_000, limit: 60 }]),

@@ -14,6 +14,7 @@ function buildEnv(overrides: Partial<EnvConfig['objectStorage']> = {}): EnvConfi
       ...overrides,
     },
     auth: { jwtSecret: 'secret', jwtExpiresIn: '8h' },
+    redis: { url: 'redis://localhost:6379' },
   };
 }
 

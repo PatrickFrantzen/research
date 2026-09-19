@@ -8,6 +8,7 @@ const REQUIRED_VARS = {
   OBJECT_STORAGE_SECRET_ACCESS_KEY: 'secret-key',
   OBJECT_STORAGE_BUCKET: 'bucket',
   JWT_SECRET: 'jwt-secret',
+  REDIS_URL: 'redis://localhost:6379',
 };
 
 describe('loadEnv', () => {
@@ -36,6 +37,7 @@ describe('loadEnv', () => {
     expect(env.objectStorage.secretAccessKey).toBe(REQUIRED_VARS.OBJECT_STORAGE_SECRET_ACCESS_KEY);
     expect(env.objectStorage.bucket).toBe(REQUIRED_VARS.OBJECT_STORAGE_BUCKET);
     expect(env.auth.jwtSecret).toBe(REQUIRED_VARS.JWT_SECRET);
+    expect(env.redis.url).toBe(REQUIRED_VARS.REDIS_URL);
   });
 
   it('defaults OBJECT_STORAGE_REGION to us-east-1 when not set', () => {
