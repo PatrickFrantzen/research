@@ -58,6 +58,10 @@ describe('MitarbeiterAnlegen', () => {
     const fixture = TestBed.createComponent(MitarbeiterAnlegen);
     fixture.detectChanges();
     httpMock.expectOne('/api/v1/standorte').flush([]);
+    fixture.componentInstance.vorname = 'Erika';
+    fixture.componentInstance.nachname = 'Mustermann';
+    fixture.componentInstance.email = 'erika@example.com';
+    fixture.componentInstance.standortId = 'standort-1';
 
     const submitPromise = fixture.componentInstance.submit();
     httpMock.expectOne('/api/v1/nutzer').flush('error', { status: 500, statusText: 'Server Error' });

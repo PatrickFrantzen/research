@@ -8,7 +8,7 @@
         <button matButton="filled" type="button" (click)="weitererEintrag()">Weiteren Eintrag erfassen</button>
       </div>
     } @else {
-      <form (ngSubmit)="submit()">
+      <form (submit)="$event.preventDefault(); submit()">
         <input #fotoInput type="file" accept="image/*" (change)="onFotoAusgewaehlt($event)" hidden />
         <button matButton="outlined" type="button" (click)="fotoInput.click()">
           {{ foto ? 'Anderes Foto auswählen' : 'Foto aufnehmen oder auswählen' }}
@@ -21,22 +21,21 @@
           <mat-label>AVV-Code</mat-label>
           <input
             matInput
-            name="avvSuche"
+            #avvSuche
             [matAutocomplete]="avvAuto"
-            [(ngModel)]="avvSucheAnzeige"
-            (ngModelChange)="onAvvSucheEingabe($event)"
-            required
+            [formField]="wareneintragForm.avvSucheAnzeige"
+            (input)="onAvvSucheEingabe(avvSuche.value)"
           />
           <mat-autocomplete #avvAuto="matAutocomplete" (optionSelected)="onAvvCodeAusgewaehlt($event)">
             @for (avvCode of avvTreffer.value(); track avvCode.id) {
-              <mat-option [value]="avvCode">{{ avvCode.code }} – {{ avvCode.bezeichnung }}</mat-option>
+              <mat-option [value]="avvCode.id">{{ avvCode.code }} – {{ avvCode.bezeichnung }}</mat-option>
             }
           </mat-autocomplete>
         </mat-form-field>
 
         <mat-form-field appearance="outline">
           <mat-label>Freitext</mat-label>
-          <textarea matInput name="freitext" [(ngModel)]="freitext" rows="4" required></textarea>
+          <textarea matInput [formField]="wareneintragForm.freitext" rows="4"></textarea>
         </mat-form-field>
 
         @if (fehler()) {

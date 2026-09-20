@@ -30,6 +30,7 @@ describe('PasswortVergessen', () => {
     authService.passwortVergessen.and.rejectWith(new Error('not found'));
     const fixture = TestBed.createComponent(PasswortVergessen);
     const component = fixture.componentInstance;
+    component.email = 'jemand@example.com';
 
     await expectAsync(component.submit()).toBeResolved();
 

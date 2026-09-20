@@ -28,19 +28,66 @@ describe('Login', () => {
     authService.login.and.resolveTo({ mussPasswortSetzen: false });
     const fixture = TestBed.createComponent(Login);
     const component = fixture.componentInstance;
-    component.email = 'vorgesetzter@example.com';
-    component.passwort = 'geheim';
+    (component as unknown as { loginDaten: { set: (value: { email: string; passwort: string }) => void } }).loginDaten.set({
+      email: 'vorgesetzter@example.com',
+      passwort: 'langes-geheimnis',
+    });
 
     await component.submit();
 
-    expect(authService.login).toHaveBeenCalledWith('vorgesetzter@example.com', 'geheim');
+    expect(authService.login).toHaveBeenCalledWith('vorgesetzter@example.com', 'langes-geheimnis');
     expect(router.navigateByUrl).toHaveBeenCalledWith('/');
+  });
+
+  it('allows existing passwords shorter than the new password policy on login', async () => {
+    authService.login.and.resolveTo({ mussPasswortSetzen: false });
+    const fixture = TestBed.createComponent(Login);
+    const component = fixture.componentInstance;
+    (component as unknown as { loginDaten: { set: (value: { email: string; passwort: string }) => void } }).loginDaten.set({
+      email: 'vorgesetzter@example.com',
+      passwort: 'geheim123',
+    });
+
+    await component.submit();
+
+    expect(authService.login).toHaveBeenCalledWith('vorgesetzter@example.com', 'geheim123');
+  });
+
+  it('handles the native form submit without a browser navigation', () => {
+    authService.login.and.resolveTo({ mussPasswortSetzen: false });
+    const fixture = TestBed.createComponent(Login);
+    const component = fixture.componentInstance;
+    (component as unknown as { loginDaten: { set: (value: { email: string; passwort: string }) => void } }).loginDaten.set({
+      email: 'vorgesetzter@example.com',
+      passwort: 'geheim123',
+    });
+    fixture.detectChanges();
+
+    const form = fixture.nativeElement.querySelector('form') as HTMLFormElement;
+    const event = new Event('submit', { bubbles: true, cancelable: true });
+
+    form.dispatchEvent(event);
+
+    expect(event.defaultPrevented).toBeTrue();
+    expect(authService.login).toHaveBeenCalledWith('vorgesetzter@example.com', 'geheim123');
+  });
+
+  it('does not submit an invalid login form', async () => {
+    const fixture = TestBed.createComponent(Login);
+
+    await fixture.componentInstance.submit();
+
+    expect(authService.login).not.toHaveBeenCalled();
   });
 
   it('shows a hint and logs out again when the account still needs a password set', async () => {
     authService.login.and.resolveTo({ mussPasswortSetzen: true });
     const fixture = TestBed.createComponent(Login);
     const component = fixture.componentInstance;
+    (component as unknown as { loginDaten: { set: (value: { email: string; passwort: string }) => void } }).loginDaten.set({
+      email: 'vorgesetzter@example.com',
+      passwort: 'langes-geheimnis',
+    });
 
     await component.submit();
 
@@ -53,6 +100,10 @@ describe('Login', () => {
     authService.login.and.rejectWith(new Error('invalid credentials'));
     const fixture = TestBed.createComponent(Login);
     const component = fixture.componentInstance;
+    (component as unknown as { loginDaten: { set: (value: { email: string; passwort: string }) => void } }).loginDaten.set({
+      email: 'vorgesetzter@example.com',
+      passwort: 'langes-geheimnis',
+    });
 
     await component.submit();
 
@@ -68,5 +119,21 @@ describe('Login', () => {
 
     expect(logo?.getAttribute('src')).toBe('brand/re-search-large.svg');
     expect(logo?.alt).toBe('RE-SEARCH – Transparente Entsorgungswege');
+  });
+
+  it('lets the user toggle password visibility', () => {
+    const fixture = TestBed.createComponent(Login);
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector('[data-testid="login-passwort"]') as HTMLInputElement;
+    const toggle = fixture.nativeElement.querySelector('[data-testid="passwort-sichtbarkeit"]') as HTMLButtonElement;
+
+    expect(input.type).toBe('password');
+
+    toggle.click();
+    fixture.detectChanges();
+
+    expect(input.type).toBe('text');
+    expect(toggle.getAttribute('aria-label')).toBe('Passwort verbergen');
   });
 });

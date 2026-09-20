@@ -5,8 +5,8 @@ import { catchError, throwError } from 'rxjs';
 import { AuthService } from './auth.service.js';
 import { istEigeneApi } from './eigene-api.js';
 
-// Zentrale Behandlung abgelaufener/ungültiger Tokens: 401/403 von der
-// eigenen API räumen die Session auf und schicken zurück zum Login, statt
+// Zentrale Behandlung abgelaufener/ungültiger Tokens: 401 von der
+// eigenen API räumt die Session auf und schickt zurück zum Login, statt
 // die UI in einem irreführenden "eingeloggt, aber alles schlägt fehl"
 // Zustand hängen zu lassen (Issue #28).
 export const unauthorizedInterceptor: HttpInterceptorFn = (req, next) => {
@@ -17,8 +17,9 @@ export const unauthorizedInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error: unknown) => {
       if (
         error instanceof HttpErrorResponse &&
-        (error.status === 401 || error.status === 403) &&
-        istEigeneApi(req.url)
+        error.status === 401 &&
+        istEigeneApi(req.url) &&
+        !istAuthCleanupRequest(req.url)
       ) {
         authService.logout();
         void router.navigateByUrl('/login');
@@ -27,3 +28,8 @@ export const unauthorizedInterceptor: HttpInterceptorFn = (req, next) => {
     }),
   );
 };
+
+function istAuthCleanupRequest(url: string): boolean {
+  const pathname = new URL(url, window.location.origin).pathname;
+  return pathname === '/api/v1/auth/logout' || pathname === '/api/v1/auth/login' || pathname === '/api/v1/auth/me';
+}

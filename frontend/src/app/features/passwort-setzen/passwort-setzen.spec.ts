@@ -44,6 +44,7 @@ describe('PasswortSetzen', () => {
     router = TestBed.inject(Router);
     spyOn(router, 'navigateByUrl').and.resolveTo(true);
     const fixture = TestBed.createComponent(PasswortSetzen);
+    fixture.componentInstance.neuesPasswort = 'neuesGeheimnis1';
 
     await fixture.componentInstance.submit();
     tick(2000);
@@ -55,6 +56,7 @@ describe('PasswortSetzen', () => {
     authService.passwortSetzen.and.rejectWith(new Error('invalid token'));
     await setup('abgelaufener-token');
     const fixture = TestBed.createComponent(PasswortSetzen);
+    fixture.componentInstance.neuesPasswort = 'neuesGeheimnis1';
 
     await fixture.componentInstance.submit();
 

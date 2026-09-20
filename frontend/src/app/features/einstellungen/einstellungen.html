@@ -2,24 +2,25 @@
   <mat-card class="karte">
     <h1>Einstellungen</h1>
 
-    <form (ngSubmit)="submit()">
+    <form (submit)="$event.preventDefault(); submit()">
       <mat-form-field appearance="outline">
         <mat-label>Vorname</mat-label>
-        <input matInput name="vorname" [(ngModel)]="vorname" required />
+        <input matInput [formField]="einstellungenForm.vorname" />
       </mat-form-field>
 
       <mat-form-field appearance="outline">
         <mat-label>Nachname</mat-label>
-        <input matInput name="nachname" [(ngModel)]="nachname" required />
+        <input matInput [formField]="einstellungenForm.nachname" />
       </mat-form-field>
 
       <mat-form-field appearance="outline">
         <mat-label>Standort</mat-label>
-        <mat-select name="standortId" [(ngModel)]="standortId" required>
+        <select matNativeControl [formField]="einstellungenForm.standortId">
+          <option value="">Bitte wählen</option>
           @for (standort of standorte.value(); track standort.id) {
-            <mat-option [value]="standort.id">{{ standort.name }}</mat-option>
+            <option [value]="standort.id">{{ standort.name }}</option>
           }
-        </mat-select>
+        </select>
       </mat-form-field>
 
       @if (gespeichert()) {
@@ -30,7 +31,9 @@
       }
 
       <div class="aktionen">
-        <button matButton="filled" type="submit" [disabled]="wirdGeladen()">Speichern</button>
+        <button matButton="filled" type="submit" [disabled]="!einstellungenForm().valid() || wirdGeladen()">
+          Speichern
+        </button>
       </div>
     </form>
   </mat-card>

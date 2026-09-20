@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormField, form, maxLength, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -9,7 +9,7 @@ import { AuthService } from '../../core/auth.service.js';
 
 @Component({
   selector: 'app-login',
-  imports: [FormsModule, MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule, RouterLink],
+  imports: [FormField, MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule, RouterLink],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
@@ -17,16 +17,27 @@ export class Login {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
-  email = '';
-  passwort = '';
+  protected readonly loginDaten = signal({ email: '', passwort: '' });
+  protected readonly loginForm = form(this.loginDaten, (pfad) => {
+    required(pfad.email);
+    required(pfad.passwort);
+    maxLength(pfad.passwort, 128);
+  });
   protected readonly fehler = signal<string | null>(null);
   protected readonly wirdGeladen = signal(false);
+  protected readonly passwortSichtbar = signal(false);
+
+  protected passwortSichtbarkeitUmschalten(): void {
+    this.passwortSichtbar.update((sichtbar) => !sichtbar);
+  }
 
   async submit(): Promise<void> {
+    if (!this.loginForm().valid()) return;
     this.fehler.set(null);
     this.wirdGeladen.set(true);
     try {
-      const { mussPasswortSetzen } = await this.authService.login(this.email, this.passwort);
+      const { email, passwort } = this.loginDaten();
+      const { mussPasswortSetzen } = await this.authService.login(email, passwort);
       if (mussPasswortSetzen) {
         this.fehler.set(
           'Für diesen Account muss zuerst ein Passwort gesetzt werden. Bitte den Link aus der Account-Anlage verwenden.',

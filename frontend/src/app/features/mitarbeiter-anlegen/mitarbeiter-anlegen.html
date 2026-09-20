@@ -9,29 +9,30 @@
         <code>{{ ergebnis.passwortSetzenLink }}</code>
       </p>
     } @else {
-      <form (ngSubmit)="submit()">
+      <form (submit)="$event.preventDefault(); submit()">
         <mat-form-field appearance="outline">
           <mat-label>Vorname</mat-label>
-          <input matInput name="vorname" [(ngModel)]="vorname" required />
+          <input matInput [formField]="mitarbeiterForm.vorname" />
         </mat-form-field>
 
         <mat-form-field appearance="outline">
           <mat-label>Nachname</mat-label>
-          <input matInput name="nachname" [(ngModel)]="nachname" required />
+          <input matInput [formField]="mitarbeiterForm.nachname" />
         </mat-form-field>
 
         <mat-form-field appearance="outline">
           <mat-label>E-Mail</mat-label>
-          <input matInput type="email" name="email" [(ngModel)]="email" required />
+          <input matInput type="email" [formField]="mitarbeiterForm.email" />
         </mat-form-field>
 
         <mat-form-field appearance="outline">
           <mat-label>Standort</mat-label>
-          <mat-select name="standortId" [(ngModel)]="standortId" required>
+          <select matNativeControl [formField]="mitarbeiterForm.standortId">
+            <option value="">Bitte wählen</option>
             @for (standort of standorte.value(); track standort.id) {
-              <mat-option [value]="standort.id">{{ standort.name }}</mat-option>
+              <option [value]="standort.id">{{ standort.name }}</option>
             }
-          </mat-select>
+          </select>
         </mat-form-field>
 
         @if (fehler()) {
@@ -40,7 +41,9 @@
 
         <div class="aktionen">
           <a routerLink="/">Abbrechen</a>
-          <button matButton="filled" type="submit" [disabled]="wirdGeladen()">Anlegen</button>
+          <button matButton="filled" type="submit" [disabled]="!mitarbeiterForm().valid() || wirdGeladen()">
+            Anlegen
+          </button>
         </div>
       </form>
     }

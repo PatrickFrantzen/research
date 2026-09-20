@@ -40,6 +40,13 @@ mat-form-field {
   width: 100%;
 }
 
+.passwort-sichtbarkeit svg {
+  display: block;
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
 .fehler {
   color: var(--mat-sys-error);
   margin: 0;

@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormField, form, maxLength, minLength, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -10,7 +10,7 @@ import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
 
 @Component({
   selector: 'app-passwort-setzen',
-  imports: [FormsModule, MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule, RouterLink],
+  imports: [FormField, MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule, RouterLink],
   templateUrl: './passwort-setzen.html',
   styleUrl: './passwort-setzen.scss',
 })
@@ -21,10 +21,23 @@ export class PasswortSetzen {
 
   private readonly token = this.route.snapshot.queryParamMap.get('token') ?? '';
 
-  neuesPasswort = '';
+  protected readonly passwortDaten = signal({ neuesPasswort: '' });
+  protected readonly passwortForm = form(this.passwortDaten, (pfad) => {
+    required(pfad.neuesPasswort);
+    minLength(pfad.neuesPasswort, 12);
+    maxLength(pfad.neuesPasswort, 128);
+  });
   protected readonly fehler = signal<string | null>(null);
   protected readonly erfolgreich = signal(false);
   protected readonly wirdGeladen = signal(false);
+
+  get neuesPasswort(): string {
+    return this.passwortDaten().neuesPasswort;
+  }
+
+  set neuesPasswort(neuesPasswort: string) {
+    this.passwortDaten.update((daten) => ({ ...daten, neuesPasswort }));
+  }
 
   constructor() {
     // Reset-Token nicht in URL/Browser-Historie/Referrer/Screenshots stehen
@@ -35,6 +48,7 @@ export class PasswortSetzen {
   }
 
   async submit(): Promise<void> {
+    if (!this.passwortForm().valid()) return;
     this.fehler.set(null);
     this.wirdGeladen.set(true);
     try {

@@ -8,15 +8,17 @@
         Setzen eines neuen Passworts versendet.
       </p>
     } @else {
-      <form (ngSubmit)="submit()">
+      <form (submit)="$event.preventDefault(); submit()">
         <mat-form-field appearance="outline">
           <mat-label>E-Mail</mat-label>
-          <input matInput type="email" name="email" [(ngModel)]="email" required autocomplete="username" />
+          <input matInput type="email" [formField]="passwortVergessenForm.email" autocomplete="username" />
         </mat-form-field>
 
         <div class="aktionen">
           <a routerLink="/login">Zurück zum Login</a>
-          <button matButton="filled" type="submit" [disabled]="wirdGeladen()">Link anfordern</button>
+          <button matButton="filled" type="submit" [disabled]="!passwortVergessenForm().valid() || wirdGeladen()">
+            Link anfordern
+          </button>
         </div>
       </form>
     }

@@ -1,6 +1,6 @@
-import { HttpClient } from '@angular/common/http';
-import { Component, inject, resource, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, inject, signal } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
+import { FormField, email as emailValidator, form, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -9,21 +9,13 @@ import { MatSelectModule } from '@angular/material/select';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
-
-interface Standort {
-  id: string;
-  name: string;
-}
-
-interface NeuerMitarbeiter {
-  email: string;
-  passwortSetzenLink: string;
-}
+import { NeuerMitarbeiter, NutzerApi } from '../../core/nutzer-api.js';
+import { StandortApi } from '../../core/standort-api.js';
 
 @Component({
   selector: 'app-mitarbeiter-anlegen',
   imports: [
-    FormsModule,
+    FormField,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
@@ -35,27 +27,65 @@ interface NeuerMitarbeiter {
   styleUrl: './mitarbeiter-anlegen.scss',
 })
 export class MitarbeiterAnlegen {
-  private readonly http = inject(HttpClient);
+  private readonly nutzerApi = inject(NutzerApi);
+  private readonly standortApi = inject(StandortApi);
 
-  protected readonly standorte = resource({
-    loader: () => firstValueFrom(this.http.get<Standort[]>('/api/v1/standorte')),
+  protected readonly standorte = rxResource({
+    stream: () => this.standortApi.liste(),
   });
 
-  vorname = '';
-  nachname = '';
-  email = '';
-  standortId = '';
+  protected readonly mitarbeiterDaten = signal({ vorname: '', nachname: '', email: '', standortId: '' });
+  protected readonly mitarbeiterForm = form(this.mitarbeiterDaten, (pfad) => {
+    required(pfad.vorname);
+    required(pfad.nachname);
+    required(pfad.email);
+    emailValidator(pfad.email);
+    required(pfad.standortId);
+  });
 
   protected readonly angelegt = signal<NeuerMitarbeiter | null>(null);
   protected readonly fehler = signal<string | null>(null);
   protected readonly wirdGeladen = signal(false);
 
+  get vorname(): string {
+    return this.mitarbeiterDaten().vorname;
+  }
+
+  set vorname(vorname: string) {
+    this.mitarbeiterDaten.update((daten) => ({ ...daten, vorname }));
+  }
+
+  get nachname(): string {
+    return this.mitarbeiterDaten().nachname;
+  }
+
+  set nachname(nachname: string) {
+    this.mitarbeiterDaten.update((daten) => ({ ...daten, nachname }));
+  }
+
+  get email(): string {
+    return this.mitarbeiterDaten().email;
+  }
+
+  set email(email: string) {
+    this.mitarbeiterDaten.update((daten) => ({ ...daten, email }));
+  }
+
+  get standortId(): string {
+    return this.mitarbeiterDaten().standortId;
+  }
+
+  set standortId(standortId: string) {
+    this.mitarbeiterDaten.update((daten) => ({ ...daten, standortId }));
+  }
+
   async submit(): Promise<void> {
+    if (!this.mitarbeiterForm().valid()) return;
     this.fehler.set(null);
     this.wirdGeladen.set(true);
     try {
       const result = await firstValueFrom(
-        this.http.post<NeuerMitarbeiter>('/api/v1/nutzer', {
+        this.nutzerApi.legeMitarbeiterAn({
           vorname: this.vorname,
           nachname: this.nachname,
           email: this.email,
@@ -63,10 +93,7 @@ export class MitarbeiterAnlegen {
         }),
       );
       this.angelegt.set(result);
-      this.vorname = '';
-      this.nachname = '';
-      this.email = '';
-      this.standortId = '';
+      this.mitarbeiterDaten.set({ vorname: '', nachname: '', email: '', standortId: '' });
     } catch (error) {
       this.fehler.set(extrahiereFehlermeldung(error, 'Account konnte nicht angelegt werden.'));
     } finally {

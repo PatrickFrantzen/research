@@ -22,10 +22,12 @@ export class WareneintragService {
     private readonly objectStorage: ObjectStorageService,
   ) {}
 
-  async findAll(filter: { avvCodeId?: string; suche?: string }) {
-    const { suche, avvCodeId } = filter;
-    const treffer = suche ? await this.sucheMitVolltext({ avvCodeId, suche }) : await this.listeAlle({ avvCodeId });
-    return Promise.all(
+  async findAll(filter: { avvCodeId?: string; suche?: string; seite?: number; proSeite?: number }) {
+    const { suche, avvCodeId, seite = 0, proSeite = 20 } = filter;
+    const { treffer, gesamt } = suche
+      ? await this.sucheMitVolltext({ avvCodeId, suche, seite, proSeite })
+      : await this.listeAlle({ avvCodeId, seite, proSeite });
+    const daten = await Promise.all(
       treffer.map(async (wareneintrag) => ({
         ...wareneintrag,
         // fotoUrl ist in der DB nur der Object-Storage-Key (ADR-0003), keine
@@ -35,26 +37,35 @@ export class WareneintragService {
         fotoUrl: await this.objectStorage.getSignedUrl(wareneintrag.fotoUrl),
       })),
     );
+    return { daten, gesamt };
   }
 
-  private listeAlle(filter: { avvCodeId?: string }) {
-    return this.prisma.wareneintrag.findMany({
-      where: filter.avvCodeId ? { avvCodeId: filter.avvCodeId } : undefined,
-      include: { avvCode: { select: { code: true } } },
-      orderBy: { erstelltAm: 'desc' },
-    });
+  private async listeAlle(filter: { avvCodeId?: string; seite: number; proSeite: number }) {
+    const where = filter.avvCodeId ? { avvCodeId: filter.avvCodeId } : undefined;
+    const [treffer, gesamt] = await Promise.all([
+      this.prisma.wareneintrag.findMany({
+        where,
+        include: { avvCode: { select: { code: true } } },
+        orderBy: [{ erstelltAm: 'desc' }, { id: 'desc' }],
+        skip: filter.seite * filter.proSeite,
+        take: filter.proSeite,
+      }),
+      this.prisma.wareneintrag.count({ where }),
+    ]);
+    return { treffer, gesamt };
   }
 
   // Volltextsuche über die generierte tsvector-Spalte (GIN-indiziert), kein
   // LIKE-Scan, siehe Issue #4.
-  private sucheMitVolltext(filter: { avvCodeId?: string; suche: string }) {
+  private async sucheMitVolltext(filter: { avvCodeId?: string; suche: string; seite: number; proSeite: number }) {
     const avvFilter = filter.avvCodeId ? Prisma.sql`AND avv_code_id = ${filter.avvCodeId}` : Prisma.empty;
     const praefixSuche = (filter.suche.match(/[\p{L}\p{N}]+/gu) ?? []).map((wort) => `${wort}:*`).join(' & ');
-    return this.prisma.$queryRaw<{ id: string; fotoUrl: string }[]>`
+    const treffer = await this.prisma.$queryRaw<{ id: string; fotoUrl: string; gesamt: bigint }[]>`
       SELECT
         wareneintraege.id, foto_url AS "fotoUrl", avv_code_id AS "avvCodeId", freitext,
         erfasst_von_id AS "erfasstVonId", standort_id AS "standortId", erstellt_am AS "erstelltAm",
-        json_build_object('code', avv_codes.code) AS "avvCode"
+        json_build_object('code', avv_codes.code) AS "avvCode",
+        COUNT(*) OVER () AS "gesamt"
       FROM wareneintraege
       JOIN avv_codes ON avv_codes.id = wareneintraege.avv_code_id
       WHERE freitext_tsv @@ (
@@ -62,8 +73,13 @@ export class WareneintragService {
         || to_tsquery('german', ${praefixSuche})
       )
       ${avvFilter}
-      ORDER BY erstellt_am DESC
+      ORDER BY erstellt_am DESC, id DESC
+      LIMIT ${filter.proSeite} OFFSET ${filter.seite * filter.proSeite}
     `;
+    return {
+      treffer: treffer.map(({ gesamt: _gesamt, ...wareneintrag }) => wareneintrag),
+      gesamt: Number(treffer[0]?.gesamt ?? 0),
+    };
   }
 
   async create(erfasstVonId: string, foto: Express.Multer.File, dto: CreateWareneintragDto) {

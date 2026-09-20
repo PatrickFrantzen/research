@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -27,6 +28,8 @@ import { UpdateWareneintragDto } from './dto/update-wareneintrag.dto.js';
 import { WareneintragService } from './wareneintrag.service.js';
 
 const FOTO_MAX_GROESSE_BYTES = 10 * 1024 * 1024; // 10 MB
+const STANDARD_PRO_SEITE = 20;
+const MAX_PRO_SEITE = 100;
 
 // Enges Whitelisting statt `/^image\//`: verhindert riskante Subtypen wie
 // image/svg+xml (kann Script enthalten) und erzwingt echte
@@ -56,8 +59,29 @@ export class WareneintragController {
 
   @Get()
   @Roles(Rolle.VORGESETZTER)
-  async findAll(@Query('avvCodeId') avvCodeId?: string, @Query('suche') suche?: string) {
-    return this.wareneintragService.findAll({ avvCodeId, suche });
+  async findAll(
+    @Query('avvCodeId') avvCodeId?: string,
+    @Query('suche') suche?: string,
+    @Query('seite') seite?: string,
+    @Query('proSeite') proSeite?: string,
+  ) {
+    const seitenNummer = this.parseGanzeZahl(seite, 0, 0, Number.MAX_SAFE_INTEGER, 'seite');
+    const eintraegeProSeite = this.parseGanzeZahl(proSeite, STANDARD_PRO_SEITE, 1, MAX_PRO_SEITE, 'proSeite');
+    return this.wareneintragService.findAll({
+      avvCodeId,
+      suche,
+      seite: seitenNummer,
+      proSeite: eintraegeProSeite,
+    });
+  }
+
+  private parseGanzeZahl(wert: string | undefined, standardwert: number, minimum: number, maximum: number, name: string) {
+    if (wert === undefined) return standardwert;
+    const zahl = Number(wert);
+    if (!Number.isInteger(zahl) || zahl < minimum || zahl > maximum) {
+      throw new BadRequestException(`${name} muss eine ganze Zahl zwischen ${minimum} und ${maximum} sein.`);
+    }
+    return zahl;
   }
 
   // Erfassen ist die Kernaufgabe des Mitarbeiters, aber auch der

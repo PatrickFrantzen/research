@@ -5,22 +5,44 @@
     <mat-card class="login-karte">
       <h1 id="login-ueberschrift">Anmelden</h1>
 
-      <form (ngSubmit)="submit()">
+      <form (submit)="$event.preventDefault(); submit()">
         <mat-form-field appearance="outline">
           <mat-label>E-Mail</mat-label>
-          <input matInput type="email" name="email" [(ngModel)]="email" required autocomplete="username" />
+          <input matInput type="email" [formField]="loginForm.email" autocomplete="username" />
         </mat-form-field>
 
         <mat-form-field appearance="outline">
           <mat-label>Passwort</mat-label>
           <input
             matInput
-            type="password"
-            name="passwort"
-            [(ngModel)]="passwort"
-            required
+            data-testid="login-passwort"
+            [type]="passwortSichtbar() ? 'text' : 'password'"
+            [formField]="loginForm.passwort"
             autocomplete="current-password"
           />
+          <button
+            matIconButton
+            matSuffix
+            type="button"
+            class="passwort-sichtbarkeit"
+            data-testid="passwort-sichtbarkeit"
+            [attr.aria-label]="passwortSichtbar() ? 'Passwort verbergen' : 'Passwort anzeigen'"
+            (click)="passwortSichtbarkeitUmschalten()"
+          >
+            @if (passwortSichtbar()) {
+              <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
+                <path
+                  d="M3.3 2 2 3.3l3 3C3.8 7.2 2.8 8.4 2 10c2.1 4.2 5.4 6.3 10 6.3 1.6 0 3-.3 4.2-.8l4.5 4.5 1.3-1.3L3.3 2Zm8.5 5.1 3.1 3.1a3.1 3.1 0 0 1-3.9 3.9L7.9 11a3.1 3.1 0 0 1 3.9-3.9ZM12 5.7c4.6 0 7.9 2.1 10 6.3-.6 1.2-1.4 2.2-2.3 3.1l-2.2-2.2a5.5 5.5 0 0 0-6.4-6.4L9.4 4.8c.8-.1 1.7-.2 2.6-.2Z"
+                />
+              </svg>
+            } @else {
+              <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
+                <path
+                  d="M12 5.7c4.6 0 7.9 2.1 10 6.3-2.1 4.2-5.4 6.3-10 6.3S4.1 16.2 2 12c2.1-4.2 5.4-6.3 10-6.3Zm0 2C8.6 7.7 6 9.1 4.3 12c1.7 2.9 4.3 4.3 7.7 4.3s6-1.4 7.7-4.3C18 9.1 15.4 7.7 12 7.7Zm0 1.6A2.7 2.7 0 1 1 12 14.7 2.7 2.7 0 0 1 12 9.3Z"
+                />
+              </svg>
+            }
+          </button>
         </mat-form-field>
 
         @if (fehler()) {
@@ -29,7 +51,7 @@
 
         <div class="aktionen">
           <a routerLink="/passwort-vergessen">Passwort vergessen</a>
-          <button matButton="filled" type="submit" [disabled]="wirdGeladen()">Login</button>
+          <button matButton="filled" type="submit" [disabled]="!loginForm().valid() || wirdGeladen()">Login</button>
         </div>
       </form>
     </mat-card>

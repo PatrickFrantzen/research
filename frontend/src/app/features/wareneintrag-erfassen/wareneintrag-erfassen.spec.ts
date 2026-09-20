@@ -1,12 +1,12 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { WareneintragErfassen } from './wareneintrag-erfassen.js';
 
 interface TestableWareneintragErfassen {
   foto: File | null;
-  ausgewaehlterAvvCode: { id: string; code: string; bezeichnung: string } | null;
+  ausgewaehlterAvvCode: { id: string; code: string; bezeichnung: string; gefaehrlich?: boolean } | null;
   kannAbsenden: boolean;
   angelegt: () => { id: string } | null;
   fehler: () => string | null;
@@ -105,4 +105,30 @@ describe('WareneintragErfassen', () => {
     expect(fixture.componentInstance.freitext).toBe('');
     expect(component.kannAbsenden).toBe(false);
   });
+
+  it('debounces AVV search input and selects AVV codes by id', fakeAsync(() => {
+    const fixture = createComponent();
+    const component = asTestable(fixture.componentInstance);
+
+    fixture.componentInstance.onAvvSucheEingabe('17');
+    fixture.componentInstance.onAvvSucheEingabe('17 01');
+    tick(299);
+    httpMock.expectNone((req) => req.url === '/api/v1/avv-codes' && req.params.get('suche') === '17 01');
+    tick(1);
+    fixture.detectChanges();
+    httpMock
+      .expectOne((req) => req.url === '/api/v1/avv-codes' && req.params.get('suche') === '17 01')
+      .flush([{ id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton', gefaehrlich: false }]);
+    tick();
+    fixture.detectChanges();
+
+    fixture.componentInstance.onAvvCodeAusgewaehlt({ option: { value: 'avv-1' } } as never);
+
+    expect(component.ausgewaehlterAvvCode).toEqual({
+      id: 'avv-1',
+      code: '17 01 01',
+      bezeichnung: 'Beton',
+      gefaehrlich: false,
+    });
+  }));
 });

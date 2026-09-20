@@ -6,35 +6,99 @@
       <mat-label>AVV-Code</mat-label>
       <input
         matInput
-        name="avvSuche"
+        #avvSuche
+        data-testid="avv-suche"
         [matAutocomplete]="avvAuto"
-        [(ngModel)]="avvSucheAnzeige"
-        (ngModelChange)="onAvvSucheEingabe($event)"
+        [formField]="filterForm.avvSucheAnzeige"
+        (input)="onAvvSucheEingabe(avvSuche.value)"
         (focus)="onAvvSucheFokus()"
       />
       <mat-autocomplete #avvAuto="matAutocomplete" (optionSelected)="onAvvCodeAusgewaehlt($event)">
         @for (avvCode of avvTreffer.value(); track avvCode.id) {
-          <mat-option [value]="avvCode">{{ avvCode.code }} – {{ avvCode.bezeichnung }}</mat-option>
+          <mat-option [value]="avvCode.id">{{ avvCode.code }} – {{ avvCode.bezeichnung }}</mat-option>
         }
       </mat-autocomplete>
     </mat-form-field>
 
     <mat-form-field appearance="outline">
       <mat-label>Freitext durchsuchen</mat-label>
-      <input matInput name="suche" (ngModelChange)="onSucheEingabe($event)" ngModel />
+      <input matInput #sucheInput [formField]="filterForm.suche" (input)="onSucheEingabe(sucheInput.value)" />
     </mat-form-field>
   </div>
 
   <div class="karten">
-    @for (wareneintrag of wareneintraege.value(); track wareneintrag.id) {
+    @for (wareneintrag of wareneintraege.value()?.daten; track wareneintrag.id) {
       <mat-card class="karte">
         <img [src]="wareneintrag.fotoUrl" alt="Foto des Wareneintrags" />
         <p>{{ wareneintrag.freitext }}</p>
         <p>AVV-Code: {{ wareneintrag.avvCode.code }}</p>
         <p class="datum">{{ wareneintrag.erstelltAm | date: 'dd.MM.yyyy, HH:mm' }}</p>
+        <div class="aktionen">
+          <button mat-button type="button" data-testid="wareneintrag-bearbeiten" (click)="bearbeitungOeffnen(wareneintrag)">
+            Bearbeiten
+          </button>
+          <button
+            mat-button
+            type="button"
+            data-testid="wareneintrag-loeschen"
+            [disabled]="loeschenLaeuft"
+            (click)="loeschen(wareneintrag)"
+          >
+            Löschen
+          </button>
+        </div>
       </mat-card>
     } @empty {
       <p>Keine Wareneinträge gefunden.</p>
     }
   </div>
+
+  @if (bearbeitung; as formular) {
+    <form class="bearbeiten">
+      <h2>Wareneintrag bearbeiten</h2>
+
+      <label>
+        AVV-Code
+        <select [formField]="bearbeitenForm.avvCodeId">
+          <option value="">Bitte wählen</option>
+          @for (avvCode of avvTreffer.value(); track avvCode.id) {
+            <option [value]="avvCode.id">{{ avvCode.code }} – {{ avvCode.bezeichnung }}</option>
+          }
+        </select>
+      </label>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Freitext</mat-label>
+        <textarea matInput [formField]="bearbeitenForm.freitext"></textarea>
+      </mat-form-field>
+
+      <label>
+        Foto ersetzen
+        <input type="file" name="bearbeitenFoto" accept="image/jpeg,image/png,image/webp" (change)="fotoErsetzen($event)" />
+      </label>
+
+      <div class="aktionen">
+        <button
+          mat-raised-button
+          color="primary"
+          type="button"
+          data-testid="wareneintrag-speichern"
+          [disabled]="!bearbeitenForm().valid() || speichernLaeuft"
+          (click)="speichern()"
+        >
+          Speichern
+        </button>
+        <button mat-button type="button" (click)="bearbeitungAbbrechen()">Abbrechen</button>
+      </div>
+    </form>
+  }
+
+  <mat-paginator
+    [length]="wareneintraege.value()?.gesamt ?? 0"
+    [pageIndex]="seite()"
+    [pageSize]="proSeite()"
+    [pageSizeOptions]="[10, 20, 50]"
+    aria-label="Seitennavigation für Wareneinträge"
+    (page)="onSeitenwechsel($event)"
+  />
 </div>

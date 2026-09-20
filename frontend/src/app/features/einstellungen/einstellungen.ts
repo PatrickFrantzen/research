@@ -1,6 +1,6 @@
-import { HttpClient } from '@angular/common/http';
-import { Component, effect, inject, resource, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, effect, inject, signal } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
+import { FormField, form, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -8,39 +8,33 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { firstValueFrom } from 'rxjs';
 import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
-
-interface Standort {
-  id: string;
-  name: string;
-}
-
-interface EigeneDaten {
-  vorname: string;
-  nachname: string;
-  email: string;
-  standortId: string;
-}
+import { NutzerApi } from '../../core/nutzer-api.js';
+import { StandortApi } from '../../core/standort-api.js';
 
 @Component({
   selector: 'app-einstellungen',
-  imports: [FormsModule, MatButtonModule, MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule],
+  imports: [FormField, MatButtonModule, MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   templateUrl: './einstellungen.html',
   styleUrl: './einstellungen.scss',
 })
 export class Einstellungen {
-  private readonly http = inject(HttpClient);
+  private readonly nutzerApi = inject(NutzerApi);
+  private readonly standortApi = inject(StandortApi);
 
-  protected readonly standorte = resource({
-    loader: () => firstValueFrom(this.http.get<Standort[]>('/api/v1/standorte')),
+  protected readonly standorte = rxResource({
+    stream: () => this.standortApi.liste(),
   });
 
-  protected readonly eigeneDaten = resource({
-    loader: () => firstValueFrom(this.http.get<EigeneDaten>('/api/v1/nutzer/me')),
+  protected readonly eigeneDaten = rxResource({
+    stream: () => this.nutzerApi.eigeneDaten(),
   });
 
-  vorname = '';
-  nachname = '';
-  standortId = '';
+  protected readonly einstellungenDaten = signal({ vorname: '', nachname: '', standortId: '' });
+  protected readonly einstellungenForm = form(this.einstellungenDaten, (pfad) => {
+    required(pfad.vorname);
+    required(pfad.nachname);
+    required(pfad.standortId);
+  });
 
   protected readonly gespeichert = signal(false);
   protected readonly fehler = signal<string | null>(null);
@@ -50,20 +44,47 @@ export class Einstellungen {
     effect(() => {
       const daten = this.eigeneDaten.value();
       if (daten) {
-        this.vorname = daten.vorname;
-        this.nachname = daten.nachname;
-        this.standortId = daten.standortId;
+        this.einstellungenDaten.set({
+          vorname: daten.vorname,
+          nachname: daten.nachname,
+          standortId: daten.standortId,
+        });
       }
     });
   }
 
+  get vorname(): string {
+    return this.einstellungenDaten().vorname;
+  }
+
+  set vorname(vorname: string) {
+    this.einstellungenDaten.update((daten) => ({ ...daten, vorname }));
+  }
+
+  get nachname(): string {
+    return this.einstellungenDaten().nachname;
+  }
+
+  set nachname(nachname: string) {
+    this.einstellungenDaten.update((daten) => ({ ...daten, nachname }));
+  }
+
+  get standortId(): string {
+    return this.einstellungenDaten().standortId;
+  }
+
+  set standortId(standortId: string) {
+    this.einstellungenDaten.update((daten) => ({ ...daten, standortId }));
+  }
+
   async submit(): Promise<void> {
+    if (!this.einstellungenForm().valid()) return;
     this.fehler.set(null);
     this.gespeichert.set(false);
     this.wirdGeladen.set(true);
     try {
       await firstValueFrom(
-        this.http.patch<EigeneDaten>('/api/v1/nutzer/me', {
+        this.nutzerApi.aktualisiereEigeneDaten({
           vorname: this.vorname,
           nachname: this.nachname,
           standortId: this.standortId,

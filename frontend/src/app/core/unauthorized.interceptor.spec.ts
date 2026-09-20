@@ -33,11 +33,21 @@ describe('unauthorizedInterceptor', () => {
     });
   });
 
-  it('logs out and redirects to /login on 403 from the own API', (done) => {
+  it('keeps the session on 403 from the own API so the feature can show the permission error', (done) => {
     run(403).subscribe({
       error: () => {
-        expect(authService.logout).toHaveBeenCalled();
-        expect(router.navigateByUrl).toHaveBeenCalledWith('/login');
+        expect(authService.logout).not.toHaveBeenCalled();
+        expect(router.navigateByUrl).not.toHaveBeenCalled();
+        done();
+      },
+    });
+  });
+
+  it('does not trigger another logout when the logout request itself returns 401', (done) => {
+    run(401, '/api/v1/auth/logout').subscribe({
+      error: () => {
+        expect(authService.logout).not.toHaveBeenCalled();
+        expect(router.navigateByUrl).not.toHaveBeenCalled();
         done();
       },
     });
