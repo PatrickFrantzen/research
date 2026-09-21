@@ -18,7 +18,7 @@ describe('WareneintragService', () => {
 
       expect(prisma.wareneintrag.findMany).toHaveBeenCalledWith({
         where: undefined,
-        include: { avvCode: { select: { code: true } } },
+        include: { avvCode: { select: { id: true, code: true, bezeichnung: true } } },
         orderBy: [{ erstelltAm: 'desc' }, { id: 'desc' }],
         skip: 20,
         take: 20,
@@ -38,14 +38,14 @@ describe('WareneintragService', () => {
 
       expect(prisma.wareneintrag.findMany).toHaveBeenCalledWith({
         where: undefined,
-        include: { avvCode: { select: { code: true } } },
+        include: { avvCode: { select: { id: true, code: true, bezeichnung: true } } },
         orderBy: [{ erstelltAm: 'desc' }, { id: 'desc' }],
         skip: 0,
         take: 20,
       });
     });
 
-    it('returns the assigned AVV-Code for every listed Wareneintrag', async () => {
+    it('returns the assigned AVV-Code (including id, for pre-selecting it when editing) for every listed Wareneintrag', async () => {
       const prisma = {
         wareneintrag: {
           findMany: vi.fn().mockImplementation((args: { include?: unknown }) =>
@@ -53,7 +53,7 @@ describe('WareneintragService', () => {
               {
                 id: 'wareneintrag-1',
                 fotoUrl: 'wareneintraege/foto-1',
-                ...(args.include ? { avvCode: { code: '17 01 01' } } : {}),
+                ...(args.include ? { avvCode: { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' } } : {}),
               },
             ]),
           ),
@@ -65,7 +65,7 @@ describe('WareneintragService', () => {
 
       const ergebnis = await service.findAll({});
 
-      expect(ergebnis.daten[0]).toMatchObject({ avvCode: { code: '17 01 01' } });
+      expect(ergebnis.daten[0]).toMatchObject({ avvCode: { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' } });
     });
 
     it('replaces the stored object-storage key with a time-limited, retrievable URL – Issue #45', async () => {
@@ -97,7 +97,7 @@ describe('WareneintragService', () => {
 
       expect(prisma.wareneintrag.findMany).toHaveBeenCalledWith({
         where: { avvCodeId: 'avv-1' },
-        include: { avvCode: { select: { code: true } } },
+        include: { avvCode: { select: { id: true, code: true, bezeichnung: true } } },
         orderBy: [{ erstelltAm: 'desc' }, { id: 'desc' }],
         skip: 0,
         take: 20,
@@ -145,17 +145,18 @@ describe('WareneintragService', () => {
       });
     });
 
-    it('returns the assigned AVV-Code for filtered search results too', async () => {
+    it('returns the assigned AVV-Code (including id, for pre-selecting it when editing) for filtered search results too', async () => {
       const prisma = {
         $queryRaw: vi.fn().mockImplementation((strings: TemplateStringsArray) => {
           const sql = strings.join('?');
-          const selectsAvvCode = sql.includes('JOIN avv_codes') && sql.includes('json_build_object');
+          const selectsAvvCode =
+            sql.includes('JOIN avv_codes') && sql.includes('json_build_object') && sql.includes("'id', avv_codes.id");
           return Promise.resolve([
             {
               id: 'wareneintrag-1',
               fotoUrl: 'wareneintraege/foto-1',
               gesamt: 1n,
-              ...(selectsAvvCode ? { avvCode: { code: '17 01 01' } } : {}),
+              ...(selectsAvvCode ? { avvCode: { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' } } : {}),
             },
           ]);
         }),
@@ -165,7 +166,7 @@ describe('WareneintragService', () => {
 
       const ergebnis = await service.findAll({ suche: 'tes' });
 
-      expect(ergebnis.daten[0]).toMatchObject({ avvCode: { code: '17 01 01' } });
+      expect(ergebnis.daten[0]).toMatchObject({ avvCode: { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' } });
     });
 
     it('replaces the stored object-storage key with a signed URL for full-text search results too – Issue #45', async () => {

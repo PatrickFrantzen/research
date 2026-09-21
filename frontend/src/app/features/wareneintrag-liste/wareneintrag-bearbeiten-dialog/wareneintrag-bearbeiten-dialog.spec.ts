@@ -11,7 +11,7 @@ const WARENEINTRAG: Wareneintrag = {
   fotoUrl: '/foto.jpg',
   freitext: 'alter Text',
   erstelltAm: '2026-09-19T20:08:00',
-  avvCode: { code: '17 01 01' },
+  avvCode: { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' },
 };
 
 interface TestableDialog {
@@ -57,10 +57,24 @@ describe('WareneintragBearbeitenDialog', () => {
     expect(fixture.componentInstance.freitext).toBe('alter Text');
   });
 
-  it('cannot be saved before an AVV-Code has been selected', () => {
+  it('prefills the AVV-Code selection from the given Wareneintrag and allows saving without reselecting it', () => {
     const fixture = createComponent();
     const component = asTestable(fixture.componentInstance);
-    expect(component.kannSpeichern).toBe(false);
+
+    expect(fixture.nativeElement.querySelector('[data-testid="bearbeiten-avv-suche"]').value).toBe(
+      '17 01 01 – Beton',
+    );
+    expect(component.kannSpeichern).toBe(true);
+  });
+
+  it('submits the prefilled avvCodeId when the user saves without changing the AVV-Code', () => {
+    const fixture = createComponent();
+
+    void fixture.componentInstance.speichern();
+
+    const request = httpMock.expectOne('/api/v1/wareneintraege/wareneintrag-1');
+    expect(request.request.body.get('avvCodeId')).toBe('avv-1');
+    request.flush({});
   });
 
   it('closes without a request when cancelled', () => {
