@@ -1,16 +1,19 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormField, form, required } from '@angular/forms/signals';
+import { FormField, form } from '@angular/forms/signals';
 import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { debounceTime, distinctUntilChanged, firstValueFrom, Subject } from 'rxjs';
 import { AvvCodeApi } from '../../core/avv-code-api.js';
+import { ConfirmDialog } from '../../core/confirm-dialog/confirm-dialog.js';
 import { Wareneintrag, WareneintragApi } from '../../core/wareneintrag-api.js';
+import { WareneintragBearbeitenDialog } from './wareneintrag-bearbeiten-dialog/wareneintrag-bearbeiten-dialog.js';
 
 // Verzögerung, bevor Filteränderungen die Liste neu laden – analog zur
 // AVV-Suche in wareneintrag-erfassen.
@@ -34,6 +37,7 @@ const FILTER_DEBOUNCE_MS = 300;
 export class WareneintragListe {
   private readonly avvCodeApi = inject(AvvCodeApi);
   private readonly wareneintragApi = inject(WareneintragApi);
+  private readonly dialog = inject(MatDialog);
 
   readonly avvCodeId = signal<string | null>(null);
   readonly suche = signal('');
@@ -42,14 +46,6 @@ export class WareneintragListe {
 
   protected readonly filterDaten = signal({ avvSucheAnzeige: '', suche: '' });
   protected readonly filterForm = form(this.filterDaten);
-  private readonly leereBearbeitung = { id: '', avvCodeId: '', freitext: '', foto: null as File | null };
-  protected readonly bearbeitungDaten = signal(this.leereBearbeitung);
-  protected readonly bearbeitenForm = form(this.bearbeitungDaten, (pfad) => {
-    required(pfad.avvCodeId);
-    required(pfad.freitext);
-  });
-  private readonly bearbeitungAktiv = signal(false);
-  protected speichernLaeuft = false;
   protected loeschenLaeuft = false;
   private readonly avvSucheEingabe = new Subject<string>();
   private readonly avvSuchbegriff = signal('');
@@ -89,10 +85,6 @@ export class WareneintragListe {
     this.filterDaten.update((daten) => ({ ...daten, avvSucheAnzeige }));
   }
 
-  protected get bearbeitung() {
-    return this.bearbeitungAktiv() ? this.bearbeitungDaten() : null;
-  }
-
   onAvvSucheEingabe(wert: string): void {
     this.avvCodeId.set(null);
     this.seite.set(0);
@@ -125,53 +117,34 @@ export class WareneintragListe {
   }
 
   bearbeitungOeffnen(wareneintrag: Wareneintrag): void {
-    this.bearbeitungDaten.set({
-      id: wareneintrag.id,
-      avvCodeId: '',
-      freitext: wareneintrag.freitext,
-      foto: null,
-    });
-    this.bearbeitungAktiv.set(true);
-  }
-
-  fotoErsetzen(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (!this.bearbeitungAktiv()) return;
-    this.bearbeitungDaten.update((daten) => ({ ...daten, foto: input.files?.item(0) ?? null }));
-  }
-
-  async speichern(): Promise<void> {
-    const bearbeitung = this.bearbeitungDaten();
-    if (!this.bearbeitungAktiv() || !bearbeitung.avvCodeId || !bearbeitung.freitext.trim()) return;
-    this.speichernLaeuft = true;
-    const formData = new FormData();
-    formData.set('avvCodeId', bearbeitung.avvCodeId);
-    formData.set('freitext', bearbeitung.freitext.trim());
-    if (bearbeitung.foto) formData.set('foto', bearbeitung.foto);
-
-    try {
-      await firstValueFrom(this.wareneintragApi.aktualisieren(bearbeitung.id, formData));
-      this.bearbeitungAbbrechen();
-      this.wareneintraege.reload();
-    } finally {
-      this.speichernLaeuft = false;
-    }
+    this.dialog
+      .open(WareneintragBearbeitenDialog, { data: { wareneintrag } })
+      .afterClosed()
+      .subscribe((gespeichert) => {
+        if (gespeichert) this.wareneintraege.reload();
+      });
   }
 
   async loeschen(wareneintrag: Wareneintrag): Promise<void> {
-    if (!window.confirm('Wareneintrag wirklich löschen?')) return;
+    const bestaetigt = await firstValueFrom(
+      this.dialog
+        .open(ConfirmDialog, {
+          data: {
+            titel: 'Wareneintrag löschen',
+            nachricht: `Möchten Sie den Wareneintrag „${wareneintrag.freitext}“ (AVV-Code ${wareneintrag.avvCode.code}) wirklich löschen?`,
+            bestaetigenLabel: 'Löschen',
+          },
+        })
+        .afterClosed(),
+    );
+    if (!bestaetigt) return;
+
     this.loeschenLaeuft = true;
     try {
       await firstValueFrom(this.wareneintragApi.loeschen(wareneintrag.id));
-      if (this.bearbeitung?.id === wareneintrag.id) this.bearbeitungAbbrechen();
       this.wareneintraege.reload();
     } finally {
       this.loeschenLaeuft = false;
     }
-  }
-
-  bearbeitungAbbrechen(): void {
-    this.bearbeitungAktiv.set(false);
-    this.bearbeitungDaten.set(this.leereBearbeitung);
   }
 }

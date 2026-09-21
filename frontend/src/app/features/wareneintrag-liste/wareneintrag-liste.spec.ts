@@ -1,11 +1,14 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { provideRouter } from '@angular/router';
+import { of } from 'rxjs';
 import { WareneintragListe } from './wareneintrag-liste.js';
 
 describe('WareneintragListe', () => {
   let httpMock: HttpTestingController;
+  let dialog: MatDialog;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -13,7 +16,17 @@ describe('WareneintragListe', () => {
       providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     }).compileComponents();
     httpMock = TestBed.inject(HttpTestingController);
+    dialog = TestBed.inject(MatDialog);
   });
+
+  // Öffnet keinen echten Dialog-Overlay im Test-DOM (das würde ein
+  // Material-Dialog-Testmodul o.ä. erfordern), sondern spyt die
+  // Dialog-Öffnung selbst – die Liste muss nur auf das Ergebnis reagieren,
+  // nicht der Dialoginhalt selbst (der ist in ConfirmDialog bzw.
+  // WareneintragBearbeitenDialog eigenständig getestet).
+  function dialogSchliesstMit<T>(ergebnis: T | undefined) {
+    spyOn(dialog, 'open').and.returnValue({ afterClosed: () => of(ergebnis) } as MatDialogRef<unknown, T>);
+  }
 
   afterEach(() => httpMock.verify());
 
@@ -171,75 +184,89 @@ describe('WareneintragListe', () => {
     expect(datum.textContent?.trim()).toBe('19.09.2026, 20:08');
   }));
 
-  it('lets a supervisor open and save a Wareneintrag edit', fakeAsync(() => {
+  it('opens the edit dialog with the selected Wareneintrag and reloads the list once it closes successfully', fakeAsync(() => {
+    dialogSchliesstMit(true);
     const fixture = TestBed.createComponent(WareneintragListe);
     fixture.detectChanges();
-    httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([
-      { id: 'avv-2', code: '20 03 01', bezeichnung: 'Siedlungsabfälle', gefaehrlich: false },
-    ]);
-    httpMock
-      .expectOne((req) => req.url === '/api/v1/wareneintraege')
-      .flush({
-        daten: [
-          {
-            id: 'wareneintrag-1',
-            fotoUrl: '/foto.jpg',
-            freitext: 'alter Text',
-            erstelltAm: '2026-09-19T20:08:00',
-            avvCode: { code: '17 01 01' },
-          },
-        ],
-        gesamt: 1,
-      });
+    httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([]);
+    const wareneintrag = {
+      id: 'wareneintrag-1',
+      fotoUrl: '/foto.jpg',
+      freitext: 'alter Text',
+      erstelltAm: '2026-09-19T20:08:00',
+      avvCode: { code: '17 01 01' },
+    };
+    httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [wareneintrag], gesamt: 1 });
+    tick();
+    fixture.detectChanges();
+
+    fixture.componentInstance.bearbeitungOeffnen(wareneintrag as never);
+
+    expect(dialog.open).toHaveBeenCalled();
+    const data = (dialog.open as jasmine.Spy).calls.mostRecent().args[1].data;
+    expect(data.wareneintrag).toEqual(wareneintrag);
+    tick();
+    fixture.detectChanges();
+    httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 0 });
+  }));
+
+  it('does not reload the list when the edit dialog is cancelled', fakeAsync(() => {
+    dialogSchliesstMit(undefined);
+    const fixture = TestBed.createComponent(WareneintragListe);
+    fixture.detectChanges();
+    httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([]);
+    httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 0 });
     tick();
     fixture.detectChanges();
 
     fixture.componentInstance.bearbeitungOeffnen({
       id: 'wareneintrag-1',
       fotoUrl: '/foto.jpg',
-      freitext: 'alter Text',
+      freitext: 'test',
       erstelltAm: '2026-09-19T20:08:00',
       avvCode: { code: '17 01 01' },
     } as never);
+    tick();
     fixture.detectChanges();
 
-    (fixture.componentInstance as unknown as { bearbeitung: { freitext: string; avvCodeId: string } }).bearbeitung.freitext =
-      'neuer Text';
-    (fixture.componentInstance as unknown as { bearbeitung: { freitext: string; avvCodeId: string } }).bearbeitung.avvCodeId =
-      'avv-2';
+    httpMock.expectNone((req) => req.url === '/api/v1/wareneintraege');
+    expect().nothing();
+  }));
+
+  it('deletes a Wareneintrag after confirmation and reloads the list', fakeAsync(() => {
+    dialogSchliesstMit(true);
+    const fixture = TestBed.createComponent(WareneintragListe);
+    fixture.detectChanges();
+    httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([]);
+    const wareneintrag = {
+      id: 'wareneintrag-1',
+      fotoUrl: '/foto.jpg',
+      freitext: 'test',
+      erstelltAm: '2026-09-19T20:08:00',
+      avvCode: { code: '17 01 01' },
+    };
+    httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [wareneintrag], gesamt: 1 });
+    tick();
     fixture.detectChanges();
 
-    void fixture.componentInstance.speichern();
+    void fixture.componentInstance.loeschen(wareneintrag as never);
+    tick();
 
+    expect(dialog.open).toHaveBeenCalled();
     const request = httpMock.expectOne('/api/v1/wareneintraege/wareneintrag-1');
-    expect(request.request.method).toBe('PATCH');
-    expect(request.request.body.get('freitext')).toBe('neuer Text');
-    expect(request.request.body.get('avvCodeId')).toBe('avv-2');
+    expect(request.request.method).toBe('DELETE');
     request.flush({});
     tick();
     fixture.detectChanges();
     httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 0 });
   }));
 
-  it('deletes a Wareneintrag after confirmation and reloads the list', fakeAsync(() => {
-    spyOn(window, 'confirm').and.returnValue(true);
+  it('does not delete a Wareneintrag when the confirmation dialog is cancelled', fakeAsync(() => {
+    dialogSchliesstMit(undefined);
     const fixture = TestBed.createComponent(WareneintragListe);
     fixture.detectChanges();
     httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([]);
-    httpMock
-      .expectOne((req) => req.url === '/api/v1/wareneintraege')
-      .flush({
-        daten: [
-          {
-            id: 'wareneintrag-1',
-            fotoUrl: '/foto.jpg',
-            freitext: 'test',
-            erstelltAm: '2026-09-19T20:08:00',
-            avvCode: { code: '17 01 01' },
-          },
-        ],
-        gesamt: 1,
-      });
+    httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 0 });
     tick();
     fixture.detectChanges();
 
@@ -250,12 +277,9 @@ describe('WareneintragListe', () => {
       erstelltAm: '2026-09-19T20:08:00',
       avvCode: { code: '17 01 01' },
     } as never);
-
-    const request = httpMock.expectOne('/api/v1/wareneintraege/wareneintrag-1');
-    expect(request.request.method).toBe('DELETE');
-    request.flush({});
     tick();
-    fixture.detectChanges();
-    httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 0 });
+
+    httpMock.expectNone('/api/v1/wareneintraege/wareneintrag-1');
+    expect().nothing();
   }));
 });

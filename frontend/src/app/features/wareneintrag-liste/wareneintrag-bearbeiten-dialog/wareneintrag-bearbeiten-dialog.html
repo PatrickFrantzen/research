@@ -1,0 +1,49 @@
+<h2 mat-dialog-title>Wareneintrag bearbeiten</h2>
+
+<mat-dialog-content>
+  <mat-form-field appearance="outline">
+    <mat-label>AVV-Code</mat-label>
+    <input
+      matInput
+      #avvSuche
+      data-testid="bearbeiten-avv-suche"
+      [matAutocomplete]="avvAuto"
+      [value]="avvSucheAnzeige"
+      (input)="onAvvSucheEingabe(avvSuche.value)"
+      placeholder="Aktueller AVV-Code: {{ daten.wareneintrag.avvCode.code }}"
+    />
+    <mat-autocomplete #avvAuto="matAutocomplete" (optionSelected)="onAvvCodeAusgewaehlt($event)">
+      @for (avvCode of avvTreffer.value(); track avvCode.id) {
+        <mat-option [value]="avvCode.id">{{ avvCode.code }} – {{ avvCode.bezeichnung }}</mat-option>
+      }
+    </mat-autocomplete>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Freitext</mat-label>
+    <textarea matInput data-testid="bearbeiten-freitext" [formField]="bearbeitenForm.freitext" rows="4"></textarea>
+  </mat-form-field>
+
+  <label>
+    Foto ersetzen
+    <input type="file" data-testid="bearbeiten-foto" accept="image/jpeg,image/png,image/webp" (change)="fotoErsetzen($event)" />
+  </label>
+
+  @if (fehler(); as meldung) {
+    <p class="fehler">{{ meldung }}</p>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" data-testid="bearbeiten-abbrechen" (click)="abbrechen()">Abbrechen</button>
+  <button
+    mat-raised-button
+    color="primary"
+    type="button"
+    data-testid="bearbeiten-speichern"
+    [disabled]="!kannSpeichern"
+    (click)="speichern()"
+  >
+    Speichern
+  </button>
+</mat-dialog-actions>
