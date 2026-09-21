@@ -45,7 +45,7 @@ export class WareneintragService {
     const [treffer, gesamt] = await Promise.all([
       this.prisma.wareneintrag.findMany({
         where,
-        include: { avvCode: { select: { code: true } } },
+        include: { avvCode: { select: { id: true, code: true, bezeichnung: true } } },
         orderBy: [{ erstelltAm: 'desc' }, { id: 'desc' }],
         skip: filter.seite * filter.proSeite,
         take: filter.proSeite,
@@ -64,7 +64,7 @@ export class WareneintragService {
       SELECT
         wareneintraege.id, foto_url AS "fotoUrl", avv_code_id AS "avvCodeId", freitext,
         erfasst_von_id AS "erfasstVonId", standort_id AS "standortId", erstellt_am AS "erstelltAm",
-        json_build_object('code', avv_codes.code) AS "avvCode",
+        json_build_object('id', avv_codes.id, 'code', avv_codes.code, 'bezeichnung', avv_codes.bezeichnung) AS "avvCode",
         COUNT(*) OVER () AS "gesamt"
       FROM wareneintraege
       JOIN avv_codes ON avv_codes.id = wareneintraege.avv_code_id

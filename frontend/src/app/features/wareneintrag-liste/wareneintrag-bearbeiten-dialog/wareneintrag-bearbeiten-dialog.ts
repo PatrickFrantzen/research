@@ -38,11 +38,14 @@ export class WareneintragBearbeitenDialog {
   private readonly dialogRef = inject(MatDialogRef<WareneintragBearbeitenDialog>);
   protected readonly daten = inject<WareneintragBearbeitenDialogDaten>(MAT_DIALOG_DATA);
 
-  private readonly avvCodeId = signal<string | null>(null);
+  // Vorbelegt mit dem aktuell zugewiesenen AVV-Code (Issue #66), damit
+  // Speichern ohne AVV-Code-Änderung keine erneute Auswahl über die Suche
+  // erfordert.
+  private readonly avvCodeId = signal<string | null>(this.daten.wareneintrag.avvCode.id);
   foto: File | null = null;
 
   protected readonly bearbeitungDaten = signal({
-    avvSucheAnzeige: '',
+    avvSucheAnzeige: `${this.daten.wareneintrag.avvCode.code} – ${this.daten.wareneintrag.avvCode.bezeichnung}`,
     freitext: this.daten.wareneintrag.freitext,
   });
   protected readonly bearbeitenForm = form(this.bearbeitungDaten, (pfad) => {

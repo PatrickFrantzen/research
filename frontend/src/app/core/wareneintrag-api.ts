@@ -7,7 +7,7 @@ export interface Wareneintrag {
   fotoUrl: string;
   freitext: string;
   erstelltAm: string;
-  avvCode: Pick<AvvCode, 'code'>;
+  avvCode: Pick<AvvCode, 'id' | 'code' | 'bezeichnung'>;
 }
 
 export interface PaginierteWareneintraege {

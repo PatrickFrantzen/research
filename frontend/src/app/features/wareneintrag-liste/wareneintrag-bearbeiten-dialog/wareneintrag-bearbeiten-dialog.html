@@ -10,7 +10,6 @@
       [matAutocomplete]="avvAuto"
       [value]="avvSucheAnzeige"
       (input)="onAvvSucheEingabe(avvSuche.value)"
-      placeholder="Aktueller AVV-Code: {{ daten.wareneintrag.avvCode.code }}"
     />
     <mat-autocomplete #avvAuto="matAutocomplete" (optionSelected)="onAvvCodeAusgewaehlt($event)">
       @for (avvCode of avvTreffer.value(); track avvCode.id) {
