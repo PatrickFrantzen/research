@@ -38,6 +38,58 @@ describe('WareneintragListe', () => {
 
   afterEach(() => httpMock.verify());
 
+  describe('Ladezustände (Issue #53)', () => {
+    function erstelleListe() {
+      const fixture = TestBed.createComponent(WareneintragListe);
+      fixture.detectChanges();
+      httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([]);
+      return { fixture, element: fixture.nativeElement as HTMLElement };
+    }
+
+    it('shows a progress bar while loading and no "keine Einträge" message', () => {
+      const { element } = erstelleListe();
+
+      expect(element.querySelector('mat-progress-bar')).not.toBeNull();
+      expect(element.querySelector('[data-testid="keine-eintraege"]')).toBeNull();
+      httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 0 });
+    });
+
+    it('shows a request error as error with retry, never as an empty list', fakeAsync(() => {
+      const { fixture, element } = erstelleListe();
+      httpMock
+        .expectOne((req) => req.url === '/api/v1/wareneintraege')
+        .flush('Fehler', { status: 500, statusText: 'Server Error' });
+      tick();
+      fixture.detectChanges();
+
+      expect(element.querySelector('[role="alert"]')?.textContent).toContain('Wareneinträge konnten nicht geladen werden.');
+      expect(element.querySelector('[data-testid="keine-eintraege"]')).toBeNull();
+
+      (element.querySelector('[data-testid="erneut-laden"]') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 0 });
+      tick();
+      fixture.detectChanges();
+
+      expect(element.querySelector('[role="alert"]')).toBeNull();
+      expect(element.querySelector('[data-testid="keine-eintraege"]')).not.toBeNull();
+    }));
+
+    it('keeps the last total in the paginator while the next page loads', fakeAsync(() => {
+      const { fixture } = erstelleListe();
+      httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 45 });
+      tick();
+      fixture.detectChanges();
+
+      fixture.componentInstance.onSeitenwechsel({ pageIndex: 1, pageSize: 20, length: 45 });
+      fixture.detectChanges();
+
+      expect((fixture.componentInstance as unknown as { gesamt: () => number }).gesamt()).toBe(45);
+      httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 45 });
+      tick();
+    }));
+  });
+
   it('lists all Wareneintraege without a filter on load', () => {
     const fixture = TestBed.createComponent(WareneintragListe);
     fixture.detectChanges();

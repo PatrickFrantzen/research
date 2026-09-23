@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormField, form, required } from '@angular/forms/signals';
 import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
@@ -94,6 +94,9 @@ export class WareneintragBearbeitenDialog {
     stream: ({ params }) => this.avvCodeApi.suchen(params),
   });
 
+  // value() wirft im Fehlerzustand – Template und Handler lesen nur hierüber.
+  protected readonly avvTrefferListe = computed(() => (this.avvTreffer.hasValue() ? this.avvTreffer.value() : []));
+
   protected speichernLaeuft = false;
   protected readonly fehler = signal<string | null>(null);
 
@@ -119,7 +122,7 @@ export class WareneintragBearbeitenDialog {
   }
 
   onAvvCodeAusgewaehlt(event: MatAutocompleteSelectedEvent): void {
-    const avvCode = this.avvTreffer.value()?.find((treffer) => treffer.id === event.option.value);
+    const avvCode = this.avvTrefferListe().find((treffer) => treffer.id === event.option.value);
     if (!avvCode) return;
     this.avvCodeId.set(avvCode.id);
     this.avvSucheAnzeige = `${avvCode.code} – ${avvCode.bezeichnung}`;

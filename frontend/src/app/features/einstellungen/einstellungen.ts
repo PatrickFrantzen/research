@@ -1,6 +1,6 @@
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { FormField, form, required } from '@angular/forms/signals';
+import { FormField, disabled, form, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -10,12 +10,22 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
+import { LadeZustand } from '../../core/lade-zustand/lade-zustand.js';
 import { NutzerApi } from '../../core/nutzer-api.js';
 import { StandortApi } from '../../core/standort-api.js';
 
 @Component({
   selector: 'app-einstellungen',
-  imports: [FormField, MatButtonModule, MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule, RouterLink],
+  imports: [
+    FormField,
+    LadeZustand,
+    MatButtonModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    RouterLink,
+  ],
   templateUrl: './einstellungen.html',
 })
 export class Einstellungen {
@@ -31,8 +41,14 @@ export class Einstellungen {
     stream: () => this.nutzerApi.eigeneDaten(),
   });
 
+  // Bis die eigenen Daten und die Standorte da sind, ist das Formular
+  // gesperrt – sonst ließen sich leere Felder speichern (Issue #53).
+  protected readonly geladen = computed(() => this.eigeneDaten.hasValue() && this.standorte.hasValue());
+  protected readonly standortListe = computed(() => (this.standorte.hasValue() ? this.standorte.value() : []));
+
   protected readonly einstellungenDaten = signal({ vorname: '', nachname: '', standortId: '' });
   protected readonly einstellungenForm = form(this.einstellungenDaten, (pfad) => {
+    disabled(pfad, { when: () => !this.geladen() });
     required(pfad.vorname);
     required(pfad.nachname);
     required(pfad.standortId);
@@ -43,7 +59,7 @@ export class Einstellungen {
 
   constructor() {
     effect(() => {
-      const daten = this.eigeneDaten.value();
+      const daten = this.eigeneDaten.hasValue() ? this.eigeneDaten.value() : undefined;
       if (daten) {
         this.einstellungenDaten.set({
           vorname: daten.vorname,
@@ -79,7 +95,7 @@ export class Einstellungen {
   }
 
   async submit(): Promise<void> {
-    if (!this.einstellungenForm().valid()) return;
+    if (!this.geladen() || !this.einstellungenForm().valid()) return;
     this.fehler.set(null);
     this.wirdGeladen.set(true);
     try {

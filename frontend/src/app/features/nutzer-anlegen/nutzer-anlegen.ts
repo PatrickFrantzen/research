@@ -1,7 +1,7 @@
 import { ClipboardModule } from '@angular/cdk/clipboard';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { FormField, email as emailValidator, form, required } from '@angular/forms/signals';
+import { FormField, disabled, email as emailValidator, form, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -12,6 +12,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
+import { LadeZustand } from '../../core/lade-zustand/lade-zustand.js';
 import { NeuerNutzer, NutzerApi } from '../../core/nutzer-api.js';
 import { StandortApi } from '../../core/standort-api.js';
 
@@ -20,6 +21,7 @@ import { StandortApi } from '../../core/standort-api.js';
   imports: [
     ClipboardModule,
     FormField,
+    LadeZustand,
     MatCardModule,
     MatFormFieldModule,
     MatIconModule,
@@ -39,6 +41,9 @@ export class NutzerAnlegen {
     stream: () => this.standortApi.liste(),
   });
 
+  // Ohne geladene Standorte ist kein gültiger Account möglich (Issue #60).
+  protected readonly standortListe = computed(() => (this.standorte.hasValue() ? this.standorte.value() : []));
+
   protected readonly nutzerDaten = signal({ vorname: '', nachname: '', email: '', standortId: '' });
   protected readonly nutzerForm = form(this.nutzerDaten, (pfad) => {
     required(pfad.vorname);
@@ -46,6 +51,7 @@ export class NutzerAnlegen {
     required(pfad.email);
     emailValidator(pfad.email);
     required(pfad.standortId);
+    disabled(pfad.standortId, { when: () => !this.standorte.hasValue() });
   });
 
   protected readonly angelegt = signal<NeuerNutzer | null>(null);
@@ -85,7 +91,7 @@ export class NutzerAnlegen {
   }
 
   async submit(): Promise<void> {
-    if (!this.nutzerForm().valid()) return;
+    if (!this.standorte.hasValue() || !this.nutzerForm().valid()) return;
     this.fehler.set(null);
     this.wirdGeladen.set(true);
     try {
