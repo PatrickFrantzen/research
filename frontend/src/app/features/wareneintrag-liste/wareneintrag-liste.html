@@ -1,5 +1,5 @@
-<div class="seite">
-  <h1>Wareneinträge</h1>
+<div class="liste">
+  <h1 class="seitentitel">Wareneinträge</h1>
 
   <div class="filter">
     <mat-form-field appearance="outline">
@@ -29,29 +29,33 @@
   <div class="karten">
     @for (wareneintrag of wareneintraege.value()?.daten; track wareneintrag.id) {
       <mat-card class="karte">
-        <div class="fotos">
-          @if (wareneintrag.fotoFernUrl) {
-            <img [src]="wareneintrag.fotoFernUrl" alt="Fernansicht" />
-          }
-          @if (wareneintrag.fotoNahUrl) {
-            <img [src]="wareneintrag.fotoNahUrl" alt="Nahansicht" />
-          }
-          @if (wareneintrag.fotoDetailUrl) {
-            <img [src]="wareneintrag.fotoDetailUrl" alt="Detailansicht" />
-          }
-        </div>
-        <p>{{ wareneintrag.freitext }}</p>
-        <p>AVV-Code: {{ wareneintrag.avvCode.code }}</p>
-        <p>Standort: {{ wareneintrag.standort.name }}</p>
-        <p>Erfasst von: {{ wareneintrag.erfasstVon.vorname }} {{ wareneintrag.erfasstVon.nachname }}</p>
-        <p class="datum">{{ wareneintrag.erstelltAm | date: 'dd.MM.yyyy, HH:mm' }}</p>
+        <mat-card-header>
+          <mat-card-title>AVV-Code: {{ wareneintrag.avvCode.code }}</mat-card-title>
+          <mat-card-subtitle class="datum">{{ wareneintrag.erstelltAm | date: 'dd.MM.yyyy, HH:mm' }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="fotos">
+            @if (wareneintrag.fotoFernUrl) {
+              <img [src]="wareneintrag.fotoFernUrl" alt="Fernansicht" />
+            }
+            @if (wareneintrag.fotoNahUrl) {
+              <img [src]="wareneintrag.fotoNahUrl" alt="Nahansicht" />
+            }
+            @if (wareneintrag.fotoDetailUrl) {
+              <img [src]="wareneintrag.fotoDetailUrl" alt="Detailansicht" />
+            }
+          </div>
+          <p>{{ wareneintrag.freitext }}</p>
+          <p>Standort: {{ wareneintrag.standort.name }}</p>
+          <p>Erfasst von: {{ wareneintrag.erfasstVon.vorname }} {{ wareneintrag.erfasstVon.nachname }}</p>
+        </mat-card-content>
         @if (istEigenerEintrag(wareneintrag)) {
-          <div class="aktionen">
-            <button mat-button type="button" data-testid="wareneintrag-bearbeiten" (click)="bearbeitungOeffnen(wareneintrag)">
+          <mat-card-actions align="end">
+            <button matButton type="button" data-testid="wareneintrag-bearbeiten" (click)="bearbeitungOeffnen(wareneintrag)">
               Bearbeiten
             </button>
             <button
-              mat-button
+              matButton
               type="button"
               data-testid="wareneintrag-loeschen"
               [disabled]="loeschenLaeuft"
@@ -59,7 +63,7 @@
             >
               Löschen
             </button>
-          </div>
+          </mat-card-actions>
         }
       </mat-card>
     } @empty {

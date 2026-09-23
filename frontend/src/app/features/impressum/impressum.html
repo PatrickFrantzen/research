@@ -1,7 +1,10 @@
 <main class="seite">
-  <mat-card class="karte">
-    <h1>Impressum</h1>
+  <mat-card class="karte impressum-karte">
+    <mat-card-header>
+      <h1 mat-card-title>Impressum</h1>
+    </mat-card-header>
 
+    <mat-card-content>
     <section>
       <h2>Angaben gemäß § 5 DDG</h2>
       <p>
@@ -40,6 +43,10 @@
       </p>
     </section>
 
-    <a routerLink="/">Zurück zur Anwendung</a>
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      <a matButton routerLink="/">Zurück zur Anwendung</a>
+    </mat-card-actions>
   </mat-card>
 </main>

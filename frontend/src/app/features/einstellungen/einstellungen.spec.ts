@@ -1,6 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { provideRouter } from '@angular/router';
 import { Einstellungen } from './einstellungen.js';
 
@@ -41,6 +42,7 @@ describe('Einstellungen', () => {
   });
 
   it('saves the changed fields and shows a success message', async () => {
+    const openSpy = spyOn(TestBed.inject(MatSnackBar), 'open');
     const fixture = TestBed.createComponent(Einstellungen);
     fixture.detectChanges();
     httpMock.expectOne('/api/v1/standorte').flush([]);
@@ -61,9 +63,7 @@ describe('Einstellungen', () => {
     request.flush({ vorname: 'Erika', nachname: 'Neuername', email: 'erika@research.local', standortId: 'standort-2' });
     await submitPromise;
 
-    expect(
-      (component as unknown as { gespeichert: () => boolean }).gespeichert(),
-    ).toBe(true);
+    expect(openSpy).toHaveBeenCalledWith('Änderungen gespeichert.', undefined, jasmine.anything());
   });
 
   it('links to the Impressum, since mobile has no footer', () => {

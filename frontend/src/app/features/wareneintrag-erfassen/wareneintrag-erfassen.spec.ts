@@ -1,13 +1,13 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { provideRouter } from '@angular/router';
 import { WareneintragErfassen } from './wareneintrag-erfassen.js';
 
 interface TestableWareneintragErfassen {
   ausgewaehlterAvvCode: { id: string; code: string; bezeichnung: string; gefaehrlich?: boolean } | null;
   kannAbsenden: boolean;
-  angelegt: () => { id: string } | null;
   fehler: () => string | null;
   onFotoAusgewaehlt: (ansicht: 'fotoFern' | 'fotoNah' | 'fotoDetail', event: Event) => void;
   fotoVorschau: (ansicht: 'fotoFern' | 'fotoNah' | 'fotoDetail') => string | null;
@@ -65,7 +65,8 @@ describe('WareneintragErfassen', () => {
     expect().nothing();
   });
 
-  it('submits without any foto, since photos are optional', async () => {
+  it('submits without any foto, since photos are optional, then confirms and resets for the next entry', async () => {
+    const openSpy = spyOn(TestBed.inject(MatSnackBar), 'open');
     const fixture = createComponent();
     const component = asTestable(fixture.componentInstance);
     component.ausgewaehlterAvvCode = { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' };
@@ -82,7 +83,9 @@ describe('WareneintragErfassen', () => {
     request.flush({ id: 'wareneintrag-1' });
     await submitPromise;
 
-    expect(component.angelegt()).toEqual({ id: 'wareneintrag-1' });
+    expect(openSpy).toHaveBeenCalledWith('Wareneintrag wurde angelegt.', undefined, jasmine.anything());
+    expect(fixture.componentInstance.freitext).toBe('');
+    expect(component.ausgewaehlterAvvCode).toBeNull();
   });
 
   it('submits only the fotos that were actually taken, under their own field names', async () => {

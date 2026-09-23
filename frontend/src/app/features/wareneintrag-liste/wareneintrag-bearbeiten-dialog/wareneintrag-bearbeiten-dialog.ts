@@ -5,6 +5,7 @@ import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/ma
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { debounceTime, distinctUntilChanged, firstValueFrom, Subject } from 'rxjs';
 import { AvvCodeApi } from '../../../core/avv-code-api.js';
@@ -43,9 +44,23 @@ const AVV_SUCHE_DEBOUNCE_MS = 300;
     MatButtonModule,
     MatDialogModule,
     MatFormFieldModule,
+    MatIconModule,
     MatInputModule,
   ],
   templateUrl: './wareneintrag-bearbeiten-dialog.html',
+  styles: `
+    .fotos-ersetzen {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .dateiname {
+      font: var(--mat-sys-body-small);
+      color: var(--mat-sys-on-surface-variant);
+    }
+  `,
 })
 export class WareneintragBearbeitenDialog {
   private readonly avvCodeApi = inject(AvvCodeApi);
@@ -58,7 +73,7 @@ export class WareneintragBearbeitenDialog {
   // erfordert.
   private readonly avvCodeId = signal<string | null>(this.daten.wareneintrag.avvCode.id);
   protected readonly fotoKacheln = FOTO_KACHELN;
-  private readonly fotos: Record<FotoAnsicht, File | null> = { fotoFern: null, fotoNah: null, fotoDetail: null };
+  private readonly fotos = signal<Record<FotoAnsicht, File | null>>({ fotoFern: null, fotoNah: null, fotoDetail: null });
 
   protected readonly bearbeitungDaten = signal({
     avvSucheAnzeige: `${this.daten.wareneintrag.avvCode.code} – ${this.daten.wareneintrag.avvCode.bezeichnung}`,
@@ -112,7 +127,12 @@ export class WareneintragBearbeitenDialog {
 
   fotoErsetzen(ansicht: FotoAnsicht, event: Event): void {
     const input = event.target as HTMLInputElement;
-    this.fotos[ansicht] = input.files?.item(0) ?? null;
+    const datei = input.files?.item(0) ?? null;
+    this.fotos.update((fotos) => ({ ...fotos, [ansicht]: datei }));
+  }
+
+  protected dateiname(ansicht: FotoAnsicht): string | null {
+    return this.fotos()[ansicht]?.name ?? null;
   }
 
   async speichern(): Promise<void> {
@@ -124,7 +144,7 @@ export class WareneintragBearbeitenDialog {
     formData.set('avvCodeId', avvCodeId);
     formData.set('freitext', this.freitext.trim());
     for (const { ansicht } of this.fotoKacheln) {
-      const datei = this.fotos[ansicht];
+      const datei = this.fotos()[ansicht];
       if (datei) formData.set(ansicht, datei);
     }
 

@@ -2,8 +2,10 @@
   <title id="title">RE-SEARCH</title>
   <desc id="description">RE-SEARCH – Transparente Entsorgungswege</desc>
   <!-- Transparent background. This spacious version is intended for login and legal pages. -->
+  <!-- Claim im Dark Mode hell, sonst auf dunklem Grund unlesbar. -->
+  <style>@media (prefers-color-scheme: dark) { .claim { fill: #dee3e8; } }</style>
   <rect x="48" y="32" width="1304" height="178" rx="4" fill="#e30613"/>
   <text x="700" y="173" text-anchor="middle" fill="#fff" font-family="Arial Black, Arial, Helvetica, sans-serif" font-size="142" font-weight="900" letter-spacing="-6">RE-SEARCH</text>
   <text x="1287" y="88" text-anchor="middle" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="39" font-weight="700">®</text>
-  <text x="700" y="280" text-anchor="middle" fill="#243746" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="700" letter-spacing="11">TRANSPARENTE ENTSORGUNGSWEGE</text>
+  <text x="700" y="280" text-anchor="middle" class="claim" fill="#243746" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="700" letter-spacing="11">TRANSPARENTE ENTSORGUNGSWEGE</text>
 </svg>

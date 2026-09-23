@@ -11,7 +11,6 @@ import { AuthService } from '../../core/auth.service.js';
   selector: 'app-nicht-gefunden',
   imports: [MatButtonModule, MatCardModule, RouterLink],
   templateUrl: './nicht-gefunden.html',
-  styleUrl: './nicht-gefunden.scss',
 })
 export class NichtGefunden {
   protected readonly istEingeloggt = inject(AuthService).istEingeloggt;

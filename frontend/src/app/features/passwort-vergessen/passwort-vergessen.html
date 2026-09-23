@@ -1,26 +1,34 @@
-<div class="seite">
+<main class="seite seite-zentriert">
   <mat-card class="karte">
-    <h1>Passwort vergessen</h1>
+    <mat-card-header>
+      <h1 mat-card-title>Passwort vergessen</h1>
+    </mat-card-header>
 
     @if (angefordert()) {
-      <p>
-        Falls ein Account mit dieser E-Mail existiert, wurde ein Link zum
-        Setzen eines neuen Passworts versendet.
-      </p>
+      <mat-card-content>
+        <p role="status">
+          Falls ein Account mit dieser E-Mail existiert, wurde ein Link zum Setzen eines neuen Passworts versendet.
+        </p>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <a matButton routerLink="/login">Zurück zum Login</a>
+      </mat-card-actions>
     } @else {
       <form (submit)="$event.preventDefault(); submit()">
-        <mat-form-field appearance="outline">
-          <mat-label>E-Mail</mat-label>
-          <input matInput type="email" [formField]="passwortVergessenForm.email" autocomplete="username" />
-        </mat-form-field>
+        <mat-card-content class="formular">
+          <mat-form-field appearance="outline">
+            <mat-label>E-Mail</mat-label>
+            <input matInput type="email" [formField]="passwortVergessenForm.email" autocomplete="username" />
+          </mat-form-field>
+        </mat-card-content>
 
-        <div class="aktionen">
-          <a routerLink="/login">Zurück zum Login</a>
+        <mat-card-actions align="end">
+          <a matButton routerLink="/login">Zurück zum Login</a>
           <button matButton="filled" type="submit" [disabled]="!passwortVergessenForm().valid() || wirdGeladen()">
             Link anfordern
           </button>
-        </div>
+        </mat-card-actions>
       </form>
     }
   </mat-card>
-</div>
+</main>

@@ -3,11 +3,11 @@
     <img class="marke" src="brand/re-search-header.svg" alt="RE-SEARCH – Transparente Entsorgungswege" />
   </a>
   <span class="spacer"></span>
-  <a mat-button routerLink="/wareneintraege" routerLinkActive="aktiv">Wareneinträge</a>
-  <a mat-button routerLink="/wareneintrag-erfassen" routerLinkActive="aktiv">Wareneintrag erfassen</a>
-  <a mat-button routerLink="/nutzer-anlegen" routerLinkActive="aktiv">Nutzer anlegen</a>
-  <a mat-button routerLink="/einstellungen" routerLinkActive="aktiv">Einstellungen</a>
-  <button mat-button type="button" (click)="logout()">Logout</button>
+  <a matButton routerLink="/wareneintraege" routerLinkActive="aktiv" ariaCurrentWhenActive="page">Wareneinträge</a>
+  <a matButton routerLink="/wareneintrag-erfassen" routerLinkActive="aktiv" ariaCurrentWhenActive="page">Wareneintrag erfassen</a>
+  <a matButton routerLink="/nutzer-anlegen" routerLinkActive="aktiv" ariaCurrentWhenActive="page">Nutzer anlegen</a>
+  <a matButton routerLink="/einstellungen" routerLinkActive="aktiv" ariaCurrentWhenActive="page">Einstellungen</a>
+  <button matButton type="button" (click)="logout()">Logout</button>
 </mat-toolbar>
 
 <mat-toolbar class="mobile-titelleiste">
@@ -22,15 +22,15 @@
 
 <!-- Nur Desktop; auf Mobil ist das Impressum über die Einstellungen erreichbar (Issue #21). -->
 <footer class="desktop-footer">
-  <a routerLink="/impressum">Impressum</a>
+  <a matButton routerLink="/impressum">Impressum</a>
 </footer>
 
-<nav class="bottom-nav">
-  <a routerLink="/wareneintraege" routerLinkActive="aktiv" class="bottom-nav-item">
+<nav class="bottom-nav" aria-label="Hauptnavigation">
+  <a routerLink="/wareneintraege" routerLinkActive="aktiv" ariaCurrentWhenActive="page" class="bottom-nav-item">
     <mat-icon>list_alt</mat-icon>
     <span>Wareneinträge</span>
   </a>
-  <a routerLink="/wareneintrag-erfassen" routerLinkActive="aktiv" class="bottom-nav-item">
+  <a routerLink="/wareneintrag-erfassen" routerLinkActive="aktiv" ariaCurrentWhenActive="page" class="bottom-nav-item">
     <mat-icon>add_circle</mat-icon>
     <span>Erfassen</span>
   </a>

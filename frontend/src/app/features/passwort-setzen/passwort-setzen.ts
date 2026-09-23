@@ -12,7 +12,6 @@ import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
   selector: 'app-passwort-setzen',
   imports: [FormField, MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule, RouterLink],
   templateUrl: './passwort-setzen.html',
-  styleUrl: './passwort-setzen.scss',
 })
 export class PasswortSetzen {
   private readonly authService = inject(AuthService);

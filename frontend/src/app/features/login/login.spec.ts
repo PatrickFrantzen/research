@@ -1,6 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { AuthService } from '../../core/auth.service.js';
 import { Login } from './login.js';
@@ -122,13 +123,14 @@ describe('Login', () => {
   });
 
   it('shows no password confirmation on a normal visit', () => {
+    const openSpy = spyOn(TestBed.inject(MatSnackBar), 'open');
     const fixture = TestBed.createComponent(Login);
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('.erfolg')).toBeNull();
+    expect(openSpy).not.toHaveBeenCalled();
   });
 
-  it('confirms a freshly set password after the redirect from PasswortSetzen', () => {
+  it('confirms a freshly set password in a snack bar after the redirect from PasswortSetzen', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       imports: [Login],
@@ -141,12 +143,11 @@ describe('Login', () => {
         },
       ],
     });
+    const openSpy = spyOn(TestBed.inject(MatSnackBar), 'open');
     const fixture = TestBed.createComponent(Login);
     fixture.detectChanges();
 
-    const erfolg = fixture.nativeElement.querySelector('.erfolg') as HTMLElement | null;
-    expect(erfolg?.textContent).toContain('Passwort wurde gesetzt');
-    expect(erfolg?.getAttribute('role')).toBe('status');
+    expect(openSpy).toHaveBeenCalledWith(jasmine.stringContaining('Passwort wurde gesetzt'), 'OK', jasmine.anything());
   });
 
   it('lets the user toggle password visibility', () => {

@@ -7,15 +7,12 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterLink } from '@angular/router';
 import { debounceTime, distinctUntilChanged, firstValueFrom, Subject } from 'rxjs';
 import { AvvCode, AvvCodeApi } from '../../core/avv-code-api.js';
 import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
 import { WareneintragApi } from '../../core/wareneintrag-api.js';
-
-interface Wareneintrag {
-  id: string;
-}
 
 // Die drei Ansichten sind optional – der Nutzer entscheidet selbst, wie
 // viele Fotos er aufnimmt (0 bis 3), siehe CONTEXT.md.
@@ -55,6 +52,7 @@ const SUCHE_DEBOUNCE_MS = 300;
 export class WareneintragErfassen {
   private readonly avvCodeApi = inject(AvvCodeApi);
   private readonly wareneintragApi = inject(WareneintragApi);
+  private readonly snackBar = inject(MatSnackBar);
 
   protected readonly fotoKacheln = FOTO_KACHELN;
   private readonly fotos: Record<FotoAnsicht, File | null> = { fotoFern: null, fotoNah: null, fotoDetail: null };
@@ -102,7 +100,6 @@ export class WareneintragErfassen {
     inject(DestroyRef).onDestroy(() => this.fotoVorschauenFreigeben());
   }
 
-  protected readonly angelegt = signal<Wareneintrag | null>(null);
   protected readonly fehler = signal<string | null>(null);
   protected readonly wirdGeladen = signal(false);
 
@@ -160,8 +157,10 @@ export class WareneintragErfassen {
       formData.append('avvCodeId', this.ausgewaehlterAvvCode.id);
       formData.append('freitext', this.freitext);
 
-      const result = await firstValueFrom(this.wareneintragApi.erstellen(formData));
-      this.angelegt.set(result);
+      await firstValueFrom(this.wareneintragApi.erstellen(formData));
+      // Direkt bereit für den nächsten Eintrag, Bestätigung per Snackbar.
+      this.weitererEintrag();
+      this.snackBar.open('Wareneintrag wurde angelegt.', undefined, { duration: 3000 });
     } catch (error) {
       this.fehler.set(extrahiereFehlermeldung(error, 'Wareneintrag konnte nicht angelegt werden.'));
     } finally {
@@ -170,7 +169,6 @@ export class WareneintragErfassen {
   }
 
   weitererEintrag(): void {
-    this.angelegt.set(null);
     this.fotos.fotoFern = null;
     this.fotos.fotoNah = null;
     this.fotos.fotoDetail = null;
