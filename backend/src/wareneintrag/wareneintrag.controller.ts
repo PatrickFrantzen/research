@@ -89,11 +89,13 @@ export class WareneintragController {
     @Query('suche') suche?: string,
     @Query('seite') seite?: string,
     @Query('proSeite') proSeite?: string,
+    @Query('standortId') standortId?: string,
   ) {
     const seitenNummer = this.parseGanzeZahl(seite, 0, 0, Number.MAX_SAFE_INTEGER, 'seite');
     const eintraegeProSeite = this.parseGanzeZahl(proSeite, STANDARD_PRO_SEITE, 1, MAX_PRO_SEITE, 'proSeite');
     return this.wareneintragService.findAll({
       avvCodeId,
+      standortId,
       suche,
       seite: seitenNummer,
       proSeite: eintraegeProSeite,

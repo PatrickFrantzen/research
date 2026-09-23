@@ -9,6 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { debounceTime, distinctUntilChanged, firstValueFrom, Subject } from 'rxjs';
 import { AvvCodeApi } from '../../../core/avv-code-api.js';
+import { pruefeFoto } from '../../../core/foto-validierung.js';
 import { extrahiereFehlermeldung } from '../../../core/http-fehler.js';
 import { Wareneintrag, WareneintragApi } from '../../../core/wareneintrag-api.js';
 
@@ -99,6 +100,7 @@ export class WareneintragBearbeitenDialog {
 
   protected speichernLaeuft = false;
   protected readonly fehler = signal<string | null>(null);
+  protected readonly fotoFehler = signal<string | null>(null);
 
   get freitext(): string {
     return this.bearbeitungDaten().freitext;
@@ -130,7 +132,11 @@ export class WareneintragBearbeitenDialog {
 
   fotoErsetzen(ansicht: FotoAnsicht, event: Event): void {
     const input = event.target as HTMLInputElement;
-    const datei = input.files?.item(0) ?? null;
+    const auswahl = input.files?.item(0) ?? null;
+    const meldung = auswahl ? pruefeFoto(auswahl) : null;
+    const label = this.fotoKacheln.find((kachel) => kachel.ansicht === ansicht)?.label;
+    this.fotoFehler.set(meldung ? `${label}: ${meldung}` : null);
+    const datei = meldung ? null : auswahl;
     this.fotos.update((fotos) => ({ ...fotos, [ansicht]: datei }));
   }
 

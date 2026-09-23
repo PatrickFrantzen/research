@@ -5,15 +5,19 @@ import { FormField, form } from '@angular/forms/signals';
 import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatSelectModule } from '@angular/material/select';
 import { debounceTime, distinctUntilChanged, firstValueFrom, Subject } from 'rxjs';
 import { AuthService } from '../../core/auth.service.js';
 import { AvvCodeApi } from '../../core/avv-code-api.js';
 import { ConfirmDialog } from '../../core/confirm-dialog/confirm-dialog.js';
 import { LadeZustand } from '../../core/lade-zustand/lade-zustand.js';
+import { StandortApi } from '../../core/standort-api.js';
 import { Wareneintrag, WareneintragApi } from '../../core/wareneintrag-api.js';
 import { WareneintragBearbeitenDialog } from './wareneintrag-bearbeiten-dialog/wareneintrag-bearbeiten-dialog.js';
 
@@ -29,9 +33,12 @@ const FILTER_DEBOUNCE_MS = 300;
     MatAutocompleteModule,
     MatButtonModule,
     MatCardModule,
+    MatChipsModule,
     MatFormFieldModule,
+    MatIconModule,
     MatInputModule,
     MatPaginatorModule,
+    MatSelectModule,
     LadeZustand,
   ],
   templateUrl: './wareneintrag-liste.html',
@@ -40,10 +47,15 @@ const FILTER_DEBOUNCE_MS = 300;
 export class WareneintragListe {
   private readonly avvCodeApi = inject(AvvCodeApi);
   private readonly wareneintragApi = inject(WareneintragApi);
+  private readonly standortApi = inject(StandortApi);
   private readonly dialog = inject(MatDialog);
   protected readonly authService = inject(AuthService);
 
   readonly avvCodeId = signal<string | null>(null);
+  // Anzeige des aktiven AVV-Filters als Chip – ein Filter ist nie aktiv,
+  // ohne sichtbar zu sein (Issue #61).
+  protected readonly avvFilterAnzeige = signal<string | null>(null);
+  readonly standortId = signal<string | null>(null);
   readonly suche = signal('');
   readonly seite = signal(0);
   readonly proSeite = signal(20);
@@ -74,12 +86,22 @@ export class WareneintragListe {
   protected readonly wareneintraege = rxResource({
     params: () => ({
       avvCodeId: this.avvCodeId(),
+      standortId: this.standortId(),
       suche: this.suche(),
       seite: this.seite(),
       proSeite: this.proSeite(),
     }),
     stream: ({ params }) => this.wareneintragApi.liste(params),
   });
+
+  // Neue Standorte erscheinen automatisch, die Liste kommt vom Server.
+  protected readonly standorte = rxResource({
+    stream: () => this.standortApi.liste(),
+  });
+  protected readonly standortListe = computed(() => (this.standorte.hasValue() ? this.standorte.value() : []));
+  protected readonly standortFilterName = computed(
+    () => this.standortListe().find((standort) => standort.id === this.standortId())?.name ?? null,
+  );
 
   // value() wirft im Fehlerzustand – Template und Handler lesen nur hierüber.
   protected readonly avvTrefferListe = computed(() => (this.avvTreffer.hasValue() ? this.avvTreffer.value() : []));
@@ -100,8 +122,6 @@ export class WareneintragListe {
   }
 
   onAvvSucheEingabe(wert: string): void {
-    this.avvCodeId.set(null);
-    this.seite.set(0);
     this.avvSucheEingabe.next(wert);
   }
 
@@ -109,15 +129,46 @@ export class WareneintragListe {
     const avvCode = this.avvTrefferListe().find((treffer) => treffer.id === event.option.value);
     if (!avvCode) return;
     this.avvCodeId.set(avvCode.id);
+    this.avvFilterAnzeige.set(`${avvCode.code} – ${avvCode.bezeichnung}`);
     this.seite.set(0);
-    this.avvSucheAnzeige = `${avvCode.code} – ${avvCode.bezeichnung}`;
+    // Suchfeld sofort wieder frei für eine andere Auswahl.
+    this.avvSucheAnzeige = '';
   }
 
-  onAvvSucheFokus(): void {
-    if (!this.avvCodeId()) return;
+  // Nach der Auswahl zeigt das Suchfeld nichts an – der gewählte AVV-Code
+  // steht als Chip darüber. Ohne displayWith schriebe das Autocomplete die
+  // Options-ID ins Feld.
+  protected readonly leeresSuchfeld = (): string => '';
+
+  avvFilterEntfernen(): void {
+    this.avvCodeId.set(null);
+    this.avvFilterAnzeige.set(null);
+    this.seite.set(0);
+  }
+
+  onStandortGewaehlt(standortId: string | null): void {
+    this.standortId.set(standortId);
+    this.seite.set(0);
+  }
+
+  standortFilterEntfernen(): void {
+    this.onStandortGewaehlt(null);
+  }
+
+  sucheEntfernen(): void {
+    this.filterDaten.update((daten) => ({ ...daten, suche: '' }));
+    this.suche.set('');
+    this.seite.set(0);
+    // Hält distinctUntilChanged synchron – sonst würde dieselbe Suche
+    // danach nicht erneut greifen.
+    this.sucheEingabe.next('');
+  }
+
+  filterZuruecksetzen(): void {
+    this.avvFilterEntfernen();
+    this.standortFilterEntfernen();
+    this.sucheEntfernen();
     this.avvSucheAnzeige = '';
-    this.avvSuchbegriff.set('');
-    this.avvSucheEingabe.next('');
   }
 
   onSucheEingabe(wert: string): void {

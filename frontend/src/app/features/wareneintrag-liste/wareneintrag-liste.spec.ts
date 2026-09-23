@@ -5,6 +5,7 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { AuthService } from '../../core/auth.service.js';
+import { StandortApi } from '../../core/standort-api.js';
 import { WareneintragListe } from './wareneintrag-liste.js';
 
 describe('WareneintragListe', () => {
@@ -21,6 +22,18 @@ describe('WareneintragListe', () => {
         provideHttpClientTesting(),
         provideRouter([]),
         { provide: AuthService, useValue: authService },
+        // Stammdaten-Adapter an der Systemgrenze fest belegt – die Liste
+        // selbst wird weiter über echte HTTP-Requests geprüft.
+        {
+          provide: StandortApi,
+          useValue: {
+            liste: () =>
+              of([
+                { id: 'standort-1', name: 'Hauptsitz' },
+                { id: 'standort-2', name: 'Lager Nord' },
+              ]),
+          },
+        },
       ],
     }).compileComponents();
     httpMock = TestBed.inject(HttpTestingController);
@@ -166,41 +179,218 @@ describe('WareneintragListe', () => {
     request.flush({ daten: [], gesamt: 0 });
   });
 
-  it('lets the user choose another AVV-Code without manually deleting the current selection', fakeAsync(() => {
+  describe('Trefferanzahl (Issue #61)', () => {
+    function ladeListe(gesamt: number) {
+      const fixture = TestBed.createComponent(WareneintragListe);
+      fixture.detectChanges();
+      httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([]);
+      const element = fixture.nativeElement as HTMLElement;
+      const anzahlVorher = element.querySelector('[data-testid="trefferanzahl"]');
+      httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt });
+      tick();
+      fixture.detectChanges();
+      return { anzahlVorher, anzahl: element.querySelector('[data-testid="trefferanzahl"]') };
+    }
+
+    it('shows the total number of hits once loaded, not while loading', fakeAsync(() => {
+      const { anzahlVorher, anzahl } = ladeListe(45);
+
+      expect(anzahlVorher).toBeNull();
+      expect(anzahl?.textContent?.trim()).toBe('45 Wareneinträge');
+    }));
+
+    it('uses the singular for exactly one hit', fakeAsync(() => {
+      expect(ladeListe(1).anzahl?.textContent?.trim()).toBe('1 Wareneintrag');
+    }));
+  });
+
+  it('describes each photo by its view, AVV-Code and date instead of a generic alt text (Issue #61)', fakeAsync(() => {
     const fixture = TestBed.createComponent(WareneintragListe);
     fixture.detectChanges();
-    httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([
-      { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton', gefaehrlich: false },
-    ]);
-    httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 0 });
+    httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([]);
+    httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({
+      daten: [
+        {
+          id: 'wareneintrag-1',
+          fotoFernUrl: '/fern.jpg',
+          fotoNahUrl: null,
+          fotoDetailUrl: '/detail.jpg',
+          freitext: 'test',
+          erstelltAm: '2026-09-19T20:08:00',
+          avvCode: { code: '17 01 01' },
+          standort: { id: 'standort-1', name: 'Hauptsitz' },
+          erfasstVon: { id: 'nutzer-2', vorname: 'Max', nachname: 'Mustermann' },
+        },
+      ],
+      gesamt: 1,
+    });
     tick();
     fixture.detectChanges();
 
-    fixture.componentInstance.onAvvCodeAusgewaehlt({
-      option: {
-        value: 'avv-1',
-      },
-    } as never);
-    fixture.detectChanges();
-    tick();
-    fixture.detectChanges();
-    httpMock
-      .expectOne(
-        (req) => req.url === '/api/v1/wareneintraege' && req.params.get('avvCodeId') === 'avv-1',
-      )
-      .flush({ daten: [], gesamt: 0 });
-
-    const input = fixture.nativeElement.querySelector('[data-testid="avv-suche"]') as HTMLInputElement;
-    expect(input.value).toBe('17 01 01 – Beton');
-
-    input.dispatchEvent(new Event('focus'));
-    fixture.detectChanges();
-    tick();
-    fixture.detectChanges();
-
-    expect(input.value).toBe('');
-    expect(fixture.componentInstance.avvCodeId()).toBe('avv-1');
+    const alts = Array.from(fixture.nativeElement.querySelectorAll('.fotos img') as NodeListOf<HTMLImageElement>).map(
+      (img) => img.alt,
+    );
+    expect(alts).toEqual(['Fernansicht – AVV 17 01 01, 19.09.2026', 'Detailansicht – AVV 17 01 01, 19.09.2026']);
   }));
+
+  describe('sichtbare Filter (Issue #61)', () => {
+    function waehleAvvCode(fixture: ReturnType<typeof TestBed.createComponent<WareneintragListe>>, id: string) {
+      fixture.componentInstance.onAvvCodeAusgewaehlt({ option: { value: id } } as never);
+      fixture.detectChanges();
+      tick();
+      fixture.detectChanges();
+    }
+
+    it('shows the chosen AVV-Code as a removable chip and frees the search field for another choice', fakeAsync(() => {
+      const fixture = TestBed.createComponent(WareneintragListe);
+      fixture.detectChanges();
+      httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([
+        { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton', gefaehrlich: false },
+      ]);
+      httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 0 });
+      tick();
+      fixture.detectChanges();
+      const element = fixture.nativeElement as HTMLElement;
+
+      waehleAvvCode(fixture, 'avv-1');
+      httpMock
+        .expectOne((req) => req.url === '/api/v1/wareneintraege' && req.params.get('avvCodeId') === 'avv-1')
+        .flush({ daten: [], gesamt: 0 });
+
+      expect(element.querySelector('[data-testid="filter-avv"]')?.textContent).toContain('17 01 01 – Beton');
+      expect((element.querySelector('[data-testid="avv-suche"]') as HTMLInputElement).value).toBe('');
+
+      (element.querySelector('[data-testid="filter-avv"] [matChipRemove]') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      tick();
+      fixture.detectChanges();
+
+      httpMock
+        .expectOne((req) => req.url === '/api/v1/wareneintraege' && !req.params.has('avvCodeId'))
+        .flush({ daten: [], gesamt: 0 });
+      expect(element.querySelector('[data-testid="filter-avv"]')).toBeNull();
+    }));
+
+    it('leaves the search field empty after picking a suggestion from the autocomplete', fakeAsync(() => {
+      const fixture = TestBed.createComponent(WareneintragListe);
+      fixture.detectChanges();
+      httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([
+        { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton', gefaehrlich: false },
+      ]);
+      httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 0 });
+      tick();
+      fixture.detectChanges();
+      const input = fixture.nativeElement.querySelector('[data-testid="avv-suche"]') as HTMLInputElement;
+
+      input.dispatchEvent(new Event('focusin'));
+      fixture.detectChanges();
+      tick();
+      (document.querySelector('mat-option') as HTMLElement).click();
+      fixture.detectChanges();
+      tick();
+      fixture.detectChanges();
+
+      httpMock.expectOne((req) => req.params.get('avvCodeId') === 'avv-1').flush({ daten: [], gesamt: 0 });
+      expect(input.value).toBe('');
+      expect(fixture.nativeElement.querySelector('[data-testid="filter-avv"]')).not.toBeNull();
+    }));
+
+    it('filters by the chosen Standort and shows it as a removable chip', fakeAsync(() => {
+      const fixture = TestBed.createComponent(WareneintragListe);
+      fixture.detectChanges();
+      httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([]);
+      httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 0 });
+      tick();
+      fixture.detectChanges();
+      const element = fixture.nativeElement as HTMLElement;
+
+      (element.querySelector('[data-testid="standort-filter"] .mat-mdc-select-trigger') as HTMLElement).click();
+      fixture.detectChanges();
+      tick();
+      const option = Array.from(document.querySelectorAll('mat-option')).find((o) => o.textContent?.includes('Lager Nord'));
+      (option as HTMLElement).click();
+      fixture.detectChanges();
+      tick();
+      fixture.detectChanges();
+
+      const request = httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege');
+      expect(request.request.params.get('standortId')).toBe('standort-2');
+      expect(request.request.params.get('seite')).toBe('0');
+      request.flush({ daten: [], gesamt: 0 });
+      tick();
+      fixture.detectChanges();
+      expect(element.querySelector('[data-testid="filter-standort"]')?.textContent).toContain('Lager Nord');
+
+      (element.querySelector('[data-testid="filter-standort"] [matChipRemove]') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      tick();
+      fixture.detectChanges();
+      httpMock
+        .expectOne((req) => req.url === '/api/v1/wareneintraege' && !req.params.has('standortId'))
+        .flush({ daten: [], gesamt: 0 });
+      expect(element.querySelector('[data-testid="filter-standort"]')).toBeNull();
+    }));
+
+    function listeMitFiltern() {
+      const fixture = TestBed.createComponent(WareneintragListe);
+      fixture.detectChanges();
+      httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([
+        { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton', gefaehrlich: false },
+      ]);
+      httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 0 });
+      tick();
+      fixture.detectChanges();
+      waehleAvvCode(fixture, 'avv-1');
+      httpMock.expectOne((req) => req.params.get('avvCodeId') === 'avv-1').flush({ daten: [], gesamt: 0 });
+      fixture.componentInstance.onStandortGewaehlt('standort-2');
+      fixture.detectChanges();
+      tick();
+      httpMock.expectOne((req) => req.params.get('standortId') === 'standort-2').flush({ daten: [], gesamt: 0 });
+      fixture.componentInstance.onSucheEingabe('Bauschutt');
+      tick(300);
+      fixture.detectChanges();
+      httpMock.expectOne((req) => req.params.get('suche') === 'Bauschutt').flush({ daten: [], gesamt: 0 });
+      tick();
+      fixture.detectChanges();
+      return { fixture, element: fixture.nativeElement as HTMLElement };
+    }
+
+    it('shows the free-text search as a removable chip as well', fakeAsync(() => {
+      const { fixture, element } = listeMitFiltern();
+
+      expect(element.querySelector('[data-testid="filter-suche"]')?.textContent).toContain('Bauschutt');
+      (element.querySelector('[data-testid="filter-suche"] [matChipRemove]') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      tick(300);
+      fixture.detectChanges();
+
+      const request = httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege');
+      expect(request.request.params.has('suche')).toBeFalse();
+      expect(request.request.params.get('avvCodeId')).toBe('avv-1');
+      request.flush({ daten: [], gesamt: 0 });
+      expect(element.querySelector('[data-testid="filter-suche"]')).toBeNull();
+    }));
+
+    it('resets all filters at once and starts again on the first page', fakeAsync(() => {
+      const { fixture, element } = listeMitFiltern();
+
+      (element.querySelector('[data-testid="filter-zuruecksetzen"]') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      tick(300);
+      fixture.detectChanges();
+
+      const request = httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege');
+      expect(request.request.params.has('avvCodeId')).toBeFalse();
+      expect(request.request.params.has('standortId')).toBeFalse();
+      expect(request.request.params.has('suche')).toBeFalse();
+      expect(request.request.params.get('seite')).toBe('0');
+      request.flush({ daten: [], gesamt: 0 });
+      tick();
+      fixture.detectChanges();
+      expect(element.querySelector('.aktive-filter')).toBeNull();
+      expect((element.querySelector('[data-testid="freitext-suche"]') as HTMLInputElement).value).toBe('');
+    }));
+  });
 
   it('shows the assigned AVV-Code on each Wareneintrag', fakeAsync(() => {
     const fixture = TestBed.createComponent(WareneintragListe);

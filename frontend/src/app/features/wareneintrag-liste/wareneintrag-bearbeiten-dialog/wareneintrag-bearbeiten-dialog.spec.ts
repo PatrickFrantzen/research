@@ -65,6 +65,20 @@ describe('WareneintragBearbeitenDialog', () => {
     return fixture;
   }
 
+  it('rejects an invalid replacement photo with a message and does not save it (Issue #59)', () => {
+    const fixture = createComponent();
+    const component = asTestable(fixture.componentInstance);
+
+    component.fotoErsetzen('fotoNah', fotoAuswahlEvent(new File(['gif'], 'neu.gif', { type: 'image/gif' })));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Nahansicht: Nur JPEG, PNG oder WebP erlaubt.');
+    void fixture.componentInstance.speichern();
+    const request = httpMock.expectOne('/api/v1/wareneintraege/wareneintrag-1');
+    expect((request.request.body as FormData).get('fotoNah')).toBeNull();
+    request.flush({});
+  });
+
   it('prefills the freitext field from the given Wareneintrag', () => {
     const fixture = createComponent();
     expect(fixture.componentInstance.freitext).toBe('alter Text');

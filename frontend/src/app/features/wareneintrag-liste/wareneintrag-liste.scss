@@ -18,6 +18,14 @@
   margin-bottom: 16px;
 }
 
+.aktive-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
 .karte {
   width: 280px;
 }
@@ -33,4 +41,10 @@
     object-fit: cover;
     border-radius: var(--mat-sys-corner-small);
   }
+}
+
+.trefferanzahl {
+  margin: 0 0 16px;
+  font: var(--mat-sys-label-large);
+  color: var(--mat-sys-on-surface-variant);
 }

@@ -44,6 +44,91 @@ describe('WareneintragErfassen', () => {
     return fixture;
   }
 
+  describe('Fotoauswahl (Issue #59)', () => {
+    it('offers only the image types the server accepts and prefers the rear camera', () => {
+      const fixture = createComponent();
+      const inputs = fixture.nativeElement.querySelectorAll('input[type="file"]') as NodeListOf<HTMLInputElement>;
+
+      expect(inputs.length).toBe(3);
+      inputs.forEach((input) => {
+        expect(input.accept).toBe('image/jpeg,image/png,image/webp');
+        expect(input.getAttribute('capture')).toBe('environment');
+      });
+    });
+
+    it('rejects an unsupported file type before any request: message, no preview, not submitted', async () => {
+      const fixture = createComponent();
+      const component = asTestable(fixture.componentInstance);
+
+      component.onFotoAusgewaehlt('fotoFern', fotoAuswahlEvent(new File(['gif'], 'foto.gif', { type: 'image/gif' })));
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).toContain('Fernansicht: Nur JPEG, PNG oder WebP erlaubt.');
+      expect(component.fotoVorschau('fotoFern')).toBeNull();
+
+      component.ausgewaehlterAvvCode = { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' };
+      fixture.componentInstance.freitext = 'Bauschutt am Eingang';
+      const submitPromise = fixture.componentInstance.submit();
+      const request = httpMock.expectOne('/api/v1/wareneintraege');
+      expect((request.request.body as FormData).get('fotoFern')).toBeNull();
+      request.flush({ id: 'wareneintrag-1' });
+      await submitPromise;
+    });
+
+    it('rejects a file larger than 10 MB with a clear message and no preview', () => {
+      const fixture = createComponent();
+      const component = asTestable(fixture.componentInstance);
+      const zuGross = new File([new Uint8Array(10 * 1024 * 1024 + 1)], 'riesig.jpg', { type: 'image/jpeg' });
+
+      component.onFotoAusgewaehlt('fotoNah', fotoAuswahlEvent(zuGross));
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).toContain('Nahansicht: Datei ist größer als 10 MB.');
+      expect(component.fotoVorschau('fotoNah')).toBeNull();
+    });
+
+    it('accepts a PNG or WebP of exactly 10 MB: clears the previous message, shows a preview and submits it', async () => {
+      const fixture = createComponent();
+      const component = asTestable(fixture.componentInstance);
+      component.onFotoAusgewaehlt('fotoDetail', fotoAuswahlEvent(new File(['gif'], 'alt.gif', { type: 'image/gif' })));
+      const grenze = new File([new Uint8Array(10 * 1024 * 1024)], 'detail.webp', { type: 'image/webp' });
+
+      component.onFotoAusgewaehlt('fotoDetail', fotoAuswahlEvent(grenze));
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('[role="alert"]')).toBeNull();
+      expect(component.fotoVorschau('fotoDetail')).not.toBeNull();
+      component.ausgewaehlterAvvCode = { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' };
+      fixture.componentInstance.freitext = 'Bauschutt am Eingang';
+      const submitPromise = fixture.componentInstance.submit();
+      const request = httpMock.expectOne('/api/v1/wareneintraege');
+      expect(((request.request.body as FormData).get('fotoDetail') as File).name).toBe('detail.webp');
+      request.flush({ id: 'wareneintrag-1' });
+      await submitPromise;
+    });
+
+    it('clears the file inputs after a successful entry, so the same photo can be picked again', async () => {
+      const fixture = createComponent();
+      const input = fixture.nativeElement.querySelector('input[type="file"]') as HTMLInputElement;
+      const auswahl = new DataTransfer();
+      auswahl.items.add(new File(['fern'], 'fern.jpg', { type: 'image/jpeg' }));
+      input.files = auswahl.files;
+      input.dispatchEvent(new Event('change'));
+      const component = asTestable(fixture.componentInstance);
+      component.ausgewaehlterAvvCode = { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' };
+      fixture.componentInstance.freitext = 'Bauschutt am Eingang';
+
+      const submitPromise = fixture.componentInstance.submit();
+      httpMock.expectOne('/api/v1/wareneintraege').flush({ id: 'wareneintrag-1' });
+      await submitPromise;
+      fixture.detectChanges();
+
+      const inputs = fixture.nativeElement.querySelectorAll('input[type="file"]') as NodeListOf<HTMLInputElement>;
+      inputs.forEach((feld) => expect(feld.files?.length ?? 0).toBe(0));
+      expect(component.fotoVorschau('fotoFern')).toBeNull();
+    });
+  });
+
   it('cannot be submitted until AVV-Code and freitext are both set, no foto required', () => {
     const fixture = createComponent();
     const component = asTestable(fixture.componentInstance);

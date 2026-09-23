@@ -11,9 +11,8 @@
         [matAutocomplete]="avvAuto"
         [formField]="filterForm.avvSucheAnzeige"
         (input)="onAvvSucheEingabe(avvSuche.value)"
-        (focus)="onAvvSucheFokus()"
       />
-      <mat-autocomplete #avvAuto="matAutocomplete" (optionSelected)="onAvvCodeAusgewaehlt($event)">
+      <mat-autocomplete #avvAuto="matAutocomplete" [displayWith]="leeresSuchfeld" (optionSelected)="onAvvCodeAusgewaehlt($event)">
         @for (avvCode of avvTrefferListe(); track avvCode.id) {
           <mat-option [value]="avvCode.id">{{ avvCode.code }} – {{ avvCode.bezeichnung }}</mat-option>
         }
@@ -25,9 +24,53 @@
 
     <mat-form-field appearance="outline">
       <mat-label>Freitext durchsuchen</mat-label>
-      <input matInput #sucheInput [formField]="filterForm.suche" (input)="onSucheEingabe(sucheInput.value)" />
+      <input matInput #sucheInput data-testid="freitext-suche" [formField]="filterForm.suche" (input)="onSucheEingabe(sucheInput.value)" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" data-testid="standort-filter">
+      <mat-label>Standort</mat-label>
+      <mat-select [value]="standortId()" (selectionChange)="onStandortGewaehlt($event.value)">
+        <mat-option [value]="null">Alle Standorte</mat-option>
+        @for (standort of standortListe(); track standort.id) {
+          <mat-option [value]="standort.id">{{ standort.name }}</mat-option>
+        }
+      </mat-select>
     </mat-form-field>
   </div>
+
+  @if (avvFilterAnzeige() || standortId() || suche()) {
+    <div class="aktive-filter">
+      <mat-chip-set aria-label="Aktive Filter">
+        @if (avvFilterAnzeige(); as avv) {
+          <mat-chip data-testid="filter-avv" (removed)="avvFilterEntfernen()">
+            AVV: {{ avv }}
+            <button matChipRemove aria-label="AVV-Filter entfernen"><mat-icon>cancel</mat-icon></button>
+          </mat-chip>
+        }
+        @if (standortId()) {
+          <mat-chip data-testid="filter-standort" (removed)="standortFilterEntfernen()">
+            Standort: {{ standortFilterName() }}
+            <button matChipRemove aria-label="Standort-Filter entfernen"><mat-icon>cancel</mat-icon></button>
+          </mat-chip>
+        }
+        @if (suche(); as begriff) {
+          <mat-chip data-testid="filter-suche" (removed)="sucheEntfernen()">
+            Freitext: {{ begriff }}
+            <button matChipRemove aria-label="Freitext-Filter entfernen"><mat-icon>cancel</mat-icon></button>
+          </mat-chip>
+        }
+      </mat-chip-set>
+      <button matButton type="button" data-testid="filter-zuruecksetzen" (click)="filterZuruecksetzen()">
+        Filter zurücksetzen
+      </button>
+    </div>
+  }
+
+  @if (wareneintraege.hasValue()) {
+    <p class="trefferanzahl" data-testid="trefferanzahl" role="status">
+      {{ wareneintraege.value().gesamt }} {{ wareneintraege.value().gesamt === 1 ? 'Wareneintrag' : 'Wareneinträge' }}
+    </p>
+  }
 
   <app-lade-zustand [ressource]="wareneintraege" meldung="Wareneinträge konnten nicht geladen werden." />
 
@@ -42,13 +85,13 @@
           <mat-card-content>
             <div class="fotos">
               @if (wareneintrag.fotoFernUrl) {
-                <img [src]="wareneintrag.fotoFernUrl" alt="Fernansicht" />
+                <img [src]="wareneintrag.fotoFernUrl" [alt]="'Fernansicht – AVV ' + wareneintrag.avvCode.code + ', ' + (wareneintrag.erstelltAm | date: 'dd.MM.yyyy')" />
               }
               @if (wareneintrag.fotoNahUrl) {
-                <img [src]="wareneintrag.fotoNahUrl" alt="Nahansicht" />
+                <img [src]="wareneintrag.fotoNahUrl" [alt]="'Nahansicht – AVV ' + wareneintrag.avvCode.code + ', ' + (wareneintrag.erstelltAm | date: 'dd.MM.yyyy')" />
               }
               @if (wareneintrag.fotoDetailUrl) {
-                <img [src]="wareneintrag.fotoDetailUrl" alt="Detailansicht" />
+                <img [src]="wareneintrag.fotoDetailUrl" [alt]="'Detailansicht – AVV ' + wareneintrag.avvCode.code + ', ' + (wareneintrag.erstelltAm | date: 'dd.MM.yyyy')" />
               }
             </div>
             <p>{{ wareneintrag.freitext }}</p>
