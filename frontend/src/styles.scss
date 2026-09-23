@@ -6,6 +6,12 @@
 // custom components at https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
 @use '@fontsource/material-icons';
+// Roboto lokal gebündelt statt über Google Fonts (Material-Standardschrift,
+// Gewichte laut M3-Typescale).
+@use '@fontsource/roboto/400' as roboto-400;
+@use '@fontsource/roboto/500' as roboto-500;
+@use '@fontsource/roboto/700' as roboto-700;
+@use './theme-colors' as theme;
 
 // mat-icon setzt die Klasse .material-icons, deren Ligatur-Regeln sonst
 // Googles CDN-Stylesheet mitliefert. @fontsource/material-icons enthält nur
@@ -29,13 +35,16 @@
 
 html {
   height: 100%;
-  // Primärfarbe Rot aus dem Kunden-Login-Mockup, siehe docs/design/branding.md
-  // (Material-Standardpalette als Näherung, exakter Marken-Hex-Wert steht
-  // noch aus).
+  // Hell/Dunkel folgt der Systemeinstellung – Material schaltet alle
+  // --mat-sys-*-Tokens automatisch um. ThemeService überschreibt das per
+  // Inline-Style, sobald der Nutzer selbst umschaltet (Issue #19).
+  color-scheme: light dark;
+  // Markenpalette aus REMONDIS-Rot #ed1c24 und Anthrazit, siehe
+  // _theme-colors.scss und docs/design/branding.md (Issue #17).
   @include mat.theme((
     color: (
-      primary: mat.$red-palette,
-      tertiary: mat.$blue-palette,
+      primary: theme.$primary-palette,
+      tertiary: theme.$tertiary-palette,
     ),
     typography: Roboto,
     density: 0,
@@ -43,11 +52,6 @@ html {
 }
 
 body {
-  // Default the application to a light color theme. This can be changed to
-  // `dark` to enable the dark color theme, or to `light dark` to defer to the
-  // user's system settings.
-  color-scheme: light;
-
   // Set a default background, font and text colors for the application using
   // Angular Material's system-level CSS variables. Learn more about these
   // variables at https://material.angular.dev/guide/system-variables
@@ -59,4 +63,43 @@ body {
   margin: 0;
   height: 100%;
 }
-/* You can add global styles to this file, and also import other style files */
+// Gemeinsames Seitenlayout für alle Feature-Seiten: zentrierte Karte, Inhalt
+// und Aktionen kommen von mat-card-* (Material-Defaults statt eigener SCSS
+// pro Komponente).
+.seite {
+  display: flex;
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+// Vollbild-zentriert für Seiten ohne Shell (Login, Passwort, 404).
+.seite-zentriert {
+  align-items: center;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.karte {
+  width: 100%;
+  max-width: 400px;
+}
+
+.formular {
+  display: flex;
+  flex-direction: column;
+}
+
+.formular mat-form-field {
+  width: 100%;
+}
+
+.fehler {
+  color: var(--mat-sys-error);
+  margin: 0;
+}
+
+// Seitentitel als <h1 mat-card-title>: Browser-Abstand des h1 entfernen,
+// Schrift kommt vom Card-Titel.
+h1[mat-card-title] {
+  margin: 0;
+}

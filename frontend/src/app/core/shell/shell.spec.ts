@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { provideRouter, Router } from '@angular/router';
 import { AuthService } from '../auth.service.js';
+import { ThemeService } from '../theme.service.js';
 import { MehrMenu } from './mehr-menu.js';
 import { Shell } from './shell.js';
 
@@ -33,6 +34,24 @@ describe('Shell', () => {
     expect(text).toContain('Mehr');
     const logo = fixture.nativeElement.querySelector('.marke') as HTMLImageElement | null;
     expect(logo?.getAttribute('src')).toBe('brand/re-search-header.svg');
+  });
+
+  it('links to the Impressum in the desktop footer', () => {
+    const fixture = TestBed.createComponent(Shell);
+    fixture.detectChanges();
+
+    const link = fixture.nativeElement.querySelector('footer.desktop-footer a') as HTMLAnchorElement | null;
+    expect(link?.getAttribute('href')).toBe('/impressum');
+  });
+
+  it('toggles the color mode from the desktop toolbar', () => {
+    const umschaltenSpy = spyOn(TestBed.inject(ThemeService), 'umschalten');
+    const fixture = TestBed.createComponent(Shell);
+    fixture.detectChanges();
+
+    (fixture.nativeElement.querySelector('.desktop-toolbar [data-testid="farbmodus-umschalten"]') as HTMLButtonElement).click();
+
+    expect(umschaltenSpy).toHaveBeenCalled();
   });
 
   it('opens the Mehr bottom sheet with MehrMenu', () => {

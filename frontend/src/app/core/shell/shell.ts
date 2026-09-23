@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../auth.service.js';
+import { ThemeService } from '../theme.service.js';
 import { MehrMenu } from './mehr-menu.js';
 
 @Component({
@@ -15,6 +16,7 @@ import { MehrMenu } from './mehr-menu.js';
 })
 export class Shell {
   protected readonly authService = inject(AuthService);
+  protected readonly themeService = inject(ThemeService);
   private readonly router = inject(Router);
   private readonly bottomSheet = inject(MatBottomSheet);
 

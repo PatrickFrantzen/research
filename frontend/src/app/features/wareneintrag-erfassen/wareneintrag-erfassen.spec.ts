@@ -1,13 +1,13 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { provideRouter } from '@angular/router';
 import { WareneintragErfassen } from './wareneintrag-erfassen.js';
 
 interface TestableWareneintragErfassen {
   ausgewaehlterAvvCode: { id: string; code: string; bezeichnung: string; gefaehrlich?: boolean } | null;
   kannAbsenden: boolean;
-  angelegt: () => { id: string } | null;
   fehler: () => string | null;
   onFotoAusgewaehlt: (ansicht: 'fotoFern' | 'fotoNah' | 'fotoDetail', event: Event) => void;
   fotoVorschau: (ansicht: 'fotoFern' | 'fotoNah' | 'fotoDetail') => string | null;
@@ -65,7 +65,8 @@ describe('WareneintragErfassen', () => {
     expect().nothing();
   });
 
-  it('submits without any foto, since photos are optional', async () => {
+  it('submits without any foto, since photos are optional, then confirms and resets for the next entry', async () => {
+    const openSpy = spyOn(TestBed.inject(MatSnackBar), 'open');
     const fixture = createComponent();
     const component = asTestable(fixture.componentInstance);
     component.ausgewaehlterAvvCode = { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' };
@@ -82,7 +83,9 @@ describe('WareneintragErfassen', () => {
     request.flush({ id: 'wareneintrag-1' });
     await submitPromise;
 
-    expect(component.angelegt()).toEqual({ id: 'wareneintrag-1' });
+    expect(openSpy).toHaveBeenCalledWith('Wareneintrag wurde angelegt.', undefined, jasmine.anything());
+    expect(fixture.componentInstance.freitext).toBe('');
+    expect(component.ausgewaehlterAvvCode).toBeNull();
   });
 
   it('submits only the fotos that were actually taken, under their own field names', async () => {
@@ -131,6 +134,54 @@ describe('WareneintragErfassen', () => {
     expect(component.ausgewaehlterAvvCode).toBeNull();
     expect(fixture.componentInstance.freitext).toBe('');
     expect(component.kannAbsenden).toBe(false);
+  });
+
+  describe('Object-URLs der Fotovorschau', () => {
+    let urlZaehler: number;
+
+    beforeEach(() => {
+      urlZaehler = 0;
+      spyOn(URL, 'createObjectURL').and.callFake(() => `blob:vorschau-${++urlZaehler}`);
+      spyOn(URL, 'revokeObjectURL');
+    });
+
+    function foto(name: string): Event {
+      return fotoAuswahlEvent(new File([name], `${name}.jpg`, { type: 'image/jpeg' }));
+    }
+
+    it('revokes the previous preview when a foto is replaced and shows the new one', () => {
+      const fixture = createComponent();
+      const component = asTestable(fixture.componentInstance);
+
+      component.onFotoAusgewaehlt('fotoFern', foto('erstes'));
+      component.onFotoAusgewaehlt('fotoFern', foto('zweites'));
+
+      expect(URL.revokeObjectURL).toHaveBeenCalledOnceWith('blob:vorschau-1');
+      expect(component.fotoVorschau('fotoFern')).toBe('blob:vorschau-2');
+    });
+
+    it('revokes every preview exactly once on reset', () => {
+      const fixture = createComponent();
+      const component = asTestable(fixture.componentInstance);
+      component.onFotoAusgewaehlt('fotoFern', foto('fern'));
+      component.onFotoAusgewaehlt('fotoDetail', foto('detail'));
+
+      fixture.componentInstance.weitererEintrag();
+      fixture.destroy();
+
+      expect(URL.revokeObjectURL).toHaveBeenCalledTimes(2);
+      expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:vorschau-1');
+      expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:vorschau-2');
+    });
+
+    it('revokes remaining previews when the component is destroyed', () => {
+      const fixture = createComponent();
+      asTestable(fixture.componentInstance).onFotoAusgewaehlt('fotoNah', foto('nah'));
+
+      fixture.destroy();
+
+      expect(URL.revokeObjectURL).toHaveBeenCalledOnceWith('blob:vorschau-1');
+    });
   });
 
   it('debounces AVV search input and selects AVV codes by id', fakeAsync(() => {

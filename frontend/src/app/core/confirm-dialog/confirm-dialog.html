@@ -1,10 +1,10 @@
 <h2 mat-dialog-title>{{ daten.titel }}</h2>
 <mat-dialog-content>{{ daten.nachricht }}</mat-dialog-content>
 <mat-dialog-actions align="end">
-  <button mat-button type="button" data-testid="confirm-dialog-abbrechen" (click)="abbrechen()">
+  <button matButton type="button" data-testid="confirm-dialog-abbrechen" (click)="abbrechen()">
     {{ daten.abbrechenLabel ?? 'Abbrechen' }}
   </button>
-  <button mat-raised-button color="warn" type="button" data-testid="confirm-dialog-bestaetigen" (click)="bestaetigen()">
+  <button matButton="filled" type="button" data-testid="confirm-dialog-bestaetigen" (click)="bestaetigen()">
     {{ daten.bestaetigenLabel ?? 'Bestätigen' }}
   </button>
 </mat-dialog-actions>

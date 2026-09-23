@@ -1,7 +1,8 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { Router, provideRouter } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { AuthService } from '../../core/auth.service.js';
 import { Login } from './login.js';
 
@@ -119,6 +120,34 @@ describe('Login', () => {
 
     expect(logo?.getAttribute('src')).toBe('brand/re-search-large.svg');
     expect(logo?.alt).toBe('RE-SEARCH – Transparente Entsorgungswege');
+  });
+
+  it('shows no password confirmation on a normal visit', () => {
+    const openSpy = spyOn(TestBed.inject(MatSnackBar), 'open');
+    const fixture = TestBed.createComponent(Login);
+    fixture.detectChanges();
+
+    expect(openSpy).not.toHaveBeenCalled();
+  });
+
+  it('confirms a freshly set password in a snack bar after the redirect from PasswortSetzen', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [Login],
+      providers: [
+        provideRouter([]),
+        { provide: AuthService, useValue: authService },
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { queryParamMap: convertToParamMap({ passwortGesetzt: '1' }) } },
+        },
+      ],
+    });
+    const openSpy = spyOn(TestBed.inject(MatSnackBar), 'open');
+    const fixture = TestBed.createComponent(Login);
+    fixture.detectChanges();
+
+    expect(openSpy).toHaveBeenCalledWith(jasmine.stringContaining('Passwort wurde gesetzt'), 'OK', jasmine.anything());
   });
 
   it('lets the user toggle password visibility', () => {

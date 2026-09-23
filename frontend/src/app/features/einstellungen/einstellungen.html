@@ -1,40 +1,45 @@
 <div class="seite">
   <mat-card class="karte">
-    <h1>Einstellungen</h1>
+    <mat-card-header>
+      <h1 mat-card-title>Einstellungen</h1>
+    </mat-card-header>
 
     <form (submit)="$event.preventDefault(); submit()">
-      <mat-form-field appearance="outline">
-        <mat-label>Vorname</mat-label>
-        <input matInput [formField]="einstellungenForm.vorname" />
-      </mat-form-field>
+      <mat-card-content class="formular">
+        <mat-form-field appearance="outline">
+          <mat-label>Vorname</mat-label>
+          <input matInput [formField]="einstellungenForm.vorname" />
+        </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Nachname</mat-label>
-        <input matInput [formField]="einstellungenForm.nachname" />
-      </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Nachname</mat-label>
+          <input matInput [formField]="einstellungenForm.nachname" />
+        </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Standort</mat-label>
-        <select matNativeControl [formField]="einstellungenForm.standortId">
-          <option value="">Bitte wählen</option>
-          @for (standort of standorte.value(); track standort.id) {
-            <option [value]="standort.id">{{ standort.name }}</option>
-          }
-        </select>
-      </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Standort</mat-label>
+          <mat-select [formField]="einstellungenForm.standortId">
+            @for (standort of standorte.value(); track standort.id) {
+              <mat-option [value]="standort.id">{{ standort.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
 
-      @if (gespeichert()) {
-        <p class="erfolg">Änderungen gespeichert.</p>
-      }
-      @if (fehler()) {
-        <p class="fehler">{{ fehler() }}</p>
-      }
+        @if (fehler()) {
+          <p class="fehler" role="alert">{{ fehler() }}</p>
+        }
+      </mat-card-content>
 
-      <div class="aktionen">
+      <mat-card-actions align="end">
         <button matButton="filled" type="submit" [disabled]="!einstellungenForm().valid() || wirdGeladen()">
           Speichern
         </button>
-      </div>
+      </mat-card-actions>
     </form>
+
+    <!-- Auf Mobil gibt es keinen Footer, daher Impressum hier (Issue #21). -->
+    <mat-card-actions>
+      <a matButton class="impressum-link" routerLink="/impressum">Impressum</a>
+    </mat-card-actions>
   </mat-card>
 </div>

@@ -13,7 +13,8 @@ Quelle: Login-Mockup vom Kunden (RE-SEARCH), erhalten 2026-09-18.
 
 | Verwendung | Wert | Quelle / Sicherheit |
 |---|---|---|
-| Primärfarbe (Logo, aktive Feld-Border) | Rot (Logo-Rechteck) | aus Mockup abgelesen, exakter Hex-Wert nicht bekannt — mit Original-Assets/Styleguide des Kunden verifizieren |
+| Primärfarbe (Logo, aktive Feld-Border) | Rot `#ed1c24` | REMONDIS-Logo (Wikimedia Commons), deckt sich mit Mockup. Im Material-Theme als Seed der Palette genutzt (`frontend/src/_theme-colors.scss`); Buttons nutzen den dunkleren Ton `#c00014` für WCAG-AA-Kontrast (Issue #17) |
+| Sekundär-/Akzent- und Neutralfarbe | Anthrazit `#383e42` | Festlegung Issue #17 (Anlehnung an RAL 7016), keine Kundenvorgabe |
 | Text/Headline-Akzent | dunkles Blaugrau (Claim-Text) | aus Mockup abgelesen, exakter Hex-Wert nicht bekannt |
 | Link-Farbe | Blau ("Forgot password") | aus Mockup abgelesen, exakter Hex-Wert nicht bekannt |
 | Hintergrund | RAL 9007 "Graualuminium" | vom Kunden explizit als RAL-Code angegeben. RAL-Codes sind offiziell nur als physische Farbmuster definiert, keine offizielle Hex-Umrechnung — kursierende Näherungen liegen bei ca. `#8C8C86`–`#8F8B81`. **Nicht ungeprüft übernehmen**, sondern per Colorpicker aus Original-Datei oder RAL-Farbkarte verifizieren |

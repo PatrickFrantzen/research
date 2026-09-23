@@ -1,6 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { provideRouter } from '@angular/router';
 import { NutzerAnlegen } from './nutzer-anlegen.js';
 
@@ -70,5 +71,47 @@ describe('NutzerAnlegen', () => {
     expect(
       (fixture.componentInstance as unknown as { fehler: () => string | null }).fehler(),
     ).toBe('Account konnte nicht angelegt werden.');
+  });
+
+  async function legeNutzerAn(fixture: ReturnType<typeof TestBed.createComponent<NutzerAnlegen>>) {
+    const component = fixture.componentInstance;
+    component.vorname = 'Erika';
+    component.nachname = 'Mustermann';
+    component.email = 'erika@example.com';
+    component.standortId = 'standort-1';
+    const submitPromise = component.submit();
+    httpMock
+      .expectOne('/api/v1/nutzer')
+      .flush({ email: 'erika@example.com', passwortSetzenLink: 'https://example.com/setzen?token=abc' });
+    await submitPromise;
+    fixture.detectChanges();
+  }
+
+  it('shows the invitation link read-only with a copy button and confirms copying', async () => {
+    const openSpy = spyOn(TestBed.inject(MatSnackBar), 'open');
+    const fixture = TestBed.createComponent(NutzerAnlegen);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/v1/standorte').flush([]);
+    await legeNutzerAn(fixture);
+
+    const link = fixture.nativeElement.querySelector('[data-testid="passwort-setzen-link"]') as HTMLInputElement;
+    expect(link.value).toBe('https://example.com/setzen?token=abc');
+    expect(link.readOnly).toBeTrue();
+    fixture.componentInstance.linkKopiert(true);
+    expect(openSpy).toHaveBeenCalledWith('Link kopiert.', undefined, jasmine.anything());
+  });
+
+  it('returns to an empty form for another Nutzer without reloading', async () => {
+    const fixture = TestBed.createComponent(NutzerAnlegen);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/v1/standorte').flush([]);
+    await legeNutzerAn(fixture);
+
+    (fixture.nativeElement.querySelector('[data-testid="weiterer-nutzer"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[data-testid="passwort-setzen-link"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('form')).not.toBeNull();
+    expect(fixture.componentInstance.vorname).toBe('');
   });
 });

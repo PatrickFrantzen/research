@@ -1,0 +1,20 @@
+.impressum-karte {
+  max-width: 40rem;
+}
+
+h2 {
+  font: var(--mat-sys-title-medium);
+  margin: 16px 0 4px;
+}
+
+p {
+  margin: 0;
+}
+
+// Deutlich erkennbar, solange die echten Pflichtangaben fehlen.
+.platzhalter {
+  background: var(--mat-sys-tertiary-container);
+  color: var(--mat-sys-on-tertiary-container);
+  padding: 0 4px;
+  border-radius: var(--mat-sys-corner-extra-small);
+}

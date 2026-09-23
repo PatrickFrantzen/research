@@ -1,0 +1,17 @@
+<main class="seite seite-zentriert">
+  <mat-card class="karte">
+    <mat-card-header>
+      <h1 mat-card-title>Seite nicht gefunden</h1>
+    </mat-card-header>
+    <mat-card-content>
+      <p>Die aufgerufene Adresse gibt es nicht.</p>
+    </mat-card-content>
+    <mat-card-actions align="end">
+      @if (istEingeloggt()) {
+        <a matButton="filled" routerLink="/">Zur Startseite</a>
+      } @else {
+        <a matButton="filled" routerLink="/login">Zum Login</a>
+      }
+    </mat-card-actions>
+  </mat-card>
+</main>

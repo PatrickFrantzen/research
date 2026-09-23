@@ -1,6 +1,6 @@
 <h2 mat-dialog-title>Wareneintrag bearbeiten</h2>
 
-<mat-dialog-content>
+<mat-dialog-content class="formular">
   <mat-form-field appearance="outline">
     <mat-label>AVV-Code</mat-label>
     <input
@@ -23,28 +23,35 @@
     <textarea matInput data-testid="bearbeiten-freitext" [formField]="bearbeitenForm.freitext" rows="4"></textarea>
   </mat-form-field>
 
-  @for (kachel of fotoKacheln; track kachel.ansicht) {
-    <label>
-      {{ kachel.label }} ersetzen
+  <div class="fotos-ersetzen">
+    @for (kachel of fotoKacheln; track kachel.ansicht) {
       <input
+        #fotoInput
         type="file"
+        hidden
         [attr.data-testid]="'bearbeiten-foto-' + kachel.ansicht"
         accept="image/jpeg,image/png,image/webp"
         (change)="fotoErsetzen(kachel.ansicht, $event)"
       />
-    </label>
-  }
+      <button matButton="outlined" type="button" (click)="fotoInput.click()">
+        <mat-icon>{{ dateiname(kachel.ansicht) ? 'check' : 'photo_camera' }}</mat-icon>
+        {{ kachel.label }} ersetzen
+      </button>
+      @if (dateiname(kachel.ansicht); as name) {
+        <span class="dateiname">{{ name }}</span>
+      }
+    }
+  </div>
 
   @if (fehler(); as meldung) {
-    <p class="fehler">{{ meldung }}</p>
+    <p class="fehler" role="alert">{{ meldung }}</p>
   }
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button type="button" data-testid="bearbeiten-abbrechen" (click)="abbrechen()">Abbrechen</button>
+  <button matButton type="button" data-testid="bearbeiten-abbrechen" (click)="abbrechen()">Abbrechen</button>
   <button
-    mat-raised-button
-    color="primary"
+    matButton="filled"
     type="button"
     data-testid="bearbeiten-speichern"
     [disabled]="!kannSpeichern"

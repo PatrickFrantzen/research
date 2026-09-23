@@ -16,6 +16,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/passwort-setzen/passwort-setzen.js').then((m) => m.PasswortSetzen),
   },
   {
+    path: 'impressum',
+    loadComponent: () => import('./features/impressum/impressum.js').then((m) => m.Impressum),
+  },
+  {
     path: '',
     canActivate: [authGuard],
     loadComponent: () => import('./core/shell/shell.js').then((m) => m.Shell),
@@ -44,5 +48,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/einstellungen/einstellungen.js').then((m) => m.Einstellungen),
       },
     ],
+  },
+  // Bewusst ohne Guard und außerhalb der Shell: unbekannte URLs landen
+  // immer hier, mit oder ohne Session (Issue #58).
+  {
+    path: '**',
+    loadComponent: () => import('./features/nicht-gefunden/nicht-gefunden.js').then((m) => m.NichtGefunden),
   },
 ];

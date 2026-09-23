@@ -1,14 +1,12 @@
 <div class="seite">
   <mat-card class="karte">
-    <h1>Wareneintrag erfassen</h1>
+    <mat-card-header>
+      <h1 mat-card-title>Wareneintrag erfassen</h1>
+    </mat-card-header>
 
-    @if (angelegt()) {
-      <p>Wareneintrag wurde angelegt.</p>
-      <div class="aktionen">
-        <button matButton="filled" type="button" (click)="weitererEintrag()">Weiteren Eintrag erfassen</button>
-      </div>
-    } @else {
-      <form (submit)="$event.preventDefault(); submit()">
+    <form (submit)="$event.preventDefault(); submit()">
+      <mat-card-content class="formular">
+        <!-- Eigene Foto-Kacheln: dafür gibt es keine Material-Komponente. -->
         <div class="foto-kacheln">
           @for (kachel of fotoKacheln; track kachel.ansicht) {
             <div class="foto-kachel">
@@ -24,6 +22,7 @@
                 type="button"
                 class="foto-kachel-inhalt"
                 [class.hat-foto]="fotoVorschau(kachel.ansicht)"
+                [attr.aria-label]="kachel.label + ' aufnehmen'"
                 (click)="fotoInput.click()"
               >
                 @if (fotoVorschau(kachel.ansicht); as url) {
@@ -59,14 +58,14 @@
         </mat-form-field>
 
         @if (fehler()) {
-          <p class="fehler">{{ fehler() }}</p>
+          <p class="fehler" role="alert">{{ fehler() }}</p>
         }
+      </mat-card-content>
 
-        <div class="aktionen">
-          <a routerLink="/">Abbrechen</a>
-          <button matButton="filled" type="submit" [disabled]="!kannAbsenden || wirdGeladen()">Absenden</button>
-        </div>
-      </form>
-    }
+      <mat-card-actions align="end">
+        <a matButton routerLink="/">Abbrechen</a>
+        <button matButton="filled" type="submit" [disabled]="!kannAbsenden || wirdGeladen()">Absenden</button>
+      </mat-card-actions>
+    </form>
   </mat-card>
 </div>

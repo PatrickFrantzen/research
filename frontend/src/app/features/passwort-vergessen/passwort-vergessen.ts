@@ -11,7 +11,6 @@ import { AuthService } from '../../core/auth.service.js';
   selector: 'app-passwort-vergessen',
   imports: [FormField, MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule, RouterLink],
   templateUrl: './passwort-vergessen.html',
-  styleUrl: './passwort-vergessen.scss',
 })
 export class PasswortVergessen {
   private readonly authService = inject(AuthService);

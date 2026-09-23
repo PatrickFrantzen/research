@@ -1,30 +1,8 @@
-.seite {
-  display: flex;
-  justify-content: center;
-  padding: 24px 16px;
-}
-
-.karte {
-  width: 100%;
-  max-width: 480px;
-  padding: 24px;
-}
-
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-mat-form-field {
-  width: 100%;
-}
-
 .foto-kacheln {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 16px;
 }
 
 .foto-kachel {
@@ -41,8 +19,9 @@ mat-form-field {
   align-items: center;
   justify-content: center;
   border: 1px dashed var(--mat-sys-outline);
-  border-radius: 4px;
+  border-radius: var(--mat-sys-corner-small);
   background: none;
+  color: var(--mat-sys-on-surface-variant);
   padding: 0;
   cursor: pointer;
   overflow: hidden;
@@ -59,18 +38,6 @@ mat-form-field {
 }
 
 .foto-kachel-label {
-  font-size: 0.75rem;
+  font: var(--mat-sys-label-small);
   text-align: center;
-}
-
-.fehler {
-  color: var(--mat-sys-error);
-  margin: 0;
-}
-
-.aktionen {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 8px;
 }

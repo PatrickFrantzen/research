@@ -6,6 +6,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
 import { NutzerApi } from '../../core/nutzer-api.js';
@@ -13,13 +15,13 @@ import { StandortApi } from '../../core/standort-api.js';
 
 @Component({
   selector: 'app-einstellungen',
-  imports: [FormField, MatButtonModule, MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule],
+  imports: [FormField, MatButtonModule, MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule, RouterLink],
   templateUrl: './einstellungen.html',
-  styleUrl: './einstellungen.scss',
 })
 export class Einstellungen {
   private readonly nutzerApi = inject(NutzerApi);
   private readonly standortApi = inject(StandortApi);
+  private readonly snackBar = inject(MatSnackBar);
 
   protected readonly standorte = rxResource({
     stream: () => this.standortApi.liste(),
@@ -36,7 +38,6 @@ export class Einstellungen {
     required(pfad.standortId);
   });
 
-  protected readonly gespeichert = signal(false);
   protected readonly fehler = signal<string | null>(null);
   protected readonly wirdGeladen = signal(false);
 
@@ -80,7 +81,6 @@ export class Einstellungen {
   async submit(): Promise<void> {
     if (!this.einstellungenForm().valid()) return;
     this.fehler.set(null);
-    this.gespeichert.set(false);
     this.wirdGeladen.set(true);
     try {
       await firstValueFrom(
@@ -90,7 +90,7 @@ export class Einstellungen {
           standortId: this.standortId,
         }),
       );
-      this.gespeichert.set(true);
+      this.snackBar.open('Änderungen gespeichert.', undefined, { duration: 3000 });
     } catch (error) {
       this.fehler.set(extrahiereFehlermeldung(error, 'Änderungen konnten nicht gespeichert werden.'));
     } finally {

@@ -1,36 +1,36 @@
-.seite {
+.liste {
   padding: 24px 16px;
 }
 
-.filter {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
+.seitentitel {
+  font: var(--mat-sys-headline-small);
+  margin: 0 0 16px;
 }
 
+.filter,
 .karten {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
 }
 
+.karten {
+  margin-bottom: 16px;
+}
+
 .karte {
-  width: 240px;
-  padding: 16px;
+  width: 280px;
 }
 
 .fotos {
   display: flex;
   gap: 4px;
+  margin: 8px 0;
 
   img {
     width: calc((100% - 8px) / 3);
     aspect-ratio: 1;
     object-fit: cover;
-    border-radius: 4px;
+    border-radius: var(--mat-sys-corner-small);
   }
-}
-
-.datum {
-  color: var(--mat-sys-on-surface-variant);
 }

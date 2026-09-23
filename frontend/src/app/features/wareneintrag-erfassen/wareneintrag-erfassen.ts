@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormField, form, required } from '@angular/forms/signals';
 import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
@@ -7,15 +7,12 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterLink } from '@angular/router';
 import { debounceTime, distinctUntilChanged, firstValueFrom, Subject } from 'rxjs';
 import { AvvCode, AvvCodeApi } from '../../core/avv-code-api.js';
 import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
 import { WareneintragApi } from '../../core/wareneintrag-api.js';
-
-interface Wareneintrag {
-  id: string;
-}
 
 // Die drei Ansichten sind optional – der Nutzer entscheidet selbst, wie
 // viele Fotos er aufnimmt (0 bis 3), siehe CONTEXT.md.
@@ -55,6 +52,7 @@ const SUCHE_DEBOUNCE_MS = 300;
 export class WareneintragErfassen {
   private readonly avvCodeApi = inject(AvvCodeApi);
   private readonly wareneintragApi = inject(WareneintragApi);
+  private readonly snackBar = inject(MatSnackBar);
 
   protected readonly fotoKacheln = FOTO_KACHELN;
   private readonly fotos: Record<FotoAnsicht, File | null> = { fotoFern: null, fotoNah: null, fotoDetail: null };
@@ -98,7 +96,10 @@ export class WareneintragErfassen {
     this.wareneintragDaten.update((daten) => ({ ...daten, freitext }));
   }
 
-  protected readonly angelegt = signal<Wareneintrag | null>(null);
+  constructor() {
+    inject(DestroyRef).onDestroy(() => this.fotoVorschauenFreigeben());
+  }
+
   protected readonly fehler = signal<string | null>(null);
   protected readonly wirdGeladen = signal(false);
 
@@ -110,7 +111,19 @@ export class WareneintragErfassen {
     const input = event.target as HTMLInputElement;
     const datei = input.files?.[0] ?? null;
     this.fotos[ansicht] = datei;
+    this.setzeFotoVorschau(ansicht, datei);
+  }
+
+  // Object-URLs halten die Datei im Speicher, bis sie freigegeben werden –
+  // daher alte URL bei Austausch, Reset und Destroy revoken (Issue #55).
+  private setzeFotoVorschau(ansicht: FotoAnsicht, datei: File | null): void {
+    const alteUrl = this.fotoVorschauUrls()[ansicht];
+    if (alteUrl) URL.revokeObjectURL(alteUrl);
     this.fotoVorschauUrls.update((urls) => ({ ...urls, [ansicht]: datei ? URL.createObjectURL(datei) : null }));
+  }
+
+  private fotoVorschauenFreigeben(): void {
+    for (const { ansicht } of this.fotoKacheln) this.setzeFotoVorschau(ansicht, null);
   }
 
   onAvvSucheEingabe(wert: string): void {
@@ -144,8 +157,10 @@ export class WareneintragErfassen {
       formData.append('avvCodeId', this.ausgewaehlterAvvCode.id);
       formData.append('freitext', this.freitext);
 
-      const result = await firstValueFrom(this.wareneintragApi.erstellen(formData));
-      this.angelegt.set(result);
+      await firstValueFrom(this.wareneintragApi.erstellen(formData));
+      // Direkt bereit für den nächsten Eintrag, Bestätigung per Snackbar.
+      this.weitererEintrag();
+      this.snackBar.open('Wareneintrag wurde angelegt.', undefined, { duration: 3000 });
     } catch (error) {
       this.fehler.set(extrahiereFehlermeldung(error, 'Wareneintrag konnte nicht angelegt werden.'));
     } finally {
@@ -154,11 +169,10 @@ export class WareneintragErfassen {
   }
 
   weitererEintrag(): void {
-    this.angelegt.set(null);
     this.fotos.fotoFern = null;
     this.fotos.fotoNah = null;
     this.fotos.fotoDetail = null;
-    this.fotoVorschauUrls.set({ fotoFern: null, fotoNah: null, fotoDetail: null });
+    this.fotoVorschauenFreigeben();
     this.ausgewaehlterAvvCode = null;
     this.wareneintragDaten.set({ avvSucheAnzeige: '', freitext: '' });
     this.avvSucheEingabe.next('');

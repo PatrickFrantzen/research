@@ -1,11 +1,14 @@
+import { ClipboardModule } from '@angular/cdk/clipboard';
 import { Component, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { FormField, email as emailValidator, form, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
@@ -15,20 +18,22 @@ import { StandortApi } from '../../core/standort-api.js';
 @Component({
   selector: 'app-nutzer-anlegen',
   imports: [
+    ClipboardModule,
     FormField,
     MatCardModule,
     MatFormFieldModule,
+    MatIconModule,
     MatInputModule,
     MatSelectModule,
     MatButtonModule,
     RouterLink,
   ],
   templateUrl: './nutzer-anlegen.html',
-  styleUrl: './nutzer-anlegen.scss',
 })
 export class NutzerAnlegen {
   private readonly nutzerApi = inject(NutzerApi);
   private readonly standortApi = inject(StandortApi);
+  private readonly snackBar = inject(MatSnackBar);
 
   protected readonly standorte = rxResource({
     stream: () => this.standortApi.liste(),
@@ -99,5 +104,15 @@ export class NutzerAnlegen {
     } finally {
       this.wirdGeladen.set(false);
     }
+  }
+
+  // Link nur in die Zwischenablage, nicht loggen oder speichern (Issue #60).
+  linkKopiert(erfolgreich: boolean): void {
+    this.snackBar.open(erfolgreich ? 'Link kopiert.' : 'Kopieren fehlgeschlagen.', undefined, { duration: 3000 });
+  }
+
+  weitererNutzer(): void {
+    this.angelegt.set(null);
+    this.fehler.set(null);
   }
 }
