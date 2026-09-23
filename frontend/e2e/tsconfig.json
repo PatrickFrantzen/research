@@ -1,0 +1,14 @@
+// Typecheck der E2E-Tests und der Playwright-Konfiguration (Issue #62).
+// Playwright transpiliert nur und prüft keine Typen (vgl. Issue #74).
+{
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "target": "ES2022",
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "skipLibCheck": true,
+    "types": ["node"]
+  },
+  "include": ["./**/*.ts", "../playwright.config.ts"]
+}

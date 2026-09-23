@@ -9,10 +9,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth.service.js';
+import { FokusBeiAnzeige } from '../../core/fokus-bei-anzeige.js';
 
 @Component({
   selector: 'app-login',
-  imports: [NgOptimizedImage, FormField, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule, MatButtonModule, RouterLink],
+  imports: [FokusBeiAnzeige, NgOptimizedImage, FormField, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule, MatButtonModule, RouterLink],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })

@@ -1,40 +1,45 @@
-<mat-toolbar class="desktop-toolbar">
-  <a class="marken-link" routerLink="/" aria-label="RE-SEARCH Startseite">
-    <img class="marke" ngSrc="brand/re-search-header.svg" width="210" height="46" priority alt="RE-SEARCH – Transparente Entsorgungswege" />
-  </a>
-  <span class="spacer"></span>
-  <a matButton routerLink="/wareneintraege" routerLinkActive="aktiv" ariaCurrentWhenActive="page">Wareneinträge</a>
-  <a matButton routerLink="/wareneintrag-erfassen" routerLinkActive="aktiv" ariaCurrentWhenActive="page">Wareneintrag erfassen</a>
-  <a matButton routerLink="/nutzer-anlegen" routerLinkActive="aktiv" ariaCurrentWhenActive="page">Nutzer anlegen</a>
-  <a matButton routerLink="/einstellungen" routerLinkActive="aktiv" ariaCurrentWhenActive="page">Einstellungen</a>
-  <button
-    matIconButton
-    type="button"
-    data-testid="farbmodus-umschalten"
-    [attr.aria-label]="themeService.modus() === 'dunkel' ? 'Helles Design aktivieren' : 'Dunkles Design aktivieren'"
-    (click)="themeService.umschalten()"
-  >
-    <mat-icon>{{ themeService.modus() === 'dunkel' ? 'light_mode' : 'dark_mode' }}</mat-icon>
-  </button>
-  <button matButton type="button" (click)="logout()">Logout</button>
-</mat-toolbar>
+<header>
+  <mat-toolbar class="desktop-toolbar">
+    <a class="marken-link" routerLink="/" aria-label="RE-SEARCH Startseite">
+      <img class="marke" ngSrc="brand/re-search-header.svg" width="210" height="46" priority alt="RE-SEARCH – Transparente Entsorgungswege" />
+    </a>
+    <span class="spacer"></span>
+    <nav class="desktop-nav" aria-label="Hauptnavigation">
+      <a matButton routerLink="/wareneintraege" routerLinkActive="aktiv" ariaCurrentWhenActive="page">Wareneinträge</a>
+      <a matButton routerLink="/wareneintrag-erfassen" routerLinkActive="aktiv" ariaCurrentWhenActive="page">Wareneintrag erfassen</a>
+      <a matButton routerLink="/nutzer-anlegen" routerLinkActive="aktiv" ariaCurrentWhenActive="page">Nutzer anlegen</a>
+      <a matButton routerLink="/einstellungen" routerLinkActive="aktiv" ariaCurrentWhenActive="page">Einstellungen</a>
+    </nav>
+    <button
+      matIconButton
+      type="button"
+      data-testid="farbmodus-umschalten"
+      [attr.aria-label]="themeService.modus() === 'dunkel' ? 'Helles Design aktivieren' : 'Dunkles Design aktivieren'"
+      (click)="themeService.umschalten()"
+    >
+      <mat-icon>{{ themeService.modus() === 'dunkel' ? 'light_mode' : 'dark_mode' }}</mat-icon>
+    </button>
+    <button matButton type="button" (click)="logout()">Logout</button>
+  </mat-toolbar>
 
-<mat-toolbar class="mobile-titelleiste">
-  <a class="marken-link" routerLink="/" aria-label="RE-SEARCH Startseite">
-    <img class="marke" ngSrc="brand/re-search-header.svg" width="210" height="46" priority alt="RE-SEARCH – Transparente Entsorgungswege" />
-  </a>
-</mat-toolbar>
+  <mat-toolbar class="mobile-titelleiste">
+    <a class="marken-link" routerLink="/" aria-label="RE-SEARCH Startseite">
+      <img class="marke" ngSrc="brand/re-search-header.svg" width="210" height="46" priority alt="RE-SEARCH – Transparente Entsorgungswege" />
+    </a>
+  </mat-toolbar>
+</header>
 
-<div class="inhalt">
+<main class="inhalt">
   <router-outlet />
-</div>
+</main>
 
 <!-- Nur Desktop; auf Mobil ist das Impressum über die Einstellungen erreichbar (Issue #21). -->
 <footer class="desktop-footer">
   <a matButton routerLink="/impressum">Impressum</a>
 </footer>
 
-<nav class="bottom-nav" aria-label="Hauptnavigation">
+<!-- Eigener Name, damit Screenreader die beiden Navigationen unterscheiden (Issue #54). -->
+<nav class="bottom-nav" aria-label="Mobile Navigation">
   <a routerLink="/wareneintraege" routerLinkActive="aktiv" ariaCurrentWhenActive="page" class="bottom-nav-item">
     <mat-icon>list_alt</mat-icon>
     <span>Wareneinträge</span>
@@ -43,7 +48,7 @@
     <mat-icon>add_circle</mat-icon>
     <span>Erfassen</span>
   </a>
-  <button type="button" class="bottom-nav-item" (click)="mehrOeffnen()">
+  <button #mehrButton type="button" class="bottom-nav-item" aria-haspopup="dialog" (click)="mehrOeffnen()">
     <mat-icon>more_horiz</mat-icon>
     <span>Mehr</span>
   </button>

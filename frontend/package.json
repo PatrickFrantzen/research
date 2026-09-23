@@ -7,7 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "lint": "ng lint --max-warnings 0"
+    "lint": "ng lint --max-warnings 0",
+    "e2e": "tsc -p e2e && playwright test"
   },
   "prettier": {
     "printWidth": 100,
@@ -42,8 +43,11 @@
     "@angular/build": "^22.1.8",
     "@angular/cli": "^22.1.8",
     "@angular/compiler-cli": "^22.1.7",
+    "@axe-core/playwright": "^4.13.0",
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.63.0",
     "@types/jasmine": "~5.1.0",
+    "@types/node": "^24.13.6",
     "angular-eslint": "22.5.0",
     "eslint": "^10.9.1",
     "istanbul-lib-instrument": "^6.0.3",

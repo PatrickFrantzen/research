@@ -7,10 +7,11 @@ import { MatInputModule } from '@angular/material/input';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth.service.js';
 import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
+import { FokusBeiAnzeige } from '../../core/fokus-bei-anzeige.js';
 
 @Component({
   selector: 'app-passwort-setzen',
-  imports: [FormField, MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule, RouterLink],
+  imports: [FokusBeiAnzeige, FormField, MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule, RouterLink],
   templateUrl: './passwort-setzen.html',
 })
 export class PasswortSetzen {

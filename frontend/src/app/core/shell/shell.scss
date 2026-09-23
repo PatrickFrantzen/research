@@ -25,6 +25,11 @@ $bottom-nav-hoehe: 64px;
   height: auto;
 }
 
+.desktop-nav {
+  display: flex;
+  gap: 4px;
+}
+
 .desktop-toolbar .aktiv {
   background: var(--mat-sys-secondary-container);
   color: var(--mat-sys-on-secondary-container);
@@ -76,8 +81,8 @@ $bottom-nav-hoehe: 64px;
 }
 
 // Gibt der Tastatur den vollen Bildschirm, statt die Bottom-Nav darüber
-// schweben zu lassen.
-.inhalt:has(input:focus, textarea:focus) + .bottom-nav {
+// schweben zu lassen. "~" statt "+": der Footer steht dazwischen.
+.inhalt:has(input:focus, textarea:focus) ~ .bottom-nav {
   display: none;
 }
 
