@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormField, form, required } from '@angular/forms/signals';
 import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
@@ -98,6 +98,10 @@ export class WareneintragErfassen {
     this.wareneintragDaten.update((daten) => ({ ...daten, freitext }));
   }
 
+  constructor() {
+    inject(DestroyRef).onDestroy(() => this.fotoVorschauenFreigeben());
+  }
+
   protected readonly angelegt = signal<Wareneintrag | null>(null);
   protected readonly fehler = signal<string | null>(null);
   protected readonly wirdGeladen = signal(false);
@@ -110,7 +114,19 @@ export class WareneintragErfassen {
     const input = event.target as HTMLInputElement;
     const datei = input.files?.[0] ?? null;
     this.fotos[ansicht] = datei;
+    this.setzeFotoVorschau(ansicht, datei);
+  }
+
+  // Object-URLs halten die Datei im Speicher, bis sie freigegeben werden –
+  // daher alte URL bei Austausch, Reset und Destroy revoken (Issue #55).
+  private setzeFotoVorschau(ansicht: FotoAnsicht, datei: File | null): void {
+    const alteUrl = this.fotoVorschauUrls()[ansicht];
+    if (alteUrl) URL.revokeObjectURL(alteUrl);
     this.fotoVorschauUrls.update((urls) => ({ ...urls, [ansicht]: datei ? URL.createObjectURL(datei) : null }));
+  }
+
+  private fotoVorschauenFreigeben(): void {
+    for (const { ansicht } of this.fotoKacheln) this.setzeFotoVorschau(ansicht, null);
   }
 
   onAvvSucheEingabe(wert: string): void {
@@ -158,7 +174,7 @@ export class WareneintragErfassen {
     this.fotos.fotoFern = null;
     this.fotos.fotoNah = null;
     this.fotos.fotoDetail = null;
-    this.fotoVorschauUrls.set({ fotoFern: null, fotoNah: null, fotoDetail: null });
+    this.fotoVorschauenFreigeben();
     this.ausgewaehlterAvvCode = null;
     this.wareneintragDaten.set({ avvSucheAnzeige: '', freitext: '' });
     this.avvSucheEingabe.next('');

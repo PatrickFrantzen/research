@@ -133,6 +133,54 @@ describe('WareneintragErfassen', () => {
     expect(component.kannAbsenden).toBe(false);
   });
 
+  describe('Object-URLs der Fotovorschau', () => {
+    let urlZaehler: number;
+
+    beforeEach(() => {
+      urlZaehler = 0;
+      spyOn(URL, 'createObjectURL').and.callFake(() => `blob:vorschau-${++urlZaehler}`);
+      spyOn(URL, 'revokeObjectURL');
+    });
+
+    function foto(name: string): Event {
+      return fotoAuswahlEvent(new File([name], `${name}.jpg`, { type: 'image/jpeg' }));
+    }
+
+    it('revokes the previous preview when a foto is replaced and shows the new one', () => {
+      const fixture = createComponent();
+      const component = asTestable(fixture.componentInstance);
+
+      component.onFotoAusgewaehlt('fotoFern', foto('erstes'));
+      component.onFotoAusgewaehlt('fotoFern', foto('zweites'));
+
+      expect(URL.revokeObjectURL).toHaveBeenCalledOnceWith('blob:vorschau-1');
+      expect(component.fotoVorschau('fotoFern')).toBe('blob:vorschau-2');
+    });
+
+    it('revokes every preview exactly once on reset', () => {
+      const fixture = createComponent();
+      const component = asTestable(fixture.componentInstance);
+      component.onFotoAusgewaehlt('fotoFern', foto('fern'));
+      component.onFotoAusgewaehlt('fotoDetail', foto('detail'));
+
+      fixture.componentInstance.weitererEintrag();
+      fixture.destroy();
+
+      expect(URL.revokeObjectURL).toHaveBeenCalledTimes(2);
+      expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:vorschau-1');
+      expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:vorschau-2');
+    });
+
+    it('revokes remaining previews when the component is destroyed', () => {
+      const fixture = createComponent();
+      asTestable(fixture.componentInstance).onFotoAusgewaehlt('fotoNah', foto('nah'));
+
+      fixture.destroy();
+
+      expect(URL.revokeObjectURL).toHaveBeenCalledOnceWith('blob:vorschau-1');
+    });
+  });
+
   it('debounces AVV search input and selects AVV codes by id', fakeAsync(() => {
     const fixture = createComponent();
     const component = asTestable(fixture.componentInstance);

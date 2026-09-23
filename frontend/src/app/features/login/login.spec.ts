@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { Router, provideRouter } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { AuthService } from '../../core/auth.service.js';
 import { Login } from './login.js';
 
@@ -119,6 +119,34 @@ describe('Login', () => {
 
     expect(logo?.getAttribute('src')).toBe('brand/re-search-large.svg');
     expect(logo?.alt).toBe('RE-SEARCH – Transparente Entsorgungswege');
+  });
+
+  it('shows no password confirmation on a normal visit', () => {
+    const fixture = TestBed.createComponent(Login);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.erfolg')).toBeNull();
+  });
+
+  it('confirms a freshly set password after the redirect from PasswortSetzen', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [Login],
+      providers: [
+        provideRouter([]),
+        { provide: AuthService, useValue: authService },
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { queryParamMap: convertToParamMap({ passwortGesetzt: '1' }) } },
+        },
+      ],
+    });
+    const fixture = TestBed.createComponent(Login);
+    fixture.detectChanges();
+
+    const erfolg = fixture.nativeElement.querySelector('.erfolg') as HTMLElement | null;
+    expect(erfolg?.textContent).toContain('Passwort wurde gesetzt');
+    expect(erfolg?.getAttribute('role')).toBe('status');
   });
 
   it('lets the user toggle password visibility', () => {

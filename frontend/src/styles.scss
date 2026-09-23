@@ -6,6 +6,7 @@
 // custom components at https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
 @use '@fontsource/material-icons';
+@use './theme-colors' as theme;
 
 // mat-icon setzt die Klasse .material-icons, deren Ligatur-Regeln sonst
 // Googles CDN-Stylesheet mitliefert. @fontsource/material-icons enthält nur
@@ -29,13 +30,12 @@
 
 html {
   height: 100%;
-  // Primärfarbe Rot aus dem Kunden-Login-Mockup, siehe docs/design/branding.md
-  // (Material-Standardpalette als Näherung, exakter Marken-Hex-Wert steht
-  // noch aus).
+  // Markenpalette aus REMONDIS-Rot #ed1c24 und Anthrazit, siehe
+  // _theme-colors.scss und docs/design/branding.md (Issue #17).
   @include mat.theme((
     color: (
-      primary: mat.$red-palette,
-      tertiary: mat.$blue-palette,
+      primary: theme.$primary-palette,
+      tertiary: theme.$tertiary-palette,
     ),
     typography: Roboto,
     density: 0,

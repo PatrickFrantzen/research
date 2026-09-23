@@ -5,6 +5,10 @@
     <mat-card class="login-karte">
       <h1 id="login-ueberschrift">Anmelden</h1>
 
+      @if (passwortGesetzt) {
+        <p class="erfolg" role="status">Passwort wurde gesetzt. Du kannst dich jetzt anmelden.</p>
+      }
+
       <form (submit)="$event.preventDefault(); submit()">
         <mat-form-field appearance="outline">
           <mat-label>E-Mail</mat-label>

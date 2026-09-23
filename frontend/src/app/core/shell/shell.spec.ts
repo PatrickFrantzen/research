@@ -35,6 +35,14 @@ describe('Shell', () => {
     expect(logo?.getAttribute('src')).toBe('brand/re-search-header.svg');
   });
 
+  it('links to the Impressum in the desktop footer', () => {
+    const fixture = TestBed.createComponent(Shell);
+    fixture.detectChanges();
+
+    const link = fixture.nativeElement.querySelector('footer.desktop-footer a') as HTMLAnchorElement | null;
+    expect(link?.getAttribute('href')).toBe('/impressum');
+  });
+
   it('opens the Mehr bottom sheet with MehrMenu', () => {
     const bottomSheet = TestBed.inject(MatBottomSheet);
     const openSpy = spyOn(bottomSheet, 'open');

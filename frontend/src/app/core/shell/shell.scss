@@ -30,8 +30,15 @@ $bottom-nav-hoehe: 64px;
   text-decoration: underline;
 }
 
-.desktop-toolbar {
+.desktop-toolbar,
+.desktop-footer {
   display: none;
+}
+
+.desktop-footer {
+  justify-content: center;
+  padding: 16px;
+  font: var(--mat-sys-body-small);
 }
 
 .inhalt {
@@ -76,7 +83,8 @@ $bottom-nav-hoehe: 64px;
 }
 
 @media (min-width: $breakpoint-desktop) {
-  .desktop-toolbar {
+  .desktop-toolbar,
+  .desktop-footer {
     display: flex;
   }
 

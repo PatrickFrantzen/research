@@ -28,7 +28,6 @@ export class PasswortSetzen {
     maxLength(pfad.neuesPasswort, 128);
   });
   protected readonly fehler = signal<string | null>(null);
-  protected readonly erfolgreich = signal(false);
   protected readonly wirdGeladen = signal(false);
 
   get neuesPasswort(): string {
@@ -53,8 +52,9 @@ export class PasswortSetzen {
     this.wirdGeladen.set(true);
     try {
       await this.authService.passwortSetzen(this.token, this.neuesPasswort);
-      this.erfolgreich.set(true);
-      setTimeout(() => this.router.navigateByUrl('/login'), 2000);
+      // Sofort weiterleiten statt verzögert per Timer – die Bestätigung zeigt
+      // die Login-Seite an (Issue #55).
+      await this.router.navigateByUrl('/login?passwortGesetzt=1');
     } catch (error) {
       this.fehler.set(extrahiereFehlermeldung(error, 'Link ist ungültig oder abgelaufen.'));
     } finally {

@@ -4,7 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth.service.js';
 
 @Component({
@@ -16,6 +16,11 @@ import { AuthService } from '../../core/auth.service.js';
 export class Login {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+
+  // Bestätigung nach erfolgreichem Passwort-Setzen (Weiterleitung aus
+  // PasswortSetzen, Issue #55).
+  protected readonly passwortGesetzt = this.route.snapshot.queryParamMap.has('passwortGesetzt');
 
   protected readonly loginDaten = signal({ email: '', passwort: '' });
   protected readonly loginForm = form(this.loginDaten, (pfad) => {

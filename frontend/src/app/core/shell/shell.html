@@ -20,6 +20,11 @@
   <router-outlet />
 </div>
 
+<!-- Nur Desktop; auf Mobil ist das Impressum über die Einstellungen erreichbar (Issue #21). -->
+<footer class="desktop-footer">
+  <a routerLink="/impressum">Impressum</a>
+</footer>
+
 <nav class="bottom-nav">
   <a routerLink="/wareneintraege" routerLinkActive="aktiv" class="bottom-nav-item">
     <mat-icon>list_alt</mat-icon>

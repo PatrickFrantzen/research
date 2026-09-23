@@ -1,0 +1,33 @@
+.seite {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+}
+
+.karte {
+  width: 100%;
+  max-width: 40rem;
+  padding: 24px;
+}
+
+h2 {
+  font: var(--mat-sys-title-medium);
+  margin: 16px 0 4px;
+}
+
+p {
+  margin: 0;
+}
+
+// Deutlich erkennbar, solange die echten Pflichtangaben fehlen.
+.platzhalter {
+  background: var(--mat-sys-tertiary-container);
+  color: var(--mat-sys-on-tertiary-container);
+  padding: 0 4px;
+  border-radius: 4px;
+}
+
+a {
+  display: inline-block;
+  margin-top: 24px;
+}

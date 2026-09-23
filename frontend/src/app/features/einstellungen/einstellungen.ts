@@ -6,6 +6,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
 import { NutzerApi } from '../../core/nutzer-api.js';
@@ -13,7 +14,7 @@ import { StandortApi } from '../../core/standort-api.js';
 
 @Component({
   selector: 'app-einstellungen',
-  imports: [FormField, MatButtonModule, MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule],
+  imports: [FormField, MatButtonModule, MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule, RouterLink],
   templateUrl: './einstellungen.html',
   styleUrl: './einstellungen.scss',
 })
