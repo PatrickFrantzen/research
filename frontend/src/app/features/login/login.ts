@@ -1,3 +1,4 @@
+import { NgOptimizedImage } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormField, form, maxLength, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,7 +12,7 @@ import { AuthService } from '../../core/auth.service.js';
 
 @Component({
   selector: 'app-login',
-  imports: [FormField, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule, MatButtonModule, RouterLink],
+  imports: [NgOptimizedImage, FormField, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule, MatButtonModule, RouterLink],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
