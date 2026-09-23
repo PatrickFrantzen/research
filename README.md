@@ -68,7 +68,7 @@ Dieselben Befehle laufen als CI-Gate bei jedem Pull Request und Push auf
 
 ```
 cd frontend && npm run lint && npm test -- --watch=false --browsers=ChromeHeadlessNoSandbox && npm run build
-cd backend && npm run lint && npm test && npm run build
+cd backend && npm run lint && npm run typecheck && npm test && npm run build
 ```
 
 - Frontend-Lint: ESLint mit `angular-eslint` für TypeScript und Templates
@@ -76,6 +76,10 @@ cd backend && npm run lint && npm test && npm run build
   (`--max-warnings 0`).
 - Backend: `npm ci --legacy-peer-deps` (wie im Dockerfile) und
   `npx prisma generate` vor Test/Build.
+- Backend-Typecheck: `npm run typecheck` (`tsc --noEmit -p tsconfig.json`)
+  prüft `src/` **und** `test/` inklusive aller Specs. `nest build` schließt
+  Specs aus und Vitest prüft keine Typen, ohne diesen Schritt veralten die
+  E2E-Specs unbemerkt.
 
 Architekturregeln, die (noch) kein Linter prüft und daher im Review gelten:
 Feature-Komponenten greifen nicht direkt auf `HttpClient` zu, sondern über
