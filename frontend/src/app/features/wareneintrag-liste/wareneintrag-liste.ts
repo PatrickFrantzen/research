@@ -10,13 +10,14 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatPaginatorIntl, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
 import { debounceTime, distinctUntilChanged, firstValueFrom, Subject } from 'rxjs';
 import { AuthService } from '../../core/auth.service.js';
 import { AvvCodeApi } from '../../core/avv-code-api.js';
 import { ConfirmDialog } from '../../core/confirm-dialog/confirm-dialog.js';
 import { LadeZustand } from '../../core/lade-zustand/lade-zustand.js';
+import { DeutscherPaginatorIntl } from '../../core/paginator-intl.js';
 import { StandortApi } from '../../core/standort-api.js';
 import { Wareneintrag, WareneintragApi } from '../../core/wareneintrag-api.js';
 import { WareneintragBearbeitenDialog } from './wareneintrag-bearbeiten-dialog/wareneintrag-bearbeiten-dialog.js';
@@ -41,6 +42,10 @@ const FILTER_DEBOUNCE_MS = 300;
     MatSelectModule,
     LadeZustand,
   ],
+  // Hier statt global in app.config.ts: MatPaginatorIntl zieht über
+  // @angular/material/paginator auch MatSelect, FormField, Overlay und Forms
+  // ins Initial-Bundle (~210 kB raw, Issue #73). Einziger Paginator der App.
+  providers: [{ provide: MatPaginatorIntl, useClass: DeutscherPaginatorIntl }],
   templateUrl: './wareneintrag-liste.html',
   styleUrl: './wareneintrag-liste.scss',
 })

@@ -81,6 +81,16 @@ cd backend && npm run lint && npm run typecheck && npm test && npm run build
   Specs aus und Vitest prüft keine Typen, ohne diesen Schritt veralten die
   E2E-Specs unbemerkt.
 
+Bundle-Budget (`frontend/angular.json`, Issue #73): Das Initial-Bundle liegt
+bei ~391 kB raw (~104 kB Transfer, Stand September 2026). Die Warnung greift
+bei 430 kB (~10 % Luft), damit Wachstum auffällt, der Build bricht bei
+500 kB. Das Initial-Bundle enthält nur Angular-Kern, Router, zone.js und den
+Service Worker; Material, CDK-Overlay und Forms gehören in die Lazy-Chunks.
+Deshalb Material-Provider (z. B. `MatPaginatorIntl`) nicht global in
+`app.config.ts` registrieren, sondern in der Komponente, die sie braucht.
+Aufschlüsseln mit `npx ng build --stats-json` und der esbuild-Metafile
+(`dist/frontend/stats.json`, z. B. im esbuild Bundle Size Analyzer).
+
 Architekturregeln, die (noch) kein Linter prüft und daher im Review gelten:
 Feature-Komponenten greifen nicht direkt auf `HttpClient` zu, sondern über
 die API-Services in `frontend/src/app/core/`; `setTimeout` in Komponenten nur
