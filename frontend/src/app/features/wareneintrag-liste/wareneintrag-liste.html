@@ -78,12 +78,14 @@
     }
   </div>
 
-  <mat-paginator
-    [length]="gesamt()"
-    [pageIndex]="seite()"
-    [pageSize]="proSeite()"
-    [pageSizeOptions]="[10, 20, 50]"
-    aria-label="Seitennavigation für Wareneinträge"
-    (page)="onSeitenwechsel($event)"
-  />
+  @if (wareneintraege.status() !== 'error') {
+    <mat-paginator
+      [length]="gesamt()"
+      [pageIndex]="seite()"
+      [pageSize]="proSeite()"
+      [pageSizeOptions]="[10, 20, 50]"
+      aria-label="Seitennavigation für Wareneinträge"
+      (page)="onSeitenwechsel($event)"
+    />
+  }
 </div>

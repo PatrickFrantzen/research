@@ -64,6 +64,7 @@ describe('WareneintragListe', () => {
 
       expect(element.querySelector('[role="alert"]')?.textContent).toContain('Wareneinträge konnten nicht geladen werden.');
       expect(element.querySelector('[data-testid="keine-eintraege"]')).toBeNull();
+      expect(element.querySelector('mat-paginator')).toBeNull();
 
       (element.querySelector('[data-testid="erneut-laden"]') as HTMLButtonElement).click();
       fixture.detectChanges();
@@ -73,6 +74,7 @@ describe('WareneintragListe', () => {
 
       expect(element.querySelector('[role="alert"]')).toBeNull();
       expect(element.querySelector('[data-testid="keine-eintraege"]')).not.toBeNull();
+      expect(element.querySelector('mat-paginator')).not.toBeNull();
     }));
 
     it('keeps the last total in the paginator while the next page loads', fakeAsync(() => {
