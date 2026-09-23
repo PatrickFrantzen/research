@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, linkedSignal, signal } from '@angular/core';
 import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormField, form } from '@angular/forms/signals';
 import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
@@ -13,6 +13,7 @@ import { debounceTime, distinctUntilChanged, firstValueFrom, Subject } from 'rxj
 import { AuthService } from '../../core/auth.service.js';
 import { AvvCodeApi } from '../../core/avv-code-api.js';
 import { ConfirmDialog } from '../../core/confirm-dialog/confirm-dialog.js';
+import { LadeZustand } from '../../core/lade-zustand/lade-zustand.js';
 import { Wareneintrag, WareneintragApi } from '../../core/wareneintrag-api.js';
 import { WareneintragBearbeitenDialog } from './wareneintrag-bearbeiten-dialog/wareneintrag-bearbeiten-dialog.js';
 
@@ -31,6 +32,7 @@ const FILTER_DEBOUNCE_MS = 300;
     MatFormFieldModule,
     MatInputModule,
     MatPaginatorModule,
+    LadeZustand,
   ],
   templateUrl: './wareneintrag-liste.html',
   styleUrl: './wareneintrag-liste.scss',
@@ -79,6 +81,16 @@ export class WareneintragListe {
     stream: ({ params }) => this.wareneintragApi.liste(params),
   });
 
+  // value() wirft im Fehlerzustand – Template und Handler lesen nur hierüber.
+  protected readonly avvTrefferListe = computed(() => (this.avvTreffer.hasValue() ? this.avvTreffer.value() : []));
+
+  // Letzte bekannte Gesamtzahl bleibt beim Blättern/Filtern stehen, bis die
+  // neue Seite da ist – sonst springt der Paginator kurz auf „0 von 0“.
+  protected readonly gesamt = linkedSignal<number | undefined, number>({
+    source: () => (this.wareneintraege.hasValue() ? this.wareneintraege.value().gesamt : undefined),
+    computation: (neu, vorher) => neu ?? vorher?.value ?? 0,
+  });
+
   protected get avvSucheAnzeige(): string {
     return this.filterDaten().avvSucheAnzeige;
   }
@@ -94,7 +106,7 @@ export class WareneintragListe {
   }
 
   onAvvCodeAusgewaehlt(event: MatAutocompleteSelectedEvent): void {
-    const avvCode = this.avvTreffer.value()?.find((treffer) => treffer.id === event.option.value);
+    const avvCode = this.avvTrefferListe().find((treffer) => treffer.id === event.option.value);
     if (!avvCode) return;
     this.avvCodeId.set(avvCode.id);
     this.seite.set(0);

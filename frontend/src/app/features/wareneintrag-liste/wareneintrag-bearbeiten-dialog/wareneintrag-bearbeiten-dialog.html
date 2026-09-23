@@ -12,8 +12,11 @@
       (input)="onAvvSucheEingabe(avvSuche.value)"
     />
     <mat-autocomplete #avvAuto="matAutocomplete" (optionSelected)="onAvvCodeAusgewaehlt($event)">
-      @for (avvCode of avvTreffer.value(); track avvCode.id) {
+      @for (avvCode of avvTrefferListe(); track avvCode.id) {
         <mat-option [value]="avvCode.id">{{ avvCode.code }} – {{ avvCode.bezeichnung }}</mat-option>
+      }
+      @if (avvTreffer.status() === 'error') {
+        <mat-option disabled>AVV-Codes konnten nicht geladen werden.</mat-option>
       }
     </mat-autocomplete>
   </mat-form-field>

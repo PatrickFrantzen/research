@@ -1,3 +1,4 @@
+import { NgOptimizedImage } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,7 +11,7 @@ import { MehrMenu } from './mehr-menu.js';
 
 @Component({
   selector: 'app-shell',
-  imports: [MatButtonModule, MatIconModule, MatToolbarModule, RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [NgOptimizedImage, MatButtonModule, MatIconModule, MatToolbarModule, RouterLink, RouterLinkActive, RouterOutlet],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
 })

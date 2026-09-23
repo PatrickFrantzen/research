@@ -4,6 +4,11 @@
       <h1 mat-card-title>Einstellungen</h1>
     </mat-card-header>
 
+    <mat-card-content>
+      <app-lade-zustand [ressource]="eigeneDaten" meldung="Deine Daten konnten nicht geladen werden." />
+      <app-lade-zustand [ressource]="standorte" meldung="Standorte konnten nicht geladen werden." />
+    </mat-card-content>
+
     <form (submit)="$event.preventDefault(); submit()">
       <mat-card-content class="formular">
         <mat-form-field appearance="outline">
@@ -19,10 +24,13 @@
         <mat-form-field appearance="outline">
           <mat-label>Standort</mat-label>
           <mat-select [formField]="einstellungenForm.standortId">
-            @for (standort of standorte.value(); track standort.id) {
+            @for (standort of standortListe(); track standort.id) {
               <mat-option [value]="standort.id">{{ standort.name }}</mat-option>
             }
           </mat-select>
+          @if (standorte.hasValue() && standortListe().length === 0) {
+            <mat-hint>Es sind noch keine Standorte hinterlegt.</mat-hint>
+          }
         </mat-form-field>
 
         @if (fehler()) {
@@ -31,7 +39,7 @@
       </mat-card-content>
 
       <mat-card-actions align="end">
-        <button matButton="filled" type="submit" [disabled]="!einstellungenForm().valid() || wirdGeladen()">
+        <button matButton="filled" type="submit" [disabled]="!geladen() || !einstellungenForm().valid() || wirdGeladen()">
           Speichern
         </button>
       </mat-card-actions>

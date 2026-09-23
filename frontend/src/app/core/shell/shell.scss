@@ -20,8 +20,9 @@ $bottom-nav-hoehe: 64px;
 
 .marke {
   display: block;
+  // Seitenverhältnis kommt aus width/height am <img> (NgOptimizedImage).
   width: min(210px, 54vw);
-  height: 46px;
+  height: auto;
 }
 
 .desktop-toolbar .aktiv {

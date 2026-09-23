@@ -14,8 +14,11 @@
         (focus)="onAvvSucheFokus()"
       />
       <mat-autocomplete #avvAuto="matAutocomplete" (optionSelected)="onAvvCodeAusgewaehlt($event)">
-        @for (avvCode of avvTreffer.value(); track avvCode.id) {
+        @for (avvCode of avvTrefferListe(); track avvCode.id) {
           <mat-option [value]="avvCode.id">{{ avvCode.code }} – {{ avvCode.bezeichnung }}</mat-option>
+        }
+        @if (avvTreffer.status() === 'error') {
+          <mat-option disabled>AVV-Codes konnten nicht geladen werden.</mat-option>
         }
       </mat-autocomplete>
     </mat-form-field>
@@ -26,57 +29,63 @@
     </mat-form-field>
   </div>
 
+  <app-lade-zustand [ressource]="wareneintraege" meldung="Wareneinträge konnten nicht geladen werden." />
+
   <div class="karten">
-    @for (wareneintrag of wareneintraege.value()?.daten; track wareneintrag.id) {
-      <mat-card class="karte">
-        <mat-card-header>
-          <mat-card-title>AVV-Code: {{ wareneintrag.avvCode.code }}</mat-card-title>
-          <mat-card-subtitle class="datum">{{ wareneintrag.erstelltAm | date: 'dd.MM.yyyy, HH:mm' }}</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="fotos">
-            @if (wareneintrag.fotoFernUrl) {
-              <img [src]="wareneintrag.fotoFernUrl" alt="Fernansicht" />
-            }
-            @if (wareneintrag.fotoNahUrl) {
-              <img [src]="wareneintrag.fotoNahUrl" alt="Nahansicht" />
-            }
-            @if (wareneintrag.fotoDetailUrl) {
-              <img [src]="wareneintrag.fotoDetailUrl" alt="Detailansicht" />
-            }
-          </div>
-          <p>{{ wareneintrag.freitext }}</p>
-          <p>Standort: {{ wareneintrag.standort.name }}</p>
-          <p>Erfasst von: {{ wareneintrag.erfasstVon.vorname }} {{ wareneintrag.erfasstVon.nachname }}</p>
-        </mat-card-content>
-        @if (istEigenerEintrag(wareneintrag)) {
-          <mat-card-actions align="end">
-            <button matButton type="button" data-testid="wareneintrag-bearbeiten" (click)="bearbeitungOeffnen(wareneintrag)">
-              Bearbeiten
-            </button>
-            <button
-              matButton
-              type="button"
-              data-testid="wareneintrag-loeschen"
-              [disabled]="loeschenLaeuft"
-              (click)="loeschen(wareneintrag)"
-            >
-              Löschen
-            </button>
-          </mat-card-actions>
-        }
-      </mat-card>
-    } @empty {
-      <p>Keine Wareneinträge gefunden.</p>
+    @if (wareneintraege.hasValue()) {
+      @for (wareneintrag of wareneintraege.value().daten; track wareneintrag.id) {
+        <mat-card class="karte">
+          <mat-card-header>
+            <mat-card-title>AVV-Code: {{ wareneintrag.avvCode.code }}</mat-card-title>
+            <mat-card-subtitle class="datum">{{ wareneintrag.erstelltAm | date: 'dd.MM.yyyy, HH:mm' }}</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="fotos">
+              @if (wareneintrag.fotoFernUrl) {
+                <img [src]="wareneintrag.fotoFernUrl" alt="Fernansicht" />
+              }
+              @if (wareneintrag.fotoNahUrl) {
+                <img [src]="wareneintrag.fotoNahUrl" alt="Nahansicht" />
+              }
+              @if (wareneintrag.fotoDetailUrl) {
+                <img [src]="wareneintrag.fotoDetailUrl" alt="Detailansicht" />
+              }
+            </div>
+            <p>{{ wareneintrag.freitext }}</p>
+            <p>Standort: {{ wareneintrag.standort.name }}</p>
+            <p>Erfasst von: {{ wareneintrag.erfasstVon.vorname }} {{ wareneintrag.erfasstVon.nachname }}</p>
+          </mat-card-content>
+          @if (istEigenerEintrag(wareneintrag)) {
+            <mat-card-actions align="end">
+              <button matButton type="button" data-testid="wareneintrag-bearbeiten" (click)="bearbeitungOeffnen(wareneintrag)">
+                Bearbeiten
+              </button>
+              <button
+                matButton
+                type="button"
+                data-testid="wareneintrag-loeschen"
+                [disabled]="loeschenLaeuft"
+                (click)="loeschen(wareneintrag)"
+              >
+                Löschen
+              </button>
+            </mat-card-actions>
+          }
+        </mat-card>
+      } @empty {
+        <p data-testid="keine-eintraege">Keine Wareneinträge gefunden.</p>
+      }
     }
   </div>
 
-  <mat-paginator
-    [length]="wareneintraege.value()?.gesamt ?? 0"
-    [pageIndex]="seite()"
-    [pageSize]="proSeite()"
-    [pageSizeOptions]="[10, 20, 50]"
-    aria-label="Seitennavigation für Wareneinträge"
-    (page)="onSeitenwechsel($event)"
-  />
+  @if (wareneintraege.status() !== 'error') {
+    <mat-paginator
+      [length]="gesamt()"
+      [pageIndex]="seite()"
+      [pageSize]="proSeite()"
+      [pageSizeOptions]="[10, 20, 50]"
+      aria-label="Seitennavigation für Wareneinträge"
+      (page)="onSeitenwechsel($event)"
+    />
+  }
 </div>

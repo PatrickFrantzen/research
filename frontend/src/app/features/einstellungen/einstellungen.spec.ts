@@ -75,4 +75,43 @@ describe('Einstellungen', () => {
     const link = fixture.nativeElement.querySelector('.impressum-link') as HTMLAnchorElement | null;
     expect(link?.getAttribute('href')).toBe('/impressum');
   });
+
+  it('keeps the form locked until the own data and Standorte are loaded', async () => {
+    const fixture = TestBed.createComponent(Einstellungen);
+    fixture.detectChanges();
+    const speichern = () => fixture.nativeElement.querySelector('button[type="submit"]') as HTMLButtonElement;
+    const vorname = () => fixture.nativeElement.querySelector('input') as HTMLInputElement;
+
+    expect(speichern().disabled).toBeTrue();
+    expect(vorname().disabled).toBeTrue();
+
+    httpMock.expectOne('/api/v1/standorte').flush([{ id: 'standort-1', name: 'Hauptsitz' }]);
+    httpMock
+      .expectOne('/api/v1/nutzer/me')
+      .flush({ vorname: 'Erika', nachname: 'Musterfrau', email: 'erika@research.local', standortId: 'standort-1' });
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(vorname().disabled).toBeFalse();
+    expect(speichern().disabled).toBeFalse();
+  });
+
+  it('shows a load error of the own data with retry and does not allow saving', async () => {
+    const fixture = TestBed.createComponent(Einstellungen);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/v1/standorte').flush([]);
+    httpMock.expectOne('/api/v1/nutzer/me').flush('Fehler', { status: 500, statusText: 'Server Error' });
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain('Deine Daten konnten nicht geladen werden.');
+    expect((element.querySelector('button[type="submit"]') as HTMLButtonElement).disabled).toBeTrue();
+
+    (element.querySelector('[data-testid="erneut-laden"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    httpMock
+      .expectOne('/api/v1/nutzer/me')
+      .flush({ vorname: 'Erika', nachname: 'Musterfrau', email: 'erika@research.local', standortId: '' });
+  });
 });
