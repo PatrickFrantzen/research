@@ -81,7 +81,7 @@ describe('Login', () => {
     expect(authService.login).not.toHaveBeenCalled();
   });
 
-  it('shows a hint and logs out again when the account still needs a password set', async () => {
+  it('continues to the mandatory password change when logged in with an initial password – Issue #76', async () => {
     authService.login.and.resolveTo({ mussPasswortSetzen: true });
     const fixture = TestBed.createComponent(Login);
     const component = fixture.componentInstance;
@@ -92,9 +92,8 @@ describe('Login', () => {
 
     await component.submit();
 
-    expect(authService.logout).toHaveBeenCalled();
-    expect(router.navigateByUrl).not.toHaveBeenCalled();
-    expect((component as unknown as { fehler: () => string | null }).fehler()).toContain('Passwort gesetzt werden');
+    expect(authService.logout).not.toHaveBeenCalled();
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/passwort-aendern');
   });
 
   it('shows an error message when login fails', async () => {

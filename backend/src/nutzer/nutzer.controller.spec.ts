@@ -6,6 +6,17 @@ function buildRequest(id: string) {
 }
 
 describe('NutzerController', () => {
+  describe('passwortZuruecksetzen', () => {
+    it('passes the acting Nutzer, the target id and the new password to the service', async () => {
+      const nutzerService = { passwortZuruecksetzen: vi.fn().mockResolvedValue(undefined) };
+      const controller = new NutzerController(nutzerService as never);
+
+      await controller.passwortZuruecksetzen(buildRequest('nutzer-1'), 'nutzer-2', { passwort: 'Neues-Initial-Pw-1' });
+
+      expect(nutzerService.passwortZuruecksetzen).toHaveBeenCalledWith('nutzer-1', 'nutzer-2', 'Neues-Initial-Pw-1');
+    });
+  });
+
   describe('me', () => {
     it('returns the own Nutzer-Stammdaten', async () => {
       const nutzerService = { findEigeneDaten: vi.fn().mockResolvedValue({ id: 'nutzer-1' }) };

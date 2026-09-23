@@ -9,8 +9,10 @@ export interface EigeneDaten {
 }
 
 export interface NeuerNutzer {
+  id: string;
+  vorname: string;
+  nachname: string;
   email: string;
-  passwortSetzenLink: string;
 }
 
 export interface NutzerAnlegenDaten {
@@ -18,6 +20,16 @@ export interface NutzerAnlegenDaten {
   nachname: string;
   email: string;
   standortId: string;
+  // Initialpasswort, beim ersten Login zu ändern (Issue #76).
+  passwort: string;
+}
+
+export interface NutzerUebersicht {
+  id: string;
+  vorname: string;
+  nachname: string;
+  email: string;
+  standort: { id: string; name: string };
 }
 
 export interface EigeneDatenUpdate {
@@ -40,5 +52,13 @@ export class NutzerApi {
 
   legeNutzerAn(daten: NutzerAnlegenDaten) {
     return this.http.post<NeuerNutzer>('/api/v1/nutzer', daten);
+  }
+
+  liste() {
+    return this.http.get<NutzerUebersicht[]>('/api/v1/nutzer');
+  }
+
+  passwortZuruecksetzen(id: string, passwort: string) {
+    return this.http.post<void>(`/api/v1/nutzer/${id}/passwort-zuruecksetzen`, { passwort });
   }
 }

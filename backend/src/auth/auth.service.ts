@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { Mailer } from '../mailer/mailer.js';
@@ -45,6 +45,33 @@ export class AuthService {
     });
 
     await this.mailer.sendPasswortSetzenLink(email, `/passwort-setzen?token=${rawToken}`);
+  }
+
+  // Ersetzt das Initialpasswort beim ersten Login (Issue #76) und liefert
+  // ein frisches Token: das alte gilt nach passwortGeaendertAm nicht mehr.
+  async passwortAendern(id: string, neuesPasswort: string): Promise<{ accessToken: string }> {
+    const nutzer = await this.prisma.nutzer.findUniqueOrThrow({ where: { id } });
+    if (!nutzer.mussPasswortSetzen) {
+      throw new ForbiddenException('Das Passwort wurde bereits geändert.');
+    }
+    if (await bcrypt.compare(neuesPasswort, nutzer.passwortHash)) {
+      throw new BadRequestException('Das neue Passwort muss sich vom Initialpasswort unterscheiden.');
+    }
+
+    const passwortHash = await bcrypt.hash(neuesPasswort, 12);
+    await this.prisma.nutzer.update({
+      where: { id },
+      data: {
+        passwortHash,
+        mussPasswortSetzen: false,
+        passwortSetzenToken: null,
+        passwortSetzenTokenAblauf: null,
+        passwortGeaendertAm: new Date(),
+      },
+    });
+    // Erst nach dem Update signieren, damit iat nicht vor passwortGeaendertAm liegt.
+    const accessToken = await this.jwtService.signAsync({ sub: id });
+    return { accessToken };
   }
 
   async passwortSetzen(token: string, neuesPasswort: string): Promise<void> {

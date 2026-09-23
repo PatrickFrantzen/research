@@ -1,7 +1,6 @@
 // Legt die Testdaten über die echte API an (Issue #62) und speichert die
 // Sessions von Erika und Max für die Specs. Läuft einmal vor allen Tests auf
-// frischer Datenbank (e2e/stack.sh). Zwei Logins, damit das Rate-Limit
-// (5/min) für die Login-Tests in der UI reicht.
+// frischer Datenbank (e2e/stack.sh).
 import { APIRequestContext, expect, request, test as setup } from '@playwright/test';
 import {
   AVV_A,
@@ -40,22 +39,22 @@ setup('Testdaten anlegen und Sessions speichern', async ({ baseURL }) => {
   const avvA = await avvCodeId(erika, AVV_A.suche);
   const avvB = await avvCodeId(erika, AVV_B.suche);
 
-  // Max am zweiten Standort anlegen und Passwort über den Link setzen –
-  // derselbe Weg wie in der UI (Nutzer anlegen → Passwort setzen).
+  // Max am zweiten Standort anlegen, mit Initialpasswort einloggen und es
+  // ersetzen – derselbe Weg wie in der UI (Issue #76).
   const standorte = (await (await erika.get('/api/v1/standorte')).json()) as { id: string; name: string }[];
   const aussenlager = standorte.find((standort) => standort.name === MAX.standort);
   expect(aussenlager, 'Standort aus e2e-vorbereiten.ts').toBeDefined();
   const angelegt = await erika.post('/api/v1/nutzer', {
     headers: await csrfHeader(erika),
-    data: { vorname: MAX.vorname, nachname: MAX.nachname, email: MAX.email, standortId: aussenlager!.id },
+    data: {
+      vorname: MAX.vorname,
+      nachname: MAX.nachname,
+      email: MAX.email,
+      standortId: aussenlager!.id,
+      passwort: MAX.initialpasswort,
+    },
   });
   expect(angelegt.status()).toBe(201);
-  const { passwortSetzenLink } = (await angelegt.json()) as { passwortSetzenLink: string };
-  const token = new URL(passwortSetzenLink, baseURL).searchParams.get('token');
-  const gesetzt = await erika.post('/api/v1/auth/passwort-setzen', {
-    data: { token, neuesPasswort: MAX.passwort },
-  });
-  expect(gesetzt.status()).toBe(204);
 
   // Aufsteigend angelegt: die Liste zeigt die neuesten zuerst.
   for (let i = 1; i <= ERIKA_EINTRAEGE; i++) {
@@ -64,7 +63,12 @@ setup('Testdaten anlegen und Sessions speichern', async ({ baseURL }) => {
     await erstelleEintrag(erika, i % 3 === 1 ? avvB : avvA, freitext);
   }
 
-  const max = await login(baseURL!, MAX.email, MAX.passwort);
+  const max = await login(baseURL!, MAX.email, MAX.initialpasswort);
+  const geaendert = await max.post('/api/v1/auth/passwort-aendern', {
+    headers: await csrfHeader(max),
+    data: { neuesPasswort: MAX.passwort },
+  });
+  expect(geaendert.status()).toBe(204);
   for (let i = 1; i <= MAX_EINTRAEGE; i++) {
     await erstelleEintrag(max, avvA, `Max ${String(i).padStart(2, '0')} Palette`);
   }

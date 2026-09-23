@@ -107,7 +107,7 @@ describe('Cookie-basierte Auth + CSRF (Issue #24)', () => {
 
     const mit = await request(app.getHttpServer()).get('/api/v1/auth/me').set('Cookie', cookies);
     expect(mit.status).toBe(200);
-    expect(mit.body).toEqual({ id: 'nutzer-1' });
+    expect(mit.body).toEqual({ id: 'nutzer-1', mussPasswortSetzen: false });
 
     const ohne = await request(app.getHttpServer()).get('/api/v1/auth/me');
     expect(ohne.status).toBe(401);

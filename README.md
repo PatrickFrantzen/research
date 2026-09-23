@@ -41,6 +41,14 @@ und MinIO, spielt Migrationen + Stammdaten-Seed ein (fester Standort
 - Login mit `INITIAL_NUTZER_EMAIL` / `INITIAL_NUTZER_PASSWORT`
   aus der `.env`
 
+Weitere Accounts (Issue #76, noch ohne Mailversand, siehe #63): Jeder
+eingeloggte Nutzer legt unter „Nutzer“ Kollegen mit E-Mail, Name, Standort und
+**Initialpasswort** an und gibt die Zugangsdaten persönlich weiter. Beim
+ersten Login ist ein eigenes Passwort Pflicht, das Backend lehnt bis dahin
+alle anderen Endpunkte ab. Hat jemand sein Passwort vergessen, vergibt ein
+Kollege unter „Nutzer“ ein neues Initialpasswort. „Passwort vergessen“ ist
+bis zur Mail-Anbindung ausgeblendet.
+
 Für Backend-Entwicklung ohne Container siehe `backend/.env.example`
 (Datenbank/Objektspeicher/Auth-Zugangsdaten für `npm run start:dev`,
 `npx prisma migrate dev`, `npm run db:seed`).
@@ -118,9 +126,11 @@ cd backend && npm run build && cd ../frontend && npm run build && npm run e2e
   enthalten, sonst bricht das Zurücksetzen ab (Schutz vor Datenverlust).
 - `PLAYWRIGHT_CHROMIUM_EXECUTABLE` nutzt ein vorhandenes Chromium statt der
   Playwright-Browser.
-- Seriell und ohne Retries: Login ist auf 5 Versuche pro Minute begrenzt, das
-  Setup nutzt zwei davon, die Login-Spec zwei weitere. Neue Tests verwenden
-  die gespeicherten Sessions (`storageState`) statt sich neu anzumelden.
+- Seriell und ohne Retries, weil alle Tests eine Datenbank teilen. Neue
+  Tests verwenden nach Möglichkeit die gespeicherten Sessions (`storageState`).
+- Login ist produktiv auf 5 Versuche pro Minute begrenzt. Nur der Test-Stack
+  hebt das über `AUTH_THROTTLE_LIMIT` an, produktiv bleibt die Variable
+  ungesetzt.
 - Der Service Worker ist in den Tests blockiert.
 - AXE prüft WCAG 2.2 A/AA plus Best-Practices auf allen Seiten in Hell und
   Dunkel, mobil und am Desktop, dazu Fehlerzustände und Dialoge. Jeder Verstoß

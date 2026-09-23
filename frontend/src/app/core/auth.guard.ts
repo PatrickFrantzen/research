@@ -6,7 +6,18 @@ import { AuthService } from './auth.service.js';
 export const authGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
-  return authService.istEingeloggt() ? true : router.createUrlTree(['/login']);
+  if (!authService.istEingeloggt()) return router.createUrlTree(['/login']);
+  // Mit Initialpasswort ist nur der Passwortwechsel erreichbar (Issue #76).
+  return authService.mussPasswortSetzen() ? router.createUrlTree(['/passwort-aendern']) : true;
+};
+
+// Gegenstück für /passwort-aendern: nur eingeloggt und nur solange das
+// Initialpasswort noch gesetzt ist.
+export const initialpasswortGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+  if (!authService.istEingeloggt()) return router.createUrlTree(['/login']);
+  return authService.mussPasswortSetzen() ? true : router.createUrlTree(['/']);
 };
 
 // Deckt sich mit $breakpoint-desktop in shell.scss – Mobil/Desktop ist seit

@@ -1,0 +1,35 @@
+<div class="seite">
+  <mat-card class="karte nutzer-karte">
+    <mat-card-header>
+      <h1 mat-card-title>Nutzer</h1>
+    </mat-card-header>
+
+    <mat-card-content>
+      <app-lade-zustand [ressource]="nutzer" meldung="Nutzer konnten nicht geladen werden." />
+
+      @if (nutzer.hasValue()) {
+        <ul class="nutzerliste">
+          @for (eintrag of nutzer.value(); track eintrag.id) {
+            <li data-testid="nutzer-eintrag">
+              <div class="angaben">
+                <span class="name">{{ eintrag.nachname }}, {{ eintrag.vorname }}</span>
+                <span class="details">{{ eintrag.email }} · {{ eintrag.standort.name }}</span>
+              </div>
+              @if (eintrag.id === authService.nutzerId()) {
+                <span class="details">Du</span>
+              } @else {
+                <button matButton type="button" data-testid="passwort-zuruecksetzen" (click)="passwortZuruecksetzen(eintrag)">
+                  Passwort zurücksetzen<span class="visuell-versteckt"> für {{ eintrag.vorname }} {{ eintrag.nachname }}</span>
+                </button>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      <a matButton="filled" routerLink="/nutzer/neu">Nutzer anlegen</a>
+    </mat-card-actions>
+  </mat-card>
+</div>

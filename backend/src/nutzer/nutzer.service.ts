@@ -1,12 +1,8 @@
-import { randomUUID } from 'node:crypto';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { erzeugePasswortSetzenToken } from '../auth/passwort-setzen-token.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateNutzerDto } from './dto/create-nutzer.dto.js';
 import { UpdateEigeneDatenDto } from './dto/update-eigene-daten.dto.js';
-
-const INITIAL_ZUGANG_GUELTIGKEIT_MS = 7 * 24 * 60 * 60 * 1000; // 7 Tage
 
 export interface NeuerNutzer {
   id: string;
@@ -14,43 +10,93 @@ export interface NeuerNutzer {
   nachname: string;
   email: string;
   standortId: string;
-  // Erstellender Nutzer übergibt den Link direkt (kein Mailversand, siehe
-  // docs/research/01-projektbeschreibung-spezifikation.md Abschnitt 2).
-  passwortSetzenLink: string;
+}
+
+export interface NutzerUebersicht {
+  id: string;
+  vorname: string;
+  nachname: string;
+  email: string;
+  standort: { id: string; name: string };
+}
+
+function istEindeutigkeitsVerletzung(error: unknown): boolean {
+  return typeof error === 'object' && error !== null && (error as { code?: unknown }).code === 'P2002';
+}
+
+function istNichtGefunden(error: unknown): boolean {
+  return typeof error === 'object' && error !== null && (error as { code?: unknown }).code === 'P2025';
 }
 
 @Injectable()
 export class NutzerService {
   constructor(private readonly prisma: PrismaService) {}
 
+  // Kein Mailversand (#63 zurückgestellt): Der erstellende Nutzer vergibt ein
+  // Initialpasswort und übergibt die Zugangsdaten persönlich. Beim ersten
+  // Login ist der Wechsel Pflicht (mussPasswortSetzen, Issue #76).
   async createNutzer(erstelltVonId: string, dto: CreateNutzerDto): Promise<NeuerNutzer> {
-    // Platzhalter-Passwort: unbrauchbar, bis der neue Nutzer über den
-    // Initial-Zugang sein eigenes Passwort setzt.
-    const platzhalterPasswortHash = await bcrypt.hash(randomUUID(), 12);
-    const { rawToken, hashedToken } = erzeugePasswortSetzenToken();
+    const passwortHash = await bcrypt.hash(dto.passwort, 12);
 
-    const nutzer = await this.prisma.nutzer.create({
-      data: {
-        vorname: dto.vorname,
-        nachname: dto.nachname,
-        email: dto.email,
-        standortId: dto.standortId,
-        passwortHash: platzhalterPasswortHash,
-        mussPasswortSetzen: true,
-        passwortSetzenToken: hashedToken,
-        passwortSetzenTokenAblauf: new Date(Date.now() + INITIAL_ZUGANG_GUELTIGKEIT_MS),
-        erstelltVonId,
-      },
+    try {
+      const nutzer = await this.prisma.nutzer.create({
+        data: {
+          vorname: dto.vorname,
+          nachname: dto.nachname,
+          email: dto.email,
+          standortId: dto.standortId,
+          passwortHash,
+          mussPasswortSetzen: true,
+          erstelltVonId,
+        },
+      });
+      return {
+        id: nutzer.id,
+        vorname: nutzer.vorname,
+        nachname: nutzer.nachname,
+        email: nutzer.email,
+        standortId: nutzer.standortId,
+      };
+    } catch (error) {
+      if (istEindeutigkeitsVerletzung(error)) {
+        throw new ConflictException('Es gibt bereits einen Account mit dieser E-Mail.');
+      }
+      throw error;
+    }
+  }
+
+  async findAlle(): Promise<NutzerUebersicht[]> {
+    return this.prisma.nutzer.findMany({
+      select: { id: true, vorname: true, nachname: true, email: true, standort: { select: { id: true, name: true } } },
+      orderBy: [{ nachname: 'asc' }, { vorname: 'asc' }],
     });
+  }
 
-    return {
-      id: nutzer.id,
-      vorname: nutzer.vorname,
-      nachname: nutzer.nachname,
-      email: nutzer.email,
-      standortId: nutzer.standortId,
-      passwortSetzenLink: `/passwort-setzen?token=${rawToken}`,
-    };
+  // Passwort vergessen ohne Mailversand (Issue #76): Ein Kollege vergibt ein
+  // neues Initialpasswort. Bestehende Sessions des Betroffenen werden über
+  // passwortGeaendertAm ungültig, beim nächsten Login ist der Wechsel Pflicht.
+  async passwortZuruecksetzen(ausfuehrendeId: string, zielId: string, passwort: string): Promise<void> {
+    if (ausfuehrendeId === zielId) {
+      throw new BadRequestException('Das eigene Passwort lässt sich hier nicht zurücksetzen.');
+    }
+    const passwortHash = await bcrypt.hash(passwort, 12);
+    try {
+      await this.prisma.nutzer.update({
+        where: { id: zielId },
+        data: {
+          passwortHash,
+          mussPasswortSetzen: true,
+          passwortSetzenToken: null,
+          passwortSetzenTokenAblauf: null,
+          passwortGeaendertAm: new Date(),
+        },
+      });
+    } catch (error) {
+      if (istNichtGefunden(error)) {
+        throw new NotFoundException('Nutzer nicht gefunden.');
+      }
+      throw error;
+    }
   }
 
   async findEigeneDaten(id: string) {

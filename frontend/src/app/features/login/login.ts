@@ -7,13 +7,13 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../core/auth.service.js';
 import { FokusBeiAnzeige } from '../../core/fokus-bei-anzeige.js';
 
 @Component({
   selector: 'app-login',
-  imports: [FokusBeiAnzeige, NgOptimizedImage, FormField, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule, MatButtonModule, RouterLink],
+  imports: [FokusBeiAnzeige, NgOptimizedImage, FormField, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule, MatButtonModule],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
@@ -52,14 +52,8 @@ export class Login implements OnInit {
     try {
       const { email, passwort } = this.loginDaten();
       const { mussPasswortSetzen } = await this.authService.login(email, passwort);
-      if (mussPasswortSetzen) {
-        this.fehler.set(
-          'Für diesen Account muss zuerst ein Passwort gesetzt werden. Bitte den Link aus der Account-Anlage verwenden.',
-        );
-        this.authService.logout();
-        return;
-      }
-      await this.router.navigateByUrl('/');
+      // Mit Initialpasswort geht es zuerst zum Pflicht-Passwortwechsel (Issue #76).
+      await this.router.navigateByUrl(mussPasswortSetzen ? '/passwort-aendern' : '/');
     } catch {
       this.fehler.set('E-Mail oder Passwort ungültig.');
     } finally {

@@ -15,7 +15,8 @@ const OEFFENTLICHE_SEITEN = [
 const GESCHUETZTE_SEITEN = [
   { pfad: '/wareneintraege', ueberschrift: 'Wareneinträge' },
   { pfad: '/wareneintrag-erfassen', ueberschrift: 'Wareneintrag erfassen' },
-  { pfad: '/nutzer-anlegen', ueberschrift: 'Nutzer anlegen' },
+  { pfad: '/nutzer', ueberschrift: 'Nutzer' },
+  { pfad: '/nutzer/neu', ueberschrift: 'Nutzer anlegen' },
   { pfad: '/einstellungen', ueberschrift: 'Einstellungen' },
 ];
 

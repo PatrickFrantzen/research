@@ -1,7 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { provideRouter } from '@angular/router';
 import { NutzerAnlegen } from './nutzer-anlegen.js';
 
@@ -38,6 +37,7 @@ describe('NutzerAnlegen', () => {
     component.nachname = 'Mustermann';
     component.email = 'erika@example.com';
     component.standortId = 'standort-1';
+    component.passwort = 'Initial-Passwort-1';
 
     const submitPromise = component.submit();
     const request = httpMock.expectOne('/api/v1/nutzer');
@@ -46,11 +46,13 @@ describe('NutzerAnlegen', () => {
       nachname: 'Mustermann',
       email: 'erika@example.com',
       standortId: 'standort-1',
+      passwort: 'Initial-Passwort-1',
     });
-    request.flush({ email: 'erika@example.com', passwortSetzenLink: 'https://example.com/setzen?token=abc' });
+    request.flush({ id: 'nutzer-2', vorname: 'Erika', nachname: 'Mustermann', email: 'erika@example.com' });
     await submitPromise;
 
     expect(component.vorname).toBe('');
+    expect(component.passwort).toBe('');
     expect(
       (component as unknown as { angelegt: () => { email: string } | null }).angelegt()?.email,
     ).toBe('erika@example.com');
@@ -65,6 +67,7 @@ describe('NutzerAnlegen', () => {
     fixture.componentInstance.nachname = 'Mustermann';
     fixture.componentInstance.email = 'erika@example.com';
     fixture.componentInstance.standortId = 'standort-1';
+    fixture.componentInstance.passwort = 'Initial-Passwort-1';
 
     const submitPromise = fixture.componentInstance.submit();
     httpMock.expectOne('/api/v1/nutzer').flush('error', { status: 500, statusText: 'Server Error' });
@@ -81,27 +84,45 @@ describe('NutzerAnlegen', () => {
     component.nachname = 'Mustermann';
     component.email = 'erika@example.com';
     component.standortId = 'standort-1';
+    component.passwort = 'Initial-Passwort-1';
     const submitPromise = component.submit();
     httpMock
       .expectOne('/api/v1/nutzer')
-      .flush({ email: 'erika@example.com', passwortSetzenLink: 'https://example.com/setzen?token=abc' });
+      .flush({ id: 'nutzer-2', vorname: 'Erika', nachname: 'Mustermann', email: 'erika@example.com' });
     await submitPromise;
     fixture.detectChanges();
   }
 
-  it('shows the invitation link read-only with a copy button and confirms copying', async () => {
-    const openSpy = spyOn(TestBed.inject(MatSnackBar), 'open');
+  it('confirms the new account and reminds to hand over the credentials in person – Issue #76', async () => {
     const fixture = TestBed.createComponent(NutzerAnlegen);
     fixture.detectChanges();
     httpMock.expectOne('/api/v1/standorte').flush([{ id: 'standort-1', name: 'Hauptsitz' }]);
     await fixture.whenStable();
     await legeNutzerAn(fixture);
 
-    const link = fixture.nativeElement.querySelector('[data-testid="passwort-setzen-link"]') as HTMLInputElement;
-    expect(link.value).toBe('https://example.com/setzen?token=abc');
-    expect(link.readOnly).toBeTrue();
-    fixture.componentInstance.linkKopiert(true);
-    expect(openSpy).toHaveBeenCalledWith('Link kopiert.', undefined, jasmine.anything());
+    const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(text).toContain('Account für Erika Mustermann (erika@example.com) wurde angelegt.');
+    expect(text).toContain('persönlich');
+    // Das Initialpasswort wird nach dem Anlegen nicht erneut angezeigt.
+    expect(text).not.toContain('Initial-Passwort-1');
+  });
+
+  it('requires an initial password with at least 12 characters', async () => {
+    const fixture = TestBed.createComponent(NutzerAnlegen);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/v1/standorte').flush([{ id: 'standort-1', name: 'Hauptsitz' }]);
+    await fixture.whenStable();
+    const component = fixture.componentInstance;
+    component.vorname = 'Erika';
+    component.nachname = 'Mustermann';
+    component.email = 'erika@example.com';
+    component.standortId = 'standort-1';
+    component.passwort = 'zu-kurz';
+
+    await component.submit();
+
+    httpMock.expectNone('/api/v1/nutzer');
+    expect().nothing();
   });
 
   it('returns to an empty form for another Nutzer without reloading', async () => {
@@ -114,7 +135,7 @@ describe('NutzerAnlegen', () => {
     (fixture.nativeElement.querySelector('[data-testid="weiterer-nutzer"]') as HTMLButtonElement).click();
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('[data-testid="passwort-setzen-link"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[role="status"]')).toBeNull();
     expect(fixture.nativeElement.querySelector('form')).not.toBeNull();
     expect(fixture.componentInstance.vorname).toBe('');
   });
@@ -131,6 +152,7 @@ describe('NutzerAnlegen', () => {
     component.nachname = 'Mustermann';
     component.email = 'erika@example.com';
     component.standortId = 'standort-1';
+    component.passwort = 'Initial-Passwort-1';
     fixture.detectChanges();
 
     expect(element.querySelector('[role="alert"]')?.textContent).toContain('Standorte konnten nicht geladen werden.');

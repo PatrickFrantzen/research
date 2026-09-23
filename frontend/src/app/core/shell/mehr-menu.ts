@@ -11,9 +11,9 @@ import { ThemeService } from '../theme.service.js';
   imports: [MatIconModule, MatListModule, RouterLink],
   template: `
     <mat-nav-list>
-      <a mat-list-item routerLink="/nutzer-anlegen" (click)="schliessen()">
-        <mat-icon matListItemIcon>person_add</mat-icon>
-        <span matListItemTitle>Nutzer anlegen</span>
+      <a mat-list-item routerLink="/nutzer" (click)="schliessen()">
+        <mat-icon matListItemIcon>group</mat-icon>
+        <span matListItemTitle>Nutzer</span>
       </a>
       <a mat-list-item routerLink="/einstellungen" (click)="schliessen()">
         <mat-icon matListItemIcon>settings</mat-icon>

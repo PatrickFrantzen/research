@@ -1,7 +1,7 @@
 // Login-Journey per Tastatur (Issues #54, #62): Fehlerfall mit Fokus auf der
 // Meldung, danach erfolgreicher Login mit Weiterleitung, Fokus auf der neuen
-// Seite und aria-current in der Navigation. Zwei Logins, siehe Rate-Limit
-// in testdaten.setup.ts.
+// Seite und aria-current in der Navigation. Ohne Mailversand ist
+// "Passwort vergessen" ausgeblendet (Issue #76).
 import { expect, test } from '@playwright/test';
 import { ERIKA, pruefeBarrierefreiheit } from './testdaten.js';
 
@@ -18,6 +18,7 @@ test('Login nur per Tastatur, erst mit falschem, dann mit richtigem Passwort', a
   const email = page.getByLabel('E-Mail');
   const passwort = page.getByTestId('login-passwort');
   await expect(email).toBeEditable();
+  await expect(page.getByRole('link', { name: 'Passwort vergessen' })).toHaveCount(0);
 
   await page.keyboard.press('Tab');
   await expect(email).toBeFocused();

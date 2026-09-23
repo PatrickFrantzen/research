@@ -20,6 +20,8 @@ export OBJECT_STORAGE_ACCESS_KEY_ID="${E2E_OBJECT_STORAGE_ACCESS_KEY_ID:-researc
 export OBJECT_STORAGE_SECRET_ACCESS_KEY="${E2E_OBJECT_STORAGE_SECRET_ACCESS_KEY:-research-secret}"
 export OBJECT_STORAGE_BUCKET="${E2E_OBJECT_STORAGE_BUCKET:-research-fotos-e2e}"
 export JWT_SECRET=e2e-secret
+# Produktiv 5 Logins pro Minute; die Suite meldet mehrere Nutzer an.
+export AUTH_THROTTLE_LIMIT=100
 # Zugangsdaten wie in e2e/testdaten.ts.
 export INITIAL_NUTZER_EMAIL=erika.e2e@example.com
 export INITIAL_NUTZER_PASSWORT=e2e-Passwort-Erika-1

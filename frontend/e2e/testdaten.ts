@@ -14,6 +14,8 @@ export const ERIKA = {
 
 export const MAX = {
   email: 'max.e2e@example.com',
+  // Von Erika vergeben, beim ersten Login durch passwort ersetzt (Issue #76).
+  initialpasswort: 'e2e-Initial-Max-01',
   passwort: 'e2e-Passwort-Max-01',
   vorname: 'Max',
   nachname: 'Mustermann',

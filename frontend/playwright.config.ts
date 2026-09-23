@@ -9,13 +9,12 @@ const istCi = !!process.env['CI'];
 export default defineConfig({
   testDir: './e2e',
   outputDir: './test-results',
-  // Login ist serverseitig auf 5 Versuche pro Minute und IP begrenzt, Tests
-  // teilen sich außerdem eine Datenbank: seriell ist deterministisch.
+  // Tests teilen sich eine Datenbank: seriell ist deterministisch.
   workers: 1,
   fullyParallel: false,
   forbidOnly: istCi,
-  // Keine Retries: jeder weitere Lauf zählt gegen das Login-Rate-Limit, und
-  // ein Flake soll auffallen statt verdeckt zu werden.
+  // Keine Retries: ein Flake soll auffallen statt verdeckt zu werden, und
+  // Wiederholungen würden auf bereits veränderten Daten laufen.
   retries: 0,
   reporter: istCi ? [['github'], ['html', { open: 'never' }]] : [['list'], ['html', { open: 'never' }]],
   use: {

@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import type { AuthenticatedRequest } from '../auth/jwt.strategy.js';
 import { CreateNutzerDto } from './dto/create-nutzer.dto.js';
+import { PasswortZuruecksetzenDto } from './dto/passwort-zuruecksetzen.dto.js';
 import { UpdateEigeneDatenDto } from './dto/update-eigene-daten.dto.js';
 import { NutzerService } from './nutzer.service.js';
 
@@ -13,6 +14,21 @@ export class NutzerController {
   @Post()
   async createNutzer(@Req() request: AuthenticatedRequest, @Body() dto: CreateNutzerDto) {
     return this.nutzerService.createNutzer(request.user.id, dto);
+  }
+
+  @Get()
+  async findAlle() {
+    return this.nutzerService.findAlle();
+  }
+
+  @Post(':id/passwort-zuruecksetzen')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async passwortZuruecksetzen(
+    @Req() request: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: PasswortZuruecksetzenDto,
+  ): Promise<void> {
+    await this.nutzerService.passwortZuruecksetzen(request.user.id, id, dto.passwort);
   }
 
   @Get('me')

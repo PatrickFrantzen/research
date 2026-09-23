@@ -1,37 +1,92 @@
 import { describe, expect, it, vi } from 'vitest';
-import { hashPasswortSetzenToken } from '../auth/passwort-setzen-token.js';
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { NutzerService } from './nutzer.service.js';
 
 describe('NutzerService', () => {
-  it('creates a Nutzer account with a placeholder password and a setup token', async () => {
-    const created = {
-      id: 'nutzer-2',
+  describe('createNutzer', () => {
+    const dto = {
       vorname: 'Max',
       nachname: 'Mustermann',
       email: 'max@research.local',
       standortId: 'standort-1',
+      passwort: 'Initial-Passwort-1',
     };
-    const prisma = { nutzer: { create: vi.fn().mockResolvedValue(created) } };
-    const service = new NutzerService(prisma as never);
 
-    const result = await service.createNutzer('erstellender-nutzer-1', {
-      vorname: 'Max',
-      nachname: 'Mustermann',
-      email: 'max@research.local',
-      standortId: 'standort-1',
+    it('creates the account with the hashed initial password and forces a change on first login – Issue #76', async () => {
+      const prisma = { nutzer: { create: vi.fn().mockResolvedValue({ id: 'nutzer-2', ...dto }) } };
+      const service = new NutzerService(prisma as never);
+
+      const result = await service.createNutzer('erstellender-nutzer-1', dto);
+
+      const data = prisma.nutzer.create.mock.calls[0][0].data;
+      expect(data.mussPasswortSetzen).toBe(true);
+      expect(data.erstelltVonId).toBe('erstellender-nutzer-1');
+      expect(data.passwortHash).not.toBe(dto.passwort);
+      expect(await bcrypt.compare(dto.passwort, data.passwortHash)).toBe(true);
+      expect(data).not.toHaveProperty('passwortSetzenToken');
+      expect(result).toEqual({
+        id: 'nutzer-2',
+        vorname: 'Max',
+        nachname: 'Mustermann',
+        email: 'max@research.local',
+        standortId: 'standort-1',
+      });
     });
 
-    expect(prisma.nutzer.create).toHaveBeenCalledOnce();
-    const createArgs = prisma.nutzer.create.mock.calls[0][0].data;
-    expect(createArgs.mussPasswortSetzen).toBe(true);
-    expect(createArgs.erstelltVonId).toBe('erstellender-nutzer-1');
-    expect(createArgs.passwortSetzenToken).toBeTypeOf('string');
+    it('reports a duplicate email as conflict', async () => {
+      const prisma = { nutzer: { create: vi.fn().mockRejectedValue({ code: 'P2002' }) } };
+      const service = new NutzerService(prisma as never);
 
-    expect(result.passwortSetzenLink).toContain('/passwort-setzen?token=');
-    const rawToken = result.passwortSetzenLink.split('token=')[1];
-    // Persisted value must be the hash of the raw token handed to the erstellenden Nutzer, not the raw token itself.
-    expect(createArgs.passwortSetzenToken).toBe(hashPasswortSetzenToken(rawToken));
-    expect(result.email).toBe('max@research.local');
+      await expect(service.createNutzer('erstellender-nutzer-1', dto)).rejects.toBeInstanceOf(ConflictException);
+    });
+  });
+
+  describe('findAlle', () => {
+    it('lists Nutzer without password or token fields, sorted by name', async () => {
+      const prisma = { nutzer: { findMany: vi.fn().mockResolvedValue([]) } };
+      const service = new NutzerService(prisma as never);
+
+      await service.findAlle();
+
+      const args = prisma.nutzer.findMany.mock.calls[0][0];
+      expect(Object.keys(args.select)).toEqual(['id', 'vorname', 'nachname', 'email', 'standort']);
+      expect(args.orderBy).toEqual([{ nachname: 'asc' }, { vorname: 'asc' }]);
+    });
+  });
+
+  describe('passwortZuruecksetzen', () => {
+    it('sets a new initial password, forces a change and invalidates existing sessions – Issue #76', async () => {
+      const prisma = { nutzer: { update: vi.fn().mockResolvedValue({}) } };
+      const service = new NutzerService(prisma as never);
+
+      await service.passwortZuruecksetzen('nutzer-1', 'nutzer-2', 'Neues-Initial-Pw-1');
+
+      const { where, data } = prisma.nutzer.update.mock.calls[0][0];
+      expect(where).toEqual({ id: 'nutzer-2' });
+      expect(data.mussPasswortSetzen).toBe(true);
+      expect(data.passwortGeaendertAm).toBeInstanceOf(Date);
+      expect(await bcrypt.compare('Neues-Initial-Pw-1', data.passwortHash)).toBe(true);
+    });
+
+    it('refuses to reset the own password', async () => {
+      const prisma = { nutzer: { update: vi.fn() } };
+      const service = new NutzerService(prisma as never);
+
+      await expect(service.passwortZuruecksetzen('nutzer-1', 'nutzer-1', 'Neues-Initial-Pw-1')).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(prisma.nutzer.update).not.toHaveBeenCalled();
+    });
+
+    it('reports an unknown Nutzer as not found', async () => {
+      const prisma = { nutzer: { update: vi.fn().mockRejectedValue({ code: 'P2025' }) } };
+      const service = new NutzerService(prisma as never);
+
+      await expect(service.passwortZuruecksetzen('nutzer-1', 'unbekannt', 'Neues-Initial-Pw-1')).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
   });
 
   describe('findEigeneDaten', () => {

@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthService } from './auth.service.js';
@@ -12,6 +12,7 @@ function buildService() {
   const prisma = {
     nutzer: {
       findUnique: vi.fn(),
+      findUniqueOrThrow: vi.fn(),
       update: vi.fn(),
     },
   };
@@ -96,6 +97,45 @@ describe('AuthService', () => {
       await expect(service.passwortVergessen('unbekannt@research.local')).resolves.toBeUndefined();
       expect(prisma.nutzer.update).not.toHaveBeenCalled();
       expect(mailer.sendPasswortSetzenLink).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('passwortAendern (Issue #76)', () => {
+    it('replaces the initial password, clears the flag and signs a token only after the update', async () => {
+      const { service, prisma, jwtService } = buildService();
+      prisma.nutzer.findUniqueOrThrow.mockResolvedValue({
+        id: 'nutzer-1',
+        mussPasswortSetzen: true,
+        passwortHash: await bcrypt.hash('Initial-Passwort-1', 4),
+      });
+
+      const result = await service.passwortAendern('nutzer-1', 'Eigenes-Passwort-1');
+
+      const { data } = prisma.nutzer.update.mock.calls[0][0];
+      expect(data.mussPasswortSetzen).toBe(false);
+      expect(data.passwortGeaendertAm).toBeInstanceOf(Date);
+      expect(await bcrypt.compare('Eigenes-Passwort-1', data.passwortHash)).toBe(true);
+      expect(prisma.nutzer.update.mock.invocationCallOrder[0]).toBeLessThan(jwtService.signAsync.mock.invocationCallOrder[0]);
+      expect(result).toEqual({ accessToken: 'signed-token' });
+    });
+
+    it('rejects keeping the initial password', async () => {
+      const { service, prisma } = buildService();
+      prisma.nutzer.findUniqueOrThrow.mockResolvedValue({
+        id: 'nutzer-1',
+        mussPasswortSetzen: true,
+        passwortHash: await bcrypt.hash('Initial-Passwort-1', 4),
+      });
+
+      await expect(service.passwortAendern('nutzer-1', 'Initial-Passwort-1')).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.nutzer.update).not.toHaveBeenCalled();
+    });
+
+    it('is only available while the initial password is still set', async () => {
+      const { service, prisma } = buildService();
+      prisma.nutzer.findUniqueOrThrow.mockResolvedValue({ id: 'nutzer-1', mussPasswortSetzen: false, passwortHash: 'x' });
+
+      await expect(service.passwortAendern('nutzer-1', 'Eigenes-Passwort-1')).rejects.toBeInstanceOf(ForbiddenException);
     });
   });
 

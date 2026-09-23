@@ -29,7 +29,7 @@ describe('Shell', () => {
     expect(fixture.nativeElement.querySelector('.desktop-toolbar')).not.toBeNull();
     expect(text).toContain('Wareneinträge');
     expect(text).toContain('Wareneintrag erfassen');
-    expect(text).toContain('Nutzer anlegen');
+    expect(text).toContain('Nutzer');
     expect(text).toContain('Einstellungen');
     expect(text).toContain('Erfassen');
     expect(text).toContain('Mehr');
