@@ -33,11 +33,11 @@ export class WareneintragService {
     private readonly objectStorage: ObjectStorageService,
   ) {}
 
-  async findAll(filter: { avvCodeId?: string; suche?: string; seite?: number; proSeite?: number }) {
-    const { suche, avvCodeId, seite = 0, proSeite = 20 } = filter;
+  async findAll(filter: { avvCodeId?: string; standortId?: string; suche?: string; seite?: number; proSeite?: number }) {
+    const { suche, avvCodeId, standortId, seite = 0, proSeite = 20 } = filter;
     const { treffer, gesamt } = suche
-      ? await this.sucheMitVolltext({ avvCodeId, suche, seite, proSeite })
-      : await this.listeAlle({ avvCodeId, seite, proSeite });
+      ? await this.sucheMitVolltext({ avvCodeId, standortId, suche, seite, proSeite })
+      : await this.listeAlle({ avvCodeId, standortId, seite, proSeite });
     const daten = await Promise.all(
       treffer.map(async (wareneintrag) => ({
         ...wareneintrag,
@@ -56,8 +56,12 @@ export class WareneintragService {
     return { daten, gesamt };
   }
 
-  private async listeAlle(filter: { avvCodeId?: string; seite: number; proSeite: number }) {
-    const where = filter.avvCodeId ? { avvCodeId: filter.avvCodeId } : undefined;
+  private async listeAlle(filter: { avvCodeId?: string; standortId?: string; seite: number; proSeite: number }) {
+    const bedingungen = {
+      ...(filter.avvCodeId && { avvCodeId: filter.avvCodeId }),
+      ...(filter.standortId && { standortId: filter.standortId }),
+    };
+    const where = Object.keys(bedingungen).length > 0 ? bedingungen : undefined;
     const [treffer, gesamt] = await Promise.all([
       this.prisma.wareneintrag.findMany({
         where,
@@ -77,8 +81,17 @@ export class WareneintragService {
 
   // Volltextsuche über die generierte tsvector-Spalte (GIN-indiziert), kein
   // LIKE-Scan, siehe Issue #4.
-  private async sucheMitVolltext(filter: { avvCodeId?: string; suche: string; seite: number; proSeite: number }) {
+  private async sucheMitVolltext(filter: {
+    avvCodeId?: string;
+    standortId?: string;
+    suche: string;
+    seite: number;
+    proSeite: number;
+  }) {
     const avvFilter = filter.avvCodeId ? Prisma.sql`AND avv_code_id = ${filter.avvCodeId}` : Prisma.empty;
+    const standortFilter = filter.standortId
+      ? Prisma.sql`AND wareneintraege.standort_id = ${filter.standortId}`
+      : Prisma.empty;
     const praefixSuche = (filter.suche.match(/[\p{L}\p{N}]+/gu) ?? []).map((wort) => `${wort}:*`).join(' & ');
     const treffer = await this.prisma.$queryRaw<
       { id: string; fotoFernUrl: string | null; fotoNahUrl: string | null; fotoDetailUrl: string | null; gesamt: bigint }[]
@@ -101,6 +114,7 @@ export class WareneintragService {
         || to_tsquery('german', ${praefixSuche})
       )
       ${avvFilter}
+      ${standortFilter}
       ORDER BY wareneintraege.erstellt_am DESC, wareneintraege.id DESC
       LIMIT ${filter.proSeite} OFFSET ${filter.seite * filter.proSeite}
     `;

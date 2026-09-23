@@ -165,6 +165,18 @@ describe('WareneintragService', () => {
       });
     });
 
+    it('filters by standortId when given, combined with avvCodeId', async () => {
+      const prisma = { wareneintrag: { findMany: vi.fn().mockResolvedValue([]), count: vi.fn().mockResolvedValue(0) } };
+      const service = new WareneintragService(prisma as never, {} as never);
+
+      await service.findAll({ avvCodeId: 'avv-1', standortId: 'standort-2' });
+
+      expect(prisma.wareneintrag.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { avvCodeId: 'avv-1', standortId: 'standort-2' } }),
+      );
+      expect(prisma.wareneintrag.count).toHaveBeenCalledWith({ where: { avvCodeId: 'avv-1', standortId: 'standort-2' } });
+    });
+
     it('uses the tsvector full-text index instead of LIKE when a search term is given', async () => {
       const prisma = { $queryRaw: vi.fn().mockResolvedValue([]) };
       const service = new WareneintragService(prisma as never, {} as never);
@@ -241,6 +253,19 @@ describe('WareneintragService', () => {
       expect(nestedFragment?.sql).toContain('avv_code_id');
       expect(values).toContain('Bauschutt');
       expect(nestedFragment?.values).toContain('avv-1');
+    });
+
+    it('combines the standortId filter with the full-text search', async () => {
+      const prisma = { $queryRaw: vi.fn().mockResolvedValue([]) };
+      const service = new WareneintragService(prisma as never, {} as never);
+
+      await service.findAll({ standortId: 'standort-2', suche: 'Bauschutt' });
+
+      const [, ...values] = prisma.$queryRaw.mock.calls[0];
+      const fragmente = values.filter((value: unknown) => value instanceof Prisma.Sql) as InstanceType<typeof Prisma.Sql>[];
+      const standortFragment = fragmente.find((fragment) => fragment.sql.includes('standort_id'));
+      expect(standortFragment?.values).toEqual(['standort-2']);
+      expect(values).toContain('Bauschutt');
     });
   });
 

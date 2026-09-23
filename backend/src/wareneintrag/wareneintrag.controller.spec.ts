@@ -41,6 +41,15 @@ describe('WareneintragController', () => {
         proSeite: 50,
       });
     });
+
+    it('passes the standortId filter through to the service', async () => {
+      const wareneintragService = { findAll: vi.fn().mockResolvedValue([]) };
+      const controller = new WareneintragController(wareneintragService as never);
+
+      await controller.findAll(undefined, undefined, undefined, undefined, 'standort-2');
+
+      expect(wareneintragService.findAll).toHaveBeenCalledWith(expect.objectContaining({ standortId: 'standort-2' }));
+    });
   });
 
   describe('create', () => {
