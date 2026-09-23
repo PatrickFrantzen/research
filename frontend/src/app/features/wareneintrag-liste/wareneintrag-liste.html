@@ -26,15 +26,31 @@
       <mat-label>Freitext durchsuchen</mat-label>
       <input matInput #sucheInput data-testid="freitext-suche" [formField]="filterForm.suche" (input)="onSucheEingabe(sucheInput.value)" />
     </mat-form-field>
+
+    <mat-form-field appearance="outline" data-testid="standort-filter">
+      <mat-label>Standort</mat-label>
+      <mat-select [value]="standortId()" (selectionChange)="onStandortGewaehlt($event.value)">
+        <mat-option [value]="null">Alle Standorte</mat-option>
+        @for (standort of standortListe(); track standort.id) {
+          <mat-option [value]="standort.id">{{ standort.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
   </div>
 
-  @if (avvFilterAnzeige() || suche()) {
+  @if (avvFilterAnzeige() || standortId() || suche()) {
     <div class="aktive-filter">
       <mat-chip-set aria-label="Aktive Filter">
         @if (avvFilterAnzeige(); as avv) {
           <mat-chip data-testid="filter-avv" (removed)="avvFilterEntfernen()">
             AVV: {{ avv }}
             <button matChipRemove aria-label="AVV-Filter entfernen"><mat-icon>cancel</mat-icon></button>
+          </mat-chip>
+        }
+        @if (standortId()) {
+          <mat-chip data-testid="filter-standort" (removed)="standortFilterEntfernen()">
+            Standort: {{ standortFilterName() }}
+            <button matChipRemove aria-label="Standort-Filter entfernen"><mat-icon>cancel</mat-icon></button>
           </mat-chip>
         }
         @if (suche(); as begriff) {

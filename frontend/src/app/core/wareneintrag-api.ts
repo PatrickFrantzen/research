@@ -21,6 +21,7 @@ export interface PaginierteWareneintraege {
 
 export interface WareneintragFilter {
   avvCodeId: string | null;
+  standortId?: string | null;
   suche: string;
   seite: number;
   proSeite: number;
@@ -36,6 +37,7 @@ export class WareneintragApi {
       proSeite: String(filter.proSeite),
     };
     if (filter.avvCodeId) params['avvCodeId'] = filter.avvCodeId;
+    if (filter.standortId) params['standortId'] = filter.standortId;
     if (filter.suche) params['suche'] = filter.suche;
     return this.http.get<PaginierteWareneintraege>('/api/v1/wareneintraege', { params });
   }

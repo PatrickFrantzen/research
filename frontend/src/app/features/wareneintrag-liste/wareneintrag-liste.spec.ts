@@ -5,6 +5,7 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { AuthService } from '../../core/auth.service.js';
+import { StandortApi } from '../../core/standort-api.js';
 import { WareneintragListe } from './wareneintrag-liste.js';
 
 describe('WareneintragListe', () => {
@@ -21,6 +22,18 @@ describe('WareneintragListe', () => {
         provideHttpClientTesting(),
         provideRouter([]),
         { provide: AuthService, useValue: authService },
+        // Stammdaten-Adapter an der Systemgrenze fest belegt – die Liste
+        // selbst wird weiter über echte HTTP-Requests geprüft.
+        {
+          provide: StandortApi,
+          useValue: {
+            liste: () =>
+              of([
+                { id: 'standort-1', name: 'Hauptsitz' },
+                { id: 'standort-2', name: 'Lager Nord' },
+              ]),
+          },
+        },
       ],
     }).compileComponents();
     httpMock = TestBed.inject(HttpTestingController);
@@ -282,6 +295,42 @@ describe('WareneintragListe', () => {
       expect(fixture.nativeElement.querySelector('[data-testid="filter-avv"]')).not.toBeNull();
     }));
 
+    it('filters by the chosen Standort and shows it as a removable chip', fakeAsync(() => {
+      const fixture = TestBed.createComponent(WareneintragListe);
+      fixture.detectChanges();
+      httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([]);
+      httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 0 });
+      tick();
+      fixture.detectChanges();
+      const element = fixture.nativeElement as HTMLElement;
+
+      (element.querySelector('[data-testid="standort-filter"] .mat-mdc-select-trigger') as HTMLElement).click();
+      fixture.detectChanges();
+      tick();
+      const option = Array.from(document.querySelectorAll('mat-option')).find((o) => o.textContent?.includes('Lager Nord'));
+      (option as HTMLElement).click();
+      fixture.detectChanges();
+      tick();
+      fixture.detectChanges();
+
+      const request = httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege');
+      expect(request.request.params.get('standortId')).toBe('standort-2');
+      expect(request.request.params.get('seite')).toBe('0');
+      request.flush({ daten: [], gesamt: 0 });
+      tick();
+      fixture.detectChanges();
+      expect(element.querySelector('[data-testid="filter-standort"]')?.textContent).toContain('Lager Nord');
+
+      (element.querySelector('[data-testid="filter-standort"] [matChipRemove]') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      tick();
+      fixture.detectChanges();
+      httpMock
+        .expectOne((req) => req.url === '/api/v1/wareneintraege' && !req.params.has('standortId'))
+        .flush({ daten: [], gesamt: 0 });
+      expect(element.querySelector('[data-testid="filter-standort"]')).toBeNull();
+    }));
+
     function listeMitFiltern() {
       const fixture = TestBed.createComponent(WareneintragListe);
       fixture.detectChanges();
@@ -293,6 +342,10 @@ describe('WareneintragListe', () => {
       fixture.detectChanges();
       waehleAvvCode(fixture, 'avv-1');
       httpMock.expectOne((req) => req.params.get('avvCodeId') === 'avv-1').flush({ daten: [], gesamt: 0 });
+      fixture.componentInstance.onStandortGewaehlt('standort-2');
+      fixture.detectChanges();
+      tick();
+      httpMock.expectOne((req) => req.params.get('standortId') === 'standort-2').flush({ daten: [], gesamt: 0 });
       fixture.componentInstance.onSucheEingabe('Bauschutt');
       tick(300);
       fixture.detectChanges();
@@ -328,6 +381,7 @@ describe('WareneintragListe', () => {
 
       const request = httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege');
       expect(request.request.params.has('avvCodeId')).toBeFalse();
+      expect(request.request.params.has('standortId')).toBeFalse();
       expect(request.request.params.has('suche')).toBeFalse();
       expect(request.request.params.get('seite')).toBe('0');
       request.flush({ daten: [], gesamt: 0 });
