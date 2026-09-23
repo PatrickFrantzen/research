@@ -6,7 +6,7 @@
 
     @if (angelegt(); as ergebnis) {
       <mat-card-content class="formular">
-        <p role="status">Account für {{ ergebnis.email }} wurde angelegt.</p>
+        <p role="status" appFokusBeiAnzeige>Account für {{ ergebnis.email }} wurde angelegt.</p>
         <p>Initial-Zugang an den Nutzer weitergeben (kein Mailversand):</p>
         <mat-form-field appearance="outline">
           <mat-label>Link zum Passwort-Setzen</mat-label>
@@ -62,7 +62,7 @@
           </mat-form-field>
 
           @if (fehler()) {
-            <p class="fehler" role="alert">{{ fehler() }}</p>
+            <p class="fehler" role="alert" appFokusBeiAnzeige>{{ fehler() }}</p>
           }
         </mat-card-content>
 

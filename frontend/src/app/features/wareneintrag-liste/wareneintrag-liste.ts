@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, linkedSignal, signal } from '@angular/core';
+import { Component, ElementRef, computed, inject, linkedSignal, signal, viewChild } from '@angular/core';
 import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormField, form } from '@angular/forms/signals';
 import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
@@ -10,13 +10,16 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatPaginatorIntl, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { debounceTime, distinctUntilChanged, firstValueFrom, Subject } from 'rxjs';
 import { AuthService } from '../../core/auth.service.js';
 import { AvvCodeApi } from '../../core/avv-code-api.js';
 import { ConfirmDialog } from '../../core/confirm-dialog/confirm-dialog.js';
+import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
 import { LadeZustand } from '../../core/lade-zustand/lade-zustand.js';
+import { DeutscherPaginatorIntl } from '../../core/paginator-intl.js';
 import { StandortApi } from '../../core/standort-api.js';
 import { Wareneintrag, WareneintragApi } from '../../core/wareneintrag-api.js';
 import { WareneintragBearbeitenDialog } from './wareneintrag-bearbeiten-dialog/wareneintrag-bearbeiten-dialog.js';
@@ -41,6 +44,10 @@ const FILTER_DEBOUNCE_MS = 300;
     MatSelectModule,
     LadeZustand,
   ],
+  // Hier statt global in app.config.ts: MatPaginatorIntl zieht über
+  // @angular/material/paginator auch MatSelect, FormField, Overlay und Forms
+  // ins Initial-Bundle (~210 kB raw, Issue #73). Einziger Paginator der App.
+  providers: [{ provide: MatPaginatorIntl, useClass: DeutscherPaginatorIntl }],
   templateUrl: './wareneintrag-liste.html',
   styleUrl: './wareneintrag-liste.scss',
 })
@@ -49,6 +56,8 @@ export class WareneintragListe {
   private readonly wareneintragApi = inject(WareneintragApi);
   private readonly standortApi = inject(StandortApi);
   private readonly dialog = inject(MatDialog);
+  private readonly snackBar = inject(MatSnackBar);
+  private readonly seitentitel = viewChild.required<ElementRef<HTMLHeadingElement>>('seitentitel');
   protected readonly authService = inject(AuthService);
 
   readonly avvCodeId = signal<string | null>(null);
@@ -215,6 +224,16 @@ export class WareneintragListe {
     try {
       await firstValueFrom(this.wareneintragApi.loeschen(wareneintrag.id));
       this.wareneintraege.reload();
+      // Die Karte samt fokussiertem Button verschwindet: Fokus auf die
+      // Überschrift statt auf <body>, Ergebnis per Snackbar (Live-Region)
+      // ansagen (Issue #54).
+      this.seitentitel().nativeElement.focus();
+      this.snackBar.open('Wareneintrag wurde gelöscht.', undefined, { duration: 3000 });
+    } catch (error) {
+      this.snackBar.open(extrahiereFehlermeldung(error, 'Wareneintrag konnte nicht gelöscht werden.'), 'OK', {
+        duration: 8000,
+        politeness: 'assertive',
+      });
     } finally {
       this.loeschenLaeuft = false;
     }

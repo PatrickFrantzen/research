@@ -13,10 +13,12 @@ import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
 import { LadeZustand } from '../../core/lade-zustand/lade-zustand.js';
 import { NutzerApi } from '../../core/nutzer-api.js';
 import { StandortApi } from '../../core/standort-api.js';
+import { FokusBeiAnzeige } from '../../core/fokus-bei-anzeige.js';
 
 @Component({
   selector: 'app-einstellungen',
   imports: [
+    FokusBeiAnzeige,
     FormField,
     LadeZustand,
     MatButtonModule,

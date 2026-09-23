@@ -14,6 +14,7 @@ import { AvvCode, AvvCodeApi } from '../../core/avv-code-api.js';
 import { pruefeFoto } from '../../core/foto-validierung.js';
 import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
 import { WareneintragApi } from '../../core/wareneintrag-api.js';
+import { FokusBeiAnzeige } from '../../core/fokus-bei-anzeige.js';
 
 // Die drei Ansichten sind optional – der Nutzer entscheidet selbst, wie
 // viele Fotos er aufnimmt (0 bis 3), siehe CONTEXT.md.
@@ -38,6 +39,7 @@ const SUCHE_DEBOUNCE_MS = 300;
 @Component({
   selector: 'app-wareneintrag-erfassen',
   imports: [
+    FokusBeiAnzeige,
     FormField,
     MatAutocompleteModule,
     MatButtonModule,

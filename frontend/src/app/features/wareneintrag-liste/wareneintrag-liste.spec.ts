@@ -2,6 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { AuthService } from '../../core/auth.service.js';
@@ -574,6 +575,31 @@ describe('WareneintragListe', () => {
     tick();
     fixture.detectChanges();
     httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 0 });
+  }));
+
+  it('announces a failed delete (e.g. 403) instead of failing silently', fakeAsync(() => {
+    dialogSchliesstMit(true);
+    const snackBar = spyOn(TestBed.inject(MatSnackBar), 'open');
+    const fixture = TestBed.createComponent(WareneintragListe);
+    fixture.detectChanges();
+    httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([]);
+    httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 0 });
+    tick();
+    fixture.detectChanges();
+
+    void fixture.componentInstance.loeschen({
+      id: 'wareneintrag-1',
+      freitext: 'test',
+      avvCode: { code: '17 01 01' },
+    } as never);
+    tick();
+    httpMock
+      .expectOne('/api/v1/wareneintraege/wareneintrag-1')
+      .flush({ message: 'Verboten' }, { status: 403, statusText: 'Forbidden' });
+    tick();
+
+    expect(snackBar).toHaveBeenCalledWith('Keine Berechtigung für diese Aktion.', 'OK', jasmine.objectContaining({ politeness: 'assertive' }));
+    httpMock.expectNone((req) => req.url === '/api/v1/wareneintraege');
   }));
 
   it('does not delete a Wareneintrag when the confirmation dialog is cancelled', fakeAsync(() => {

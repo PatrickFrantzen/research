@@ -12,6 +12,7 @@ import { AvvCodeApi } from '../../../core/avv-code-api.js';
 import { pruefeFoto } from '../../../core/foto-validierung.js';
 import { extrahiereFehlermeldung } from '../../../core/http-fehler.js';
 import { Wareneintrag, WareneintragApi } from '../../../core/wareneintrag-api.js';
+import { FokusBeiAnzeige } from '../../../core/fokus-bei-anzeige.js';
 
 export interface WareneintragBearbeitenDialogDaten {
   wareneintrag: Wareneintrag;
@@ -40,6 +41,7 @@ const AVV_SUCHE_DEBOUNCE_MS = 300;
 @Component({
   selector: 'app-wareneintrag-bearbeiten-dialog',
   imports: [
+    FokusBeiAnzeige,
     FormField,
     MatAutocompleteModule,
     MatButtonModule,

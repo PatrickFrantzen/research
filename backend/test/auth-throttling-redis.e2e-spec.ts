@@ -5,7 +5,7 @@ import { PassportModule } from '@nestjs/passport';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import { Test } from '@nestjs/testing';
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AuthController } from '../src/auth/auth.controller.js';
@@ -28,6 +28,7 @@ describe.skipIf(!process.env['RUN_REDIS_TESTS'])('Rate-Limiting über mehrere In
     const moduleRef = await Test.createTestingModule({
       imports: [
         ThrottlerModule.forRootAsync({
+          imports: [],
           useFactory: () => ({
             throttlers: [{ ttl: 60_000, limit: 60 }],
             storage: new ThrottlerStorageRedisService(REDIS_URL),

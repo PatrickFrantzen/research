@@ -21,6 +21,7 @@ describe('Security-Header (Issue #26)', () => {
       databaseUrl: 'postgresql://localhost/test',
       objectStorage: {
         endpoint: 'http://localhost:9000',
+        publicEndpoint: 'http://localhost:9000',
         region: 'us-east-1',
         accessKeyId: 'access',
         secretAccessKey: 'secret',

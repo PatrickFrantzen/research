@@ -1,5 +1,6 @@
-// Deutsche Texte für mat-paginator (Material liefert nur Englisch). Global in
-// app.config.ts registriert, gilt damit für jeden Paginator der App.
+// Deutsche Texte für mat-paginator (Material liefert nur Englisch). Bewusst
+// nicht global registriert, sondern in der Komponente mit Paginator
+// (wareneintrag-liste.ts), damit der Paginator lazy bleibt (Issue #73).
 import { Injectable } from '@angular/core';
 import { MatPaginatorIntl } from '@angular/material/paginator';
 
