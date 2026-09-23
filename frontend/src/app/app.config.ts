@@ -15,6 +15,7 @@ import { routes } from './app.routes';
 import { AuthService } from './core/auth.service';
 import { csrfInterceptor } from './core/csrf.interceptor';
 import { DeutscherPaginatorIntl } from './core/paginator-intl';
+import { ThemeService } from './core/theme.service';
 import { unauthorizedInterceptor } from './core/unauthorized.interceptor';
 
 export const appConfig: ApplicationConfig = {
@@ -28,6 +29,8 @@ export const appConfig: ApplicationConfig = {
     // ersten Routen-Auflösung feststehen, damit die Auth-Guards synchron
     // entscheiden können.
     provideAppInitializer(() => inject(AuthService).init()),
+    // Gespeicherten Farbmodus vor dem ersten Rendern anwenden (kein Aufblitzen).
+    provideAppInitializer(() => void inject(ThemeService)),
     // Cached App-Shell-Build für wiederholte Aufrufe, siehe Issue #7. Bewusst
     // ohne Offline-Formular-Puffer – siehe docs/research/02-architektur.md
     // Abschnitt 8, Punkt 3.

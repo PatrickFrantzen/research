@@ -7,6 +7,15 @@
   <a matButton routerLink="/wareneintrag-erfassen" routerLinkActive="aktiv" ariaCurrentWhenActive="page">Wareneintrag erfassen</a>
   <a matButton routerLink="/nutzer-anlegen" routerLinkActive="aktiv" ariaCurrentWhenActive="page">Nutzer anlegen</a>
   <a matButton routerLink="/einstellungen" routerLinkActive="aktiv" ariaCurrentWhenActive="page">Einstellungen</a>
+  <button
+    matIconButton
+    type="button"
+    data-testid="farbmodus-umschalten"
+    [attr.aria-label]="themeService.modus() === 'dunkel' ? 'Helles Design aktivieren' : 'Dunkles Design aktivieren'"
+    (click)="themeService.umschalten()"
+  >
+    <mat-icon>{{ themeService.modus() === 'dunkel' ? 'light_mode' : 'dark_mode' }}</mat-icon>
+  </button>
   <button matButton type="button" (click)="logout()">Logout</button>
 </mat-toolbar>
 

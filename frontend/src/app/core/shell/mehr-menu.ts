@@ -4,6 +4,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../auth.service.js';
+import { ThemeService } from '../theme.service.js';
 
 @Component({
   selector: 'app-mehr-menu',
@@ -18,16 +19,23 @@ import { AuthService } from '../auth.service.js';
         <mat-icon matListItemIcon>settings</mat-icon>
         <span matListItemTitle>Einstellungen</span>
       </a>
+    </mat-nav-list>
+    <mat-action-list>
+      <button mat-list-item type="button" data-testid="farbmodus-umschalten" (click)="themeService.umschalten()">
+        <mat-icon matListItemIcon>{{ themeService.modus() === 'dunkel' ? 'light_mode' : 'dark_mode' }}</mat-icon>
+        <span matListItemTitle>{{ themeService.modus() === 'dunkel' ? 'Helles Design' : 'Dunkles Design' }}</span>
+      </button>
       <button mat-list-item type="button" (click)="logout()">
         <mat-icon matListItemIcon>logout</mat-icon>
         <span matListItemTitle>Logout</span>
       </button>
-    </mat-nav-list>
+    </mat-action-list>
   `,
 })
 export class MehrMenu {
   private readonly bottomSheetRef = inject(MatBottomSheetRef<MehrMenu>);
   private readonly authService = inject(AuthService);
+  protected readonly themeService = inject(ThemeService);
   private readonly router = inject(Router);
 
   schliessen(): void {
