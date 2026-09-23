@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { NutzerController } from './nutzer.controller.js';
 
 function buildRequest(id: string) {
-  return { user: { id, rolle: 'MITARBEITER' } } as never;
+  return { user: { id } } as never;
 }
 
 describe('NutzerController', () => {

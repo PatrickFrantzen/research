@@ -1,6 +1,5 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { Rolle } from '../generated/prisma/enums.js';
 
 process.env['DATABASE_URL'] ??= 'postgresql://localhost/test';
 process.env['OBJECT_STORAGE_ENDPOINT'] ??= 'http://localhost:9000';
@@ -25,53 +24,41 @@ describe('JwtStrategy', () => {
 
   it('accepts a token whose Nutzer still exists', async () => {
     const { strategy, prisma } = buildStrategy();
-    prisma.nutzer.findUnique.mockResolvedValue({ id: 'nutzer-1', rolle: Rolle.VORGESETZTER });
+    prisma.nutzer.findUnique.mockResolvedValue({ id: 'nutzer-1' });
 
-    const user = await strategy.validate({ sub: 'nutzer-1', rolle: Rolle.VORGESETZTER });
+    const user = await strategy.validate({ sub: 'nutzer-1' });
 
-    expect(user).toEqual({ id: 'nutzer-1', rolle: Rolle.VORGESETZTER });
+    expect(user).toEqual({ id: 'nutzer-1' });
   });
 
   it('rejects a token for a Nutzer that no longer exists (deleted account) – Issue #34', async () => {
     const { strategy, prisma } = buildStrategy();
     prisma.nutzer.findUnique.mockResolvedValue(null);
 
-    await expect(strategy.validate({ sub: 'geloeschter-nutzer', rolle: Rolle.MITARBEITER })).rejects.toBeInstanceOf(
-      UnauthorizedException,
-    );
-  });
-
-  it('uses the current role from the DB rather than trusting a stale role claim in the token – Issue #34', async () => {
-    const { strategy, prisma } = buildStrategy();
-    // Token wurde vor einer Rollenänderung ausgestellt (aktuell nicht möglich, aber defensiv).
-    prisma.nutzer.findUnique.mockResolvedValue({ id: 'nutzer-1', rolle: Rolle.VORGESETZTER });
-
-    const user = await strategy.validate({ sub: 'nutzer-1', rolle: Rolle.MITARBEITER });
-
-    expect(user.rolle).toBe(Rolle.VORGESETZTER);
+    await expect(strategy.validate({ sub: 'geloeschter-nutzer' })).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
   describe('Invalidierung nach Passwortänderung (Issue #40)', () => {
     it('rejects a token issued before the last password change', async () => {
       const { strategy, prisma } = buildStrategy();
       const passwortGeaendertAm = new Date('2026-01-02T00:00:00Z');
-      prisma.nutzer.findUnique.mockResolvedValue({ id: 'nutzer-1', rolle: Rolle.MITARBEITER, passwortGeaendertAm });
+      prisma.nutzer.findUnique.mockResolvedValue({ id: 'nutzer-1', passwortGeaendertAm });
       const iatVorDerAenderung = Math.floor(new Date('2026-01-01T00:00:00Z').getTime() / 1000);
 
-      await expect(
-        strategy.validate({ sub: 'nutzer-1', rolle: Rolle.MITARBEITER, iat: iatVorDerAenderung }),
-      ).rejects.toBeInstanceOf(UnauthorizedException);
+      await expect(strategy.validate({ sub: 'nutzer-1', iat: iatVorDerAenderung })).rejects.toBeInstanceOf(
+        UnauthorizedException,
+      );
     });
 
     it('accepts a token issued after the last password change', async () => {
       const { strategy, prisma } = buildStrategy();
       const passwortGeaendertAm = new Date('2026-01-02T00:00:00Z');
-      prisma.nutzer.findUnique.mockResolvedValue({ id: 'nutzer-1', rolle: Rolle.MITARBEITER, passwortGeaendertAm });
+      prisma.nutzer.findUnique.mockResolvedValue({ id: 'nutzer-1', passwortGeaendertAm });
       const iatNachDerAenderung = Math.floor(new Date('2026-01-03T00:00:00Z').getTime() / 1000);
 
-      await expect(
-        strategy.validate({ sub: 'nutzer-1', rolle: Rolle.MITARBEITER, iat: iatNachDerAenderung }),
-      ).resolves.toEqual({ id: 'nutzer-1', rolle: Rolle.MITARBEITER });
+      await expect(strategy.validate({ sub: 'nutzer-1', iat: iatNachDerAenderung })).resolves.toEqual({
+        id: 'nutzer-1',
+      });
     });
   });
 });

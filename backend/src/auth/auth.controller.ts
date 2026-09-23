@@ -52,9 +52,9 @@ export class AuthController {
   @Post('login')
   @Throttle(AUTH_THROTTLE)
   async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
-    const { accessToken, mussPasswortSetzen, rolle } = await this.authService.login(dto.email, dto.passwort);
+    const { accessToken, mussPasswortSetzen, id } = await this.authService.login(dto.email, dto.passwort);
     setzeAuthCookies(res, accessToken);
-    return { mussPasswortSetzen, rolle };
+    return { mussPasswortSetzen, id };
   }
 
   @Post('logout')
@@ -63,12 +63,13 @@ export class AuthController {
     loescheAuthCookies(res);
   }
 
-  // Liefert dem Frontend die Rolle des eingeloggten Nutzers – das JWT selbst
-  // ist HttpOnly und damit für JS nicht lesbar (Issue #24).
+  // Liefert dem Frontend die ID des eingeloggten Nutzers (u.a. für
+  // Besitz-Checks bei Wareneinträgen) – das JWT selbst ist HttpOnly und
+  // damit für JS nicht lesbar (Issue #24).
   @Get('me')
   @UseGuards(JwtAuthGuard)
   me(@Req() req: AuthenticatedRequest) {
-    return { rolle: req.user.rolle };
+    return { id: req.user.id };
   }
 
   @Post('passwort-vergessen')

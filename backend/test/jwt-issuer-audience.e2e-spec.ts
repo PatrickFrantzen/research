@@ -10,7 +10,6 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AuthModule } from '../src/auth/auth.module.js';
 import { JwtAuthGuard } from '../src/auth/jwt-auth.guard.js';
 import { JwtStrategy } from '../src/auth/jwt.strategy.js';
-import { Rolle } from '../src/generated/prisma/enums.js';
 import { PrismaModule } from '../src/prisma/prisma.module.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 import { ACCESS_TOKEN_COOKIE } from '../src/auth/auth-cookies.js';
@@ -34,7 +33,6 @@ describe('JWT Issuer/Audience-Prüfung (Issue #34)', () => {
   let app: INestApplication;
   const nutzer = {
     id: 'nutzer-1',
-    rolle: Rolle.VORGESETZTER,
     passwortGeaendertAm: new Date(0),
   };
 
@@ -68,7 +66,7 @@ describe('JWT Issuer/Audience-Prüfung (Issue #34)', () => {
   });
 
   function token(overrides: { issuer?: string; audience?: string } = {}): string {
-    return jwt.sign({ sub: nutzer.id, rolle: nutzer.rolle }, JWT_SECRET, {
+    return jwt.sign({ sub: nutzer.id }, JWT_SECRET, {
       algorithm: 'HS256',
       issuer: overrides.issuer ?? JWT_ISSUER,
       audience: overrides.audience ?? JWT_AUDIENCE,
@@ -110,7 +108,6 @@ describe('Login über das reale AuthModule stellt vom eigenen JwtStrategy akzept
   const nutzer = {
     id: 'nutzer-1',
     email: 'chef@research.local',
-    rolle: Rolle.VORGESETZTER,
     passwortHash,
     mussPasswortSetzen: false,
     passwortGeaendertAm: new Date(0),

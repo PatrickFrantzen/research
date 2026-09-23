@@ -9,13 +9,33 @@
       </div>
     } @else {
       <form (submit)="$event.preventDefault(); submit()">
-        <input #fotoInput type="file" accept="image/*" (change)="onFotoAusgewaehlt($event)" hidden />
-        <button matButton="outlined" type="button" (click)="fotoInput.click()">
-          {{ foto ? 'Anderes Foto auswählen' : 'Foto aufnehmen oder auswählen' }}
-        </button>
-        @if (fotoVorschauUrl(); as url) {
-          <img [src]="url" alt="Foto-Vorschau" class="foto-vorschau" />
-        }
+        <div class="foto-kacheln">
+          @for (kachel of fotoKacheln; track kachel.ansicht) {
+            <div class="foto-kachel">
+              <input
+                #fotoInput
+                type="file"
+                accept="image/*"
+                capture="environment"
+                (change)="onFotoAusgewaehlt(kachel.ansicht, $event)"
+                hidden
+              />
+              <button
+                type="button"
+                class="foto-kachel-inhalt"
+                [class.hat-foto]="fotoVorschau(kachel.ansicht)"
+                (click)="fotoInput.click()"
+              >
+                @if (fotoVorschau(kachel.ansicht); as url) {
+                  <img [src]="url" [alt]="kachel.label" />
+                } @else {
+                  <mat-icon>add_a_photo</mat-icon>
+                }
+              </button>
+              <span class="foto-kachel-label">{{ kachel.label }}</span>
+            </div>
+          }
+        </div>
 
         <mat-form-field appearance="outline">
           <mat-label>AVV-Code</mat-label>

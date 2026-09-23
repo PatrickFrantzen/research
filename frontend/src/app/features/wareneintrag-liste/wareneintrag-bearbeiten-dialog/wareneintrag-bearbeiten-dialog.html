@@ -23,10 +23,17 @@
     <textarea matInput data-testid="bearbeiten-freitext" [formField]="bearbeitenForm.freitext" rows="4"></textarea>
   </mat-form-field>
 
-  <label>
-    Foto ersetzen
-    <input type="file" data-testid="bearbeiten-foto" accept="image/jpeg,image/png,image/webp" (change)="fotoErsetzen($event)" />
-  </label>
+  @for (kachel of fotoKacheln; track kachel.ansicht) {
+    <label>
+      {{ kachel.label }} ersetzen
+      <input
+        type="file"
+        [attr.data-testid]="'bearbeiten-foto-' + kachel.ansicht"
+        accept="image/jpeg,image/png,image/webp"
+        (change)="fotoErsetzen(kachel.ansicht, $event)"
+      />
+    </label>
+  }
 
   @if (fehler(); as meldung) {
     <p class="fehler">{{ meldung }}</p>

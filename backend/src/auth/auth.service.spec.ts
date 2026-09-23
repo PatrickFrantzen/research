@@ -2,7 +2,6 @@ import { createHash } from 'node:crypto';
 import { UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { Rolle } from '../generated/prisma/enums.js';
 import { AuthService } from './auth.service.js';
 
 function sha256(value: string): string {
@@ -34,19 +33,18 @@ describe('AuthService', () => {
       const passwortHash = await bcrypt.hash('geheim123', 4);
       prisma.nutzer.findUnique.mockResolvedValue({
         id: 'nutzer-1',
-        rolle: Rolle.VORGESETZTER,
         passwortHash,
         mussPasswortSetzen: false,
       });
 
-      const result = await service.login('chef@research.local', 'geheim123');
+      const result = await service.login('nutzer@research.local', 'geheim123');
 
       expect(result).toEqual({
         accessToken: 'signed-token',
         mussPasswortSetzen: false,
-        rolle: Rolle.VORGESETZTER,
+        id: 'nutzer-1',
       });
-      expect(jwtService.signAsync).toHaveBeenCalledWith({ sub: 'nutzer-1', rolle: Rolle.VORGESETZTER });
+      expect(jwtService.signAsync).toHaveBeenCalledWith({ sub: 'nutzer-1' });
     });
 
     it('rejects an unknown email', async () => {
@@ -63,7 +61,6 @@ describe('AuthService', () => {
       const passwortHash = await bcrypt.hash('richtig', 4);
       prisma.nutzer.findUnique.mockResolvedValue({
         id: 'nutzer-1',
-        rolle: Rolle.MITARBEITER,
         passwortHash,
         mussPasswortSetzen: false,
       });

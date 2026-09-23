@@ -15,6 +15,21 @@ export interface WareneintragBearbeitenDialogDaten {
   wareneintrag: Wareneintrag;
 }
 
+// Die drei Ansichten sind optional – wie beim Erfassen ersetzt der Nutzer
+// nur, was er neu fotografieren möchte (0 bis 3), siehe CONTEXT.md.
+type FotoAnsicht = 'fotoFern' | 'fotoNah' | 'fotoDetail';
+
+interface FotoKachel {
+  ansicht: FotoAnsicht;
+  label: string;
+}
+
+const FOTO_KACHELN: FotoKachel[] = [
+  { ansicht: 'fotoFern', label: 'Fernansicht' },
+  { ansicht: 'fotoNah', label: 'Nahansicht' },
+  { ansicht: 'fotoDetail', label: 'Detailansicht' },
+];
+
 // Eigene Debounce-Verzögerung statt einer geteilten Konstante mit der
 // Liste: der Dialog hat eine eigene, vom Listenfilter entkoppelte
 // AVV-Suche (siehe Kommentar in wareneintrag-liste.ts).
@@ -42,7 +57,8 @@ export class WareneintragBearbeitenDialog {
   // Speichern ohne AVV-Code-Änderung keine erneute Auswahl über die Suche
   // erfordert.
   private readonly avvCodeId = signal<string | null>(this.daten.wareneintrag.avvCode.id);
-  foto: File | null = null;
+  protected readonly fotoKacheln = FOTO_KACHELN;
+  private readonly fotos: Record<FotoAnsicht, File | null> = { fotoFern: null, fotoNah: null, fotoDetail: null };
 
   protected readonly bearbeitungDaten = signal({
     avvSucheAnzeige: `${this.daten.wareneintrag.avvCode.code} – ${this.daten.wareneintrag.avvCode.bezeichnung}`,
@@ -94,9 +110,9 @@ export class WareneintragBearbeitenDialog {
     this.avvSucheAnzeige = `${avvCode.code} – ${avvCode.bezeichnung}`;
   }
 
-  fotoErsetzen(event: Event): void {
+  fotoErsetzen(ansicht: FotoAnsicht, event: Event): void {
     const input = event.target as HTMLInputElement;
-    this.foto = input.files?.item(0) ?? null;
+    this.fotos[ansicht] = input.files?.item(0) ?? null;
   }
 
   async speichern(): Promise<void> {
@@ -107,7 +123,10 @@ export class WareneintragBearbeitenDialog {
     const formData = new FormData();
     formData.set('avvCodeId', avvCodeId);
     formData.set('freitext', this.freitext.trim());
-    if (this.foto) formData.set('foto', this.foto);
+    for (const { ansicht } of this.fotoKacheln) {
+      const datei = this.fotos[ansicht];
+      if (datei) formData.set(ansicht, datei);
+    }
 
     try {
       await firstValueFrom(this.wareneintragApi.aktualisieren(this.daten.wareneintrag.id, formData));

@@ -7,8 +7,8 @@
 
 Firmeninterne, reduzierte Version von
 [waste-connect-v2](https://github.com/PatrickFrantzen/waste-connect-v2):
-Mitarbeiter registrieren Ware mobil (Foto, AVV-Nummer, Freitext),
-Vorgesetzte sichten/filtern/bearbeiten die Einträge am Desktop.
+Nutzer registrieren Ware mobil (Fotos, AVV-Nummer, Freitext) und
+sichten/filtern die Einträge am Desktop.
 
 Eigenständiges Repo, da Architektur und Technik-Stack voraussichtlich von
 waste-connect-v2 abweichen (Hosting/Datenbank laufen über die Infrastruktur
@@ -23,7 +23,7 @@ des Kunden).
 ## Lokale Entwicklung
 
 Einmalig `.env.example` im Repo-Root als `.env` kopieren und `JWT_SECRET`
-sowie den Initial-Zugang für den ersten Vorgesetzter-Account setzen
+sowie den Initial-Zugang für den ersten Nutzer-Account setzen
 (ohne `.env` greifen unsichere Platzhalter-Defaults – nur für Wegwerf-Setups
 okay).
 
@@ -33,12 +33,12 @@ docker compose up
 
 Startet App-Container (NestJS-API + ausgelieferter Angular-Build), PostgreSQL
 und MinIO, spielt Migrationen + Stammdaten-Seed ein (fester Standort
-"Hauptsitz", ein initialer Vorgesetzter-Account). Danach:
+"Hauptsitz", ein initialer Nutzer-Account). Danach:
 
 - App: http://localhost:3000
 - Health-Check: http://localhost:3000/api/v1/health
 - MinIO-Console: http://localhost:9001
-- Login mit `INITIAL_VORGESETZTER_EMAIL` / `INITIAL_VORGESETZTER_PASSWORT`
+- Login mit `INITIAL_NUTZER_EMAIL` / `INITIAL_NUTZER_PASSWORT`
   aus der `.env`
 
 Für Backend-Entwicklung ohne Container siehe `backend/.env.example`

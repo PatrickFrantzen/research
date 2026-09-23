@@ -4,16 +4,24 @@ import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
+import { AuthService } from '../../core/auth.service.js';
 import { WareneintragListe } from './wareneintrag-liste.js';
 
 describe('WareneintragListe', () => {
   let httpMock: HttpTestingController;
   let dialog: MatDialog;
+  let authService: { nutzerId: () => string | null };
 
   beforeEach(async () => {
+    authService = { nutzerId: () => 'nutzer-1' };
     await TestBed.configureTestingModule({
       imports: [WareneintragListe],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        { provide: AuthService, useValue: authService },
+      ],
     }).compileComponents();
     httpMock = TestBed.inject(HttpTestingController);
     dialog = TestBed.inject(MatDialog);
@@ -149,10 +157,14 @@ describe('WareneintragListe', () => {
       .flush({ daten: [
         {
           id: 'wareneintrag-1',
-          fotoUrl: '/foto.jpg',
+          fotoFernUrl: '/foto.jpg',
+          fotoNahUrl: null,
+          fotoDetailUrl: null,
           freitext: 'test',
           erstelltAm: '2026-09-19T18:08:00.000Z',
           avvCode: { code: '17 01 01' },
+          standort: { id: 'standort-1', name: 'Hauptsitz' },
+          erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
         },
       ], gesamt: 1 });
     tick();
@@ -160,6 +172,49 @@ describe('WareneintragListe', () => {
 
     const karte = fixture.nativeElement.querySelector('.karte') as HTMLElement;
     expect(karte.textContent).toContain('AVV-Code: 17 01 01');
+    expect(karte.textContent).toContain('Standort: Hauptsitz');
+    expect(karte.textContent).toContain('Erfasst von: Erika Musterfrau');
+  }));
+
+  it('shows Bearbeiten/Löschen only for Wareneintraege the current Nutzer created themselves', fakeAsync(() => {
+    const fixture = TestBed.createComponent(WareneintragListe);
+    fixture.detectChanges();
+    httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([]);
+    httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({
+      daten: [
+        {
+          id: 'eigener-wareneintrag',
+          fotoFernUrl: null,
+          fotoNahUrl: null,
+          fotoDetailUrl: null,
+          freitext: 'eigener',
+          erstelltAm: '2026-09-19T18:08:00.000Z',
+          avvCode: { code: '17 01 01' },
+          standort: { id: 'standort-1', name: 'Hauptsitz' },
+          erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
+        },
+        {
+          id: 'fremder-wareneintrag',
+          fotoFernUrl: null,
+          fotoNahUrl: null,
+          fotoDetailUrl: null,
+          freitext: 'fremder',
+          erstelltAm: '2026-09-19T18:08:00.000Z',
+          avvCode: { code: '17 01 01' },
+          standort: { id: 'standort-1', name: 'Hauptsitz' },
+          erfasstVon: { id: 'nutzer-2', vorname: 'Max', nachname: 'Mustermann' },
+        },
+      ],
+      gesamt: 2,
+    });
+    tick();
+    fixture.detectChanges();
+
+    const karten = fixture.nativeElement.querySelectorAll('.karte') as NodeListOf<HTMLElement>;
+    expect(karten[0].querySelector('[data-testid="wareneintrag-bearbeiten"]')).not.toBeNull();
+    expect(karten[0].querySelector('[data-testid="wareneintrag-loeschen"]')).not.toBeNull();
+    expect(karten[1].querySelector('[data-testid="wareneintrag-bearbeiten"]')).toBeNull();
+    expect(karten[1].querySelector('[data-testid="wareneintrag-loeschen"]')).toBeNull();
   }));
 
   it('shows the creation date in German format with 24-hour time', fakeAsync(() => {
@@ -171,10 +226,14 @@ describe('WareneintragListe', () => {
       .flush({ daten: [
         {
           id: 'wareneintrag-1',
-          fotoUrl: '/foto.jpg',
+          fotoFernUrl: '/foto.jpg',
+          fotoNahUrl: null,
+          fotoDetailUrl: null,
           freitext: 'test',
           erstelltAm: '2026-09-19T20:08:00',
           avvCode: { code: '17 01 01' },
+          standort: { id: 'standort-1', name: 'Hauptsitz' },
+          erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
         },
       ], gesamt: 1 });
     tick();
@@ -191,10 +250,14 @@ describe('WareneintragListe', () => {
     httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([]);
     const wareneintrag = {
       id: 'wareneintrag-1',
-      fotoUrl: '/foto.jpg',
+      fotoFernUrl: '/foto.jpg',
+      fotoNahUrl: null,
+      fotoDetailUrl: null,
       freitext: 'alter Text',
       erstelltAm: '2026-09-19T20:08:00',
       avvCode: { code: '17 01 01' },
+      standort: { id: 'standort-1', name: 'Hauptsitz' },
+      erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
     };
     httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [wareneintrag], gesamt: 1 });
     tick();
@@ -221,10 +284,14 @@ describe('WareneintragListe', () => {
 
     fixture.componentInstance.bearbeitungOeffnen({
       id: 'wareneintrag-1',
-      fotoUrl: '/foto.jpg',
+      fotoFernUrl: '/foto.jpg',
+      fotoNahUrl: null,
+      fotoDetailUrl: null,
       freitext: 'test',
       erstelltAm: '2026-09-19T20:08:00',
       avvCode: { code: '17 01 01' },
+      standort: { id: 'standort-1', name: 'Hauptsitz' },
+      erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
     } as never);
     tick();
     fixture.detectChanges();
@@ -240,10 +307,14 @@ describe('WareneintragListe', () => {
     httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([]);
     const wareneintrag = {
       id: 'wareneintrag-1',
-      fotoUrl: '/foto.jpg',
+      fotoFernUrl: '/foto.jpg',
+      fotoNahUrl: null,
+      fotoDetailUrl: null,
       freitext: 'test',
       erstelltAm: '2026-09-19T20:08:00',
       avvCode: { code: '17 01 01' },
+      standort: { id: 'standort-1', name: 'Hauptsitz' },
+      erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
     };
     httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [wareneintrag], gesamt: 1 });
     tick();
@@ -272,10 +343,14 @@ describe('WareneintragListe', () => {
 
     void fixture.componentInstance.loeschen({
       id: 'wareneintrag-1',
-      fotoUrl: '/foto.jpg',
+      fotoFernUrl: '/foto.jpg',
+      fotoNahUrl: null,
+      fotoDetailUrl: null,
       freitext: 'test',
       erstelltAm: '2026-09-19T20:08:00',
       avvCode: { code: '17 01 01' },
+      standort: { id: 'standort-1', name: 'Hauptsitz' },
+      erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
     } as never);
     tick();
 

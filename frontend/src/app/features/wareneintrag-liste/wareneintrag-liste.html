@@ -29,24 +29,38 @@
   <div class="karten">
     @for (wareneintrag of wareneintraege.value()?.daten; track wareneintrag.id) {
       <mat-card class="karte">
-        <img [src]="wareneintrag.fotoUrl" alt="Foto des Wareneintrags" />
+        <div class="fotos">
+          @if (wareneintrag.fotoFernUrl) {
+            <img [src]="wareneintrag.fotoFernUrl" alt="Fernansicht" />
+          }
+          @if (wareneintrag.fotoNahUrl) {
+            <img [src]="wareneintrag.fotoNahUrl" alt="Nahansicht" />
+          }
+          @if (wareneintrag.fotoDetailUrl) {
+            <img [src]="wareneintrag.fotoDetailUrl" alt="Detailansicht" />
+          }
+        </div>
         <p>{{ wareneintrag.freitext }}</p>
         <p>AVV-Code: {{ wareneintrag.avvCode.code }}</p>
+        <p>Standort: {{ wareneintrag.standort.name }}</p>
+        <p>Erfasst von: {{ wareneintrag.erfasstVon.vorname }} {{ wareneintrag.erfasstVon.nachname }}</p>
         <p class="datum">{{ wareneintrag.erstelltAm | date: 'dd.MM.yyyy, HH:mm' }}</p>
-        <div class="aktionen">
-          <button mat-button type="button" data-testid="wareneintrag-bearbeiten" (click)="bearbeitungOeffnen(wareneintrag)">
-            Bearbeiten
-          </button>
-          <button
-            mat-button
-            type="button"
-            data-testid="wareneintrag-loeschen"
-            [disabled]="loeschenLaeuft"
-            (click)="loeschen(wareneintrag)"
-          >
-            Löschen
-          </button>
-        </div>
+        @if (istEigenerEintrag(wareneintrag)) {
+          <div class="aktionen">
+            <button mat-button type="button" data-testid="wareneintrag-bearbeiten" (click)="bearbeitungOeffnen(wareneintrag)">
+              Bearbeiten
+            </button>
+            <button
+              mat-button
+              type="button"
+              data-testid="wareneintrag-loeschen"
+              [disabled]="loeschenLaeuft"
+              (click)="loeschen(wareneintrag)"
+            >
+              Löschen
+            </button>
+          </div>
+        }
       </mat-card>
     } @empty {
       <p>Keine Wareneinträge gefunden.</p>

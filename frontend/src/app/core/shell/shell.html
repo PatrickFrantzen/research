@@ -1,61 +1,36 @@
-@if (istVorgesetzter) {
-  <mat-toolbar class="desktop-toolbar">
-    <a class="marken-link" routerLink="/" aria-label="RE-SEARCH Startseite">
-      <img class="marke" src="brand/re-search-header.svg" alt="RE-SEARCH – Transparente Entsorgungswege" />
-    </a>
-    <span class="spacer"></span>
-    <a mat-button routerLink="/wareneintraege" routerLinkActive="aktiv">Wareneinträge</a>
-    <a mat-button routerLink="/wareneintrag-erfassen" routerLinkActive="aktiv">Wareneintrag erfassen</a>
-    <a mat-button routerLink="/mitarbeiter-anlegen" routerLinkActive="aktiv">Mitarbeiter anlegen</a>
-    <a mat-button routerLink="/einstellungen" routerLinkActive="aktiv">Einstellungen</a>
-    <button mat-button type="button" (click)="logout()">Logout</button>
-  </mat-toolbar>
+<mat-toolbar class="desktop-toolbar">
+  <a class="marken-link" routerLink="/" aria-label="RE-SEARCH Startseite">
+    <img class="marke" src="brand/re-search-header.svg" alt="RE-SEARCH – Transparente Entsorgungswege" />
+  </a>
+  <span class="spacer"></span>
+  <a mat-button routerLink="/wareneintraege" routerLinkActive="aktiv">Wareneinträge</a>
+  <a mat-button routerLink="/wareneintrag-erfassen" routerLinkActive="aktiv">Wareneintrag erfassen</a>
+  <a mat-button routerLink="/nutzer-anlegen" routerLinkActive="aktiv">Nutzer anlegen</a>
+  <a mat-button routerLink="/einstellungen" routerLinkActive="aktiv">Einstellungen</a>
+  <button mat-button type="button" (click)="logout()">Logout</button>
+</mat-toolbar>
 
-  <mat-toolbar class="mobile-titelleiste vorgesetzter-mobil-titel">
-    <a class="marken-link" routerLink="/" aria-label="RE-SEARCH Startseite">
-      <img class="marke" src="brand/re-search-header.svg" alt="RE-SEARCH – Transparente Entsorgungswege" />
-    </a>
-  </mat-toolbar>
-} @else {
-  <mat-toolbar class="mobile-titelleiste">
-    <a class="marken-link" routerLink="/" aria-label="RE-SEARCH Startseite">
-      <img class="marke" src="brand/re-search-header.svg" alt="RE-SEARCH – Transparente Entsorgungswege" />
-    </a>
-  </mat-toolbar>
-}
+<mat-toolbar class="mobile-titelleiste">
+  <a class="marken-link" routerLink="/" aria-label="RE-SEARCH Startseite">
+    <img class="marke" src="brand/re-search-header.svg" alt="RE-SEARCH – Transparente Entsorgungswege" />
+  </a>
+</mat-toolbar>
 
-<div class="inhalt" [class.vorgesetzter-inhalt]="istVorgesetzter">
+<div class="inhalt">
   <router-outlet />
 </div>
 
-@if (istVorgesetzter) {
-  <nav class="bottom-nav vorgesetzter-bottom-nav">
-    <a routerLink="/wareneintraege" routerLinkActive="aktiv" class="bottom-nav-item">
-      <mat-icon>list_alt</mat-icon>
-      <span>Wareneinträge</span>
-    </a>
-    <a routerLink="/wareneintrag-erfassen" routerLinkActive="aktiv" class="bottom-nav-item">
-      <mat-icon>add_circle</mat-icon>
-      <span>Erfassen</span>
-    </a>
-    <button type="button" class="bottom-nav-item" (click)="mehrOeffnen()">
-      <mat-icon>more_horiz</mat-icon>
-      <span>Mehr</span>
-    </button>
-  </nav>
-} @else {
-  <nav class="bottom-nav mitarbeiter-bottom-nav">
-    <a routerLink="/wareneintrag-erfassen" routerLinkActive="aktiv" class="bottom-nav-item">
-      <mat-icon>add_circle</mat-icon>
-      <span>Erfassen</span>
-    </a>
-    <a routerLink="/einstellungen" routerLinkActive="aktiv" class="bottom-nav-item">
-      <mat-icon>settings</mat-icon>
-      <span>Einstellungen</span>
-    </a>
-    <button type="button" class="bottom-nav-item" (click)="logout()">
-      <mat-icon>logout</mat-icon>
-      <span>Logout</span>
-    </button>
-  </nav>
-}
+<nav class="bottom-nav">
+  <a routerLink="/wareneintraege" routerLinkActive="aktiv" class="bottom-nav-item">
+    <mat-icon>list_alt</mat-icon>
+    <span>Wareneinträge</span>
+  </a>
+  <a routerLink="/wareneintrag-erfassen" routerLinkActive="aktiv" class="bottom-nav-item">
+    <mat-icon>add_circle</mat-icon>
+    <span>Erfassen</span>
+  </a>
+  <button type="button" class="bottom-nav-item" (click)="mehrOeffnen()">
+    <mat-icon>more_horiz</mat-icon>
+    <span>Mehr</span>
+  </button>
+</nav>

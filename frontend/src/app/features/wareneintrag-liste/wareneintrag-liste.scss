@@ -17,9 +17,16 @@
 .karte {
   width: 240px;
   padding: 16px;
+}
+
+.fotos {
+  display: flex;
+  gap: 4px;
 
   img {
-    width: 100%;
+    width: calc((100% - 8px) / 3);
+    aspect-ratio: 1;
+    object-fit: cover;
     border-radius: 4px;
   }
 }

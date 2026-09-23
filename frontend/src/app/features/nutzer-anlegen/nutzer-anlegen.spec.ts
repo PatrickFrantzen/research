@@ -2,14 +2,14 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { MitarbeiterAnlegen } from './mitarbeiter-anlegen.js';
+import { NutzerAnlegen } from './nutzer-anlegen.js';
 
-describe('MitarbeiterAnlegen', () => {
+describe('NutzerAnlegen', () => {
   let httpMock: HttpTestingController;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MitarbeiterAnlegen],
+      imports: [NutzerAnlegen],
       providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     }).compileComponents();
     httpMock = TestBed.inject(HttpTestingController);
@@ -18,7 +18,7 @@ describe('MitarbeiterAnlegen', () => {
   afterEach(() => httpMock.verify());
 
   it('loads the Standorte for the select on init', () => {
-    const fixture = TestBed.createComponent(MitarbeiterAnlegen);
+    const fixture = TestBed.createComponent(NutzerAnlegen);
     fixture.detectChanges();
 
     const request = httpMock.expectOne('/api/v1/standorte');
@@ -26,8 +26,8 @@ describe('MitarbeiterAnlegen', () => {
     request.flush([{ id: 'standort-1', name: 'Hauptsitz' }]);
   });
 
-  it('creates the Mitarbeiter with the entered fields and resets the form on success', async () => {
-    const fixture = TestBed.createComponent(MitarbeiterAnlegen);
+  it('creates the Nutzer with the entered fields and resets the form on success', async () => {
+    const fixture = TestBed.createComponent(NutzerAnlegen);
     fixture.detectChanges();
     httpMock.expectOne('/api/v1/standorte').flush([]);
 
@@ -55,7 +55,7 @@ describe('MitarbeiterAnlegen', () => {
   });
 
   it('shows an error when creation fails', async () => {
-    const fixture = TestBed.createComponent(MitarbeiterAnlegen);
+    const fixture = TestBed.createComponent(NutzerAnlegen);
     fixture.detectChanges();
     httpMock.expectOne('/api/v1/standorte').flush([]);
     fixture.componentInstance.vorname = 'Erika';

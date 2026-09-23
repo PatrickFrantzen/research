@@ -5,6 +5,7 @@ import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/ma
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { RouterLink } from '@angular/router';
 import { debounceTime, distinctUntilChanged, firstValueFrom, Subject } from 'rxjs';
@@ -15,6 +16,21 @@ import { WareneintragApi } from '../../core/wareneintrag-api.js';
 interface Wareneintrag {
   id: string;
 }
+
+// Die drei Ansichten sind optional – der Nutzer entscheidet selbst, wie
+// viele Fotos er aufnimmt (0 bis 3), siehe CONTEXT.md.
+type FotoAnsicht = 'fotoFern' | 'fotoNah' | 'fotoDetail';
+
+interface FotoKachel {
+  ansicht: FotoAnsicht;
+  label: string;
+}
+
+const FOTO_KACHELN: FotoKachel[] = [
+  { ansicht: 'fotoFern', label: 'Fernansicht' },
+  { ansicht: 'fotoNah', label: 'Nahansicht' },
+  { ansicht: 'fotoDetail', label: 'Detailansicht' },
+];
 
 // Verzögerung, bevor die AVV-Suche pro Tastenanschlag ausgelöst wird – die
 // Liste hat 834 Einträge (Spezifikation Abschnitt 3.1), Anfragen bei jedem
@@ -29,6 +45,7 @@ const SUCHE_DEBOUNCE_MS = 300;
     MatButtonModule,
     MatCardModule,
     MatFormFieldModule,
+    MatIconModule,
     MatInputModule,
     RouterLink,
   ],
@@ -39,8 +56,13 @@ export class WareneintragErfassen {
   private readonly avvCodeApi = inject(AvvCodeApi);
   private readonly wareneintragApi = inject(WareneintragApi);
 
-  protected foto: File | null = null;
-  protected readonly fotoVorschauUrl = signal<string | null>(null);
+  protected readonly fotoKacheln = FOTO_KACHELN;
+  private readonly fotos: Record<FotoAnsicht, File | null> = { fotoFern: null, fotoNah: null, fotoDetail: null };
+  private readonly fotoVorschauUrls = signal<Record<FotoAnsicht, string | null>>({
+    fotoFern: null,
+    fotoNah: null,
+    fotoDetail: null,
+  });
 
   protected readonly wareneintragDaten = signal({ avvSucheAnzeige: '', freitext: '' });
   protected readonly wareneintragForm = form(this.wareneintragDaten, (pfad) => {
@@ -80,11 +102,15 @@ export class WareneintragErfassen {
   protected readonly fehler = signal<string | null>(null);
   protected readonly wirdGeladen = signal(false);
 
-  onFotoAusgewaehlt(event: Event): void {
+  fotoVorschau(ansicht: FotoAnsicht): string | null {
+    return this.fotoVorschauUrls()[ansicht];
+  }
+
+  onFotoAusgewaehlt(ansicht: FotoAnsicht, event: Event): void {
     const input = event.target as HTMLInputElement;
     const datei = input.files?.[0] ?? null;
-    this.foto = datei;
-    this.fotoVorschauUrl.set(datei ? URL.createObjectURL(datei) : null);
+    this.fotos[ansicht] = datei;
+    this.fotoVorschauUrls.update((urls) => ({ ...urls, [ansicht]: datei ? URL.createObjectURL(datei) : null }));
   }
 
   onAvvSucheEingabe(wert: string): void {
@@ -100,18 +126,21 @@ export class WareneintragErfassen {
   }
 
   protected get kannAbsenden(): boolean {
-    return this.foto !== null && this.ausgewaehlterAvvCode !== null && this.freitext.trim().length > 0;
+    return this.ausgewaehlterAvvCode !== null && this.freitext.trim().length > 0;
   }
 
   async submit(): Promise<void> {
-    if (!this.foto || !this.ausgewaehlterAvvCode || this.freitext.trim().length === 0) {
+    if (!this.kannAbsenden || !this.ausgewaehlterAvvCode) {
       return;
     }
     this.fehler.set(null);
     this.wirdGeladen.set(true);
     try {
       const formData = new FormData();
-      formData.append('foto', this.foto);
+      for (const { ansicht } of this.fotoKacheln) {
+        const datei = this.fotos[ansicht];
+        if (datei) formData.append(ansicht, datei);
+      }
       formData.append('avvCodeId', this.ausgewaehlterAvvCode.id);
       formData.append('freitext', this.freitext);
 
@@ -126,8 +155,10 @@ export class WareneintragErfassen {
 
   weitererEintrag(): void {
     this.angelegt.set(null);
-    this.foto = null;
-    this.fotoVorschauUrl.set(null);
+    this.fotos.fotoFern = null;
+    this.fotos.fotoNah = null;
+    this.fotos.fotoDetail = null;
+    this.fotoVorschauUrls.set({ fotoFern: null, fotoNah: null, fotoDetail: null });
     this.ausgewaehlterAvvCode = null;
     this.wareneintragDaten.set({ avvSucheAnzeige: '', freitext: '' });
     this.avvSucheEingabe.next('');

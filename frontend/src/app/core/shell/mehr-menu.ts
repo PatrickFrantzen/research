@@ -10,9 +10,9 @@ import { AuthService } from '../auth.service.js';
   imports: [MatIconModule, MatListModule, RouterLink],
   template: `
     <mat-nav-list>
-      <a mat-list-item routerLink="/mitarbeiter-anlegen" (click)="schliessen()">
+      <a mat-list-item routerLink="/nutzer-anlegen" (click)="schliessen()">
         <mat-icon matListItemIcon>person_add</mat-icon>
-        <span matListItemTitle>Mitarbeiter anlegen</span>
+        <span matListItemTitle>Nutzer anlegen</span>
       </a>
       <a mat-list-item routerLink="/einstellungen" (click)="schliessen()">
         <mat-icon matListItemIcon>settings</mat-icon>

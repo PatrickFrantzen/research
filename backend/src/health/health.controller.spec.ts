@@ -22,8 +22,8 @@ describe('HealthController', () => {
     });
   });
 
-  describe('details (GET /health/details, VORGESETZTER-geschützt)', () => {
-    it('returns the full dependency status for authenticated Vorgesetzte', async () => {
+  describe('details (GET /health/details, authentifiziert)', () => {
+    it('returns the full dependency status for authenticated users', async () => {
       const healthService = {
         check: vi.fn().mockResolvedValue({ status: 'ok', database: 'ok', objectStorage: 'ok' }),
       };

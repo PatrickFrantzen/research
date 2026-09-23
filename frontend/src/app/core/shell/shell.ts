@@ -18,10 +18,6 @@ export class Shell {
   private readonly router = inject(Router);
   private readonly bottomSheet = inject(MatBottomSheet);
 
-  protected get istVorgesetzter(): boolean {
-    return this.authService.rolle() === 'VORGESETZTER';
-  }
-
   mehrOeffnen(): void {
     this.bottomSheet.open(MehrMenu);
   }

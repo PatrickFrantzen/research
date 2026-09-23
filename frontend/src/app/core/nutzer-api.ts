@@ -8,12 +8,12 @@ export interface EigeneDaten {
   standortId: string;
 }
 
-export interface NeuerMitarbeiter {
+export interface NeuerNutzer {
   email: string;
   passwortSetzenLink: string;
 }
 
-export interface MitarbeiterAnlegenDaten {
+export interface NutzerAnlegenDaten {
   vorname: string;
   nachname: string;
   email: string;
@@ -38,7 +38,7 @@ export class NutzerApi {
     return this.http.patch<EigeneDaten>('/api/v1/nutzer/me', daten);
   }
 
-  legeMitarbeiterAn(daten: MitarbeiterAnlegenDaten) {
-    return this.http.post<NeuerMitarbeiter>('/api/v1/nutzer', daten);
+  legeNutzerAn(daten: NutzerAnlegenDaten) {
+    return this.http.post<NeuerNutzer>('/api/v1/nutzer', daten);
   }
 }

@@ -4,10 +4,14 @@ import type { AvvCode } from './avv-code-api.js';
 
 export interface Wareneintrag {
   id: string;
-  fotoUrl: string;
+  fotoFernUrl: string | null;
+  fotoNahUrl: string | null;
+  fotoDetailUrl: string | null;
   freitext: string;
   erstelltAm: string;
   avvCode: Pick<AvvCode, 'id' | 'code' | 'bezeichnung'>;
+  standort: { id: string; name: string };
+  erfasstVon: { id: string; vorname: string; nachname: string };
 }
 
 export interface PaginierteWareneintraege {

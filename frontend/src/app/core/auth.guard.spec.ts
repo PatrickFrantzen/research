@@ -1,16 +1,22 @@
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { TestBed } from '@angular/core/testing';
 import { Router, UrlTree } from '@angular/router';
-import { authGuard, kannWareneintragErfassenGuard, startseiteRedirectGuard, vorgesetzterGuard } from './auth.guard.js';
+import { authGuard, startseiteRedirectGuard } from './auth.guard.js';
 import { AuthService } from './auth.service.js';
 
 describe('auth guards', () => {
-  let authService: { istEingeloggt: () => boolean; rolle: () => string | null };
+  let authService: { istEingeloggt: () => boolean };
+  let breakpointObserver: { isMatched: (query: string) => boolean };
   let router: Router;
 
   beforeEach(() => {
-    authService = { istEingeloggt: () => false, rolle: () => null };
+    authService = { istEingeloggt: () => false };
+    breakpointObserver = { isMatched: () => false };
     TestBed.configureTestingModule({
-      providers: [{ provide: AuthService, useValue: authService }],
+      providers: [
+        { provide: AuthService, useValue: authService },
+        { provide: BreakpointObserver, useValue: breakpointObserver },
+      ],
     });
     router = TestBed.inject(Router);
   });
@@ -32,48 +38,16 @@ describe('auth guards', () => {
     });
   });
 
-  describe('vorgesetzterGuard', () => {
-    it('allows access for role VORGESETZTER', () => {
-      authService.rolle = () => 'VORGESETZTER';
-      expect(runGuard(vorgesetzterGuard)).toBe(true);
-    });
-
-    it('redirects to / for any other role', () => {
-      authService.rolle = () => 'MITARBEITER';
-      const result = runGuard(vorgesetzterGuard);
-      expect(result).toEqual(router.createUrlTree(['/']));
-    });
-  });
-
-  describe('kannWareneintragErfassenGuard', () => {
-    it('allows access for role MITARBEITER', () => {
-      authService.rolle = () => 'MITARBEITER';
-      expect(runGuard(kannWareneintragErfassenGuard)).toBe(true);
-    });
-
-    it('allows access for role VORGESETZTER (Vertretungsfall)', () => {
-      authService.rolle = () => 'VORGESETZTER';
-      expect(runGuard(kannWareneintragErfassenGuard)).toBe(true);
-    });
-
-    it('redirects to / when no role is set', () => {
-      authService.rolle = () => null;
-      const result = runGuard(kannWareneintragErfassenGuard);
-      expect(result).toEqual(router.createUrlTree(['/']));
-    });
-  });
-
   describe('startseiteRedirectGuard', () => {
-    it('redirects VORGESETZTER to /wareneintraege', () => {
-      authService.rolle = () => 'VORGESETZTER';
+    it('redirects to /wareneintraege on desktop-width screens', () => {
+      breakpointObserver.isMatched = () => true;
       const result = runGuard(startseiteRedirectGuard);
       expect(result).toEqual(router.createUrlTree(['/wareneintraege']));
     });
 
-    it('redirects MITARBEITER to /wareneintrag-erfassen', () => {
-      authService.rolle = () => 'MITARBEITER';
-      const result = runGuard(startseiteRedirectGuard);
-      expect(result).toEqual(router.createUrlTree(['/wareneintrag-erfassen']));
+    it('allows access (renders the Dashboard) on mobile-width screens', () => {
+      breakpointObserver.isMatched = () => false;
+      expect(runGuard(startseiteRedirectGuard)).toBe(true);
     });
   });
 });

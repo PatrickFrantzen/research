@@ -1,3 +1,4 @@
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from './auth.service.js';
@@ -8,24 +9,16 @@ export const authGuard: CanActivateFn = () => {
   return authService.istEingeloggt() ? true : router.createUrlTree(['/login']);
 };
 
-export const vorgesetzterGuard: CanActivateFn = () => {
-  const authService = inject(AuthService);
-  const router = inject(Router);
-  return authService.rolle() === 'VORGESETZTER' ? true : router.createUrlTree(['/']);
-};
+// Deckt sich mit $breakpoint-desktop in shell.scss – Mobil/Desktop ist seit
+// der Rollen-Entfernung eine reine Bildschirmbreiten-Frage, keine Rollenfrage
+// mehr (jeder Nutzer sieht auf Desktop-Breite dieselbe Ansicht).
+const DESKTOP_BREAKPOINT = '(min-width: 768px)';
 
-// Erfassen ist die Kernaufgabe des Mitarbeiters, aber auch der Vorgesetzte
-// darf im Vertretungsfall Wareneinträge anlegen.
-export const kannWareneintragErfassenGuard: CanActivateFn = () => {
-  const authService = inject(AuthService);
-  const router = inject(Router);
-  const rolle = authService.rolle();
-  return rolle === 'MITARBEITER' || rolle === 'VORGESETZTER' ? true : router.createUrlTree(['/']);
-};
-
+// Root-Route: Desktop zeigt weiterhin direkt die Wareneintrag-Liste als
+// Startseite, Mobil rendert stattdessen das Dashboard (Kind-Route rendert
+// dann, wenn hier `true` zurückkommt).
 export const startseiteRedirectGuard: CanActivateFn = () => {
-  const authService = inject(AuthService);
+  const breakpointObserver = inject(BreakpointObserver);
   const router = inject(Router);
-  const ziel = authService.rolle() === 'VORGESETZTER' ? '/wareneintraege' : '/wareneintrag-erfassen';
-  return router.createUrlTree([ziel]);
+  return breakpointObserver.isMatched(DESKTOP_BREAKPOINT) ? router.createUrlTree(['/wareneintraege']) : true;
 };
