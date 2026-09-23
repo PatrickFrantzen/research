@@ -71,7 +71,7 @@ $bottom-nav-hoehe: 64px;
 
 // Gibt der Tastatur den vollen Bildschirm, statt die Bottom-Nav darüber
 // schweben zu lassen.
-.inhalt:has(input:focus, textarea:focus) + .mitarbeiter-bottom-nav {
+.inhalt:has(input:focus, textarea:focus) + .bottom-nav {
   display: none;
 }
 
@@ -80,12 +80,12 @@ $bottom-nav-hoehe: 64px;
     display: flex;
   }
 
-  .vorgesetzter-mobil-titel,
-  .vorgesetzter-bottom-nav {
+  .mobile-titelleiste,
+  .bottom-nav {
     display: none;
   }
 
-  .vorgesetzter-inhalt {
+  .inhalt {
     padding-bottom: 0;
   }
 }

@@ -21,7 +21,7 @@
     "test:debug": "vitest --inspect-brk --no-file-parallelism",
     "test:e2e": "vitest run --config ./vitest.config.e2e.ts",
     "db:migrate": "prisma migrate deploy",
-    "db:seed": "tsx prisma/seed-standorte.ts && tsx prisma/seed-avv-codes.ts && tsx prisma/seed-initial-vorgesetzter.ts"
+    "db:seed": "tsx prisma/seed-standorte.ts && tsx prisma/seed-avv-codes.ts && tsx prisma/seed-initial-nutzer.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1135.0",

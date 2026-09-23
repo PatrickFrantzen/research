@@ -1,10 +1,5 @@
 import { Routes } from '@angular/router';
-import {
-  authGuard,
-  kannWareneintragErfassenGuard,
-  startseiteRedirectGuard,
-  vorgesetzterGuard,
-} from './core/auth.guard.js';
+import { authGuard, startseiteRedirectGuard } from './core/auth.guard.js';
 
 export const routes: Routes = [
   {
@@ -28,23 +23,19 @@ export const routes: Routes = [
       {
         path: '',
         canActivate: [startseiteRedirectGuard],
-        children: [],
+        loadComponent: () => import('./features/dashboard/dashboard.js').then((m) => m.Dashboard),
       },
       {
-        path: 'mitarbeiter-anlegen',
-        canActivate: [vorgesetzterGuard],
-        loadComponent: () =>
-          import('./features/mitarbeiter-anlegen/mitarbeiter-anlegen.js').then((m) => m.MitarbeiterAnlegen),
+        path: 'nutzer-anlegen',
+        loadComponent: () => import('./features/nutzer-anlegen/nutzer-anlegen.js').then((m) => m.NutzerAnlegen),
       },
       {
         path: 'wareneintraege',
-        canActivate: [vorgesetzterGuard],
         loadComponent: () =>
           import('./features/wareneintrag-liste/wareneintrag-liste.js').then((m) => m.WareneintragListe),
       },
       {
         path: 'wareneintrag-erfassen',
-        canActivate: [kannWareneintragErfassenGuard],
         loadComponent: () =>
           import('./features/wareneintrag-erfassen/wareneintrag-erfassen.js').then((m) => m.WareneintragErfassen),
       },

@@ -10,6 +10,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { debounceTime, distinctUntilChanged, firstValueFrom, Subject } from 'rxjs';
+import { AuthService } from '../../core/auth.service.js';
 import { AvvCodeApi } from '../../core/avv-code-api.js';
 import { ConfirmDialog } from '../../core/confirm-dialog/confirm-dialog.js';
 import { Wareneintrag, WareneintragApi } from '../../core/wareneintrag-api.js';
@@ -38,6 +39,7 @@ export class WareneintragListe {
   private readonly avvCodeApi = inject(AvvCodeApi);
   private readonly wareneintragApi = inject(WareneintragApi);
   private readonly dialog = inject(MatDialog);
+  protected readonly authService = inject(AuthService);
 
   readonly avvCodeId = signal<string | null>(null);
   readonly suche = signal('');
@@ -114,6 +116,13 @@ export class WareneintragListe {
   onSeitenwechsel(event: PageEvent): void {
     this.seite.set(event.pageIndex);
     this.proSeite.set(event.pageSize);
+  }
+
+  // Nur der erfassende Nutzer darf seinen eigenen Wareneintrag
+  // bearbeiten/löschen (nicht mehr rollenbasiert, siehe CONTEXT.md). Das
+  // Backend erzwingt es zusätzlich – hier nur zur Anzeige der Buttons.
+  protected istEigenerEintrag(wareneintrag: Wareneintrag): boolean {
+    return wareneintrag.erfasstVon.id === this.authService.nutzerId();
   }
 
   bearbeitungOeffnen(wareneintrag: Wareneintrag): void {

@@ -5,15 +5,23 @@ import { provideRouter } from '@angular/router';
 import { WareneintragErfassen } from './wareneintrag-erfassen.js';
 
 interface TestableWareneintragErfassen {
-  foto: File | null;
   ausgewaehlterAvvCode: { id: string; code: string; bezeichnung: string; gefaehrlich?: boolean } | null;
   kannAbsenden: boolean;
   angelegt: () => { id: string } | null;
   fehler: () => string | null;
+  onFotoAusgewaehlt: (ansicht: 'fotoFern' | 'fotoNah' | 'fotoDetail', event: Event) => void;
+  fotoVorschau: (ansicht: 'fotoFern' | 'fotoNah' | 'fotoDetail') => string | null;
 }
 
 function asTestable(component: WareneintragErfassen): TestableWareneintragErfassen {
   return component as unknown as TestableWareneintragErfassen;
+}
+
+function fotoAuswahlEvent(datei: File): Event {
+  const input = document.createElement('input');
+  input.type = 'file';
+  Object.defineProperty(input, 'files', { value: [datei] });
+  return { target: input } as unknown as Event;
 }
 
 describe('WareneintragErfassen', () => {
@@ -36,20 +44,19 @@ describe('WareneintragErfassen', () => {
     return fixture;
   }
 
-  it('cannot be submitted until foto, AVV-Code and freitext are all set', () => {
+  it('cannot be submitted until AVV-Code and freitext are both set, no foto required', () => {
     const fixture = createComponent();
     const component = asTestable(fixture.componentInstance);
 
     expect(component.kannAbsenden).toBe(false);
 
-    component.foto = new File(['foto'], 'foto.jpg', { type: 'image/jpeg' });
     component.ausgewaehlterAvvCode = { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' };
     fixture.componentInstance.freitext = 'Bauschutt am Eingang';
 
     expect(component.kannAbsenden).toBe(true);
   });
 
-  it('does not send a request when submitted without a foto or AVV-Code', async () => {
+  it('does not send a request when submitted without an AVV-Code', async () => {
     const fixture = createComponent();
 
     await fixture.componentInstance.submit();
@@ -58,10 +65,9 @@ describe('WareneintragErfassen', () => {
     expect().nothing();
   });
 
-  it('submits foto, avvCodeId and freitext as FormData and stores the result', async () => {
+  it('submits without any foto, since photos are optional', async () => {
     const fixture = createComponent();
     const component = asTestable(fixture.componentInstance);
-    component.foto = new File(['foto'], 'foto.jpg', { type: 'image/jpeg' });
     component.ausgewaehlterAvvCode = { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' };
     fixture.componentInstance.freitext = 'Bauschutt am Eingang';
 
@@ -70,17 +76,38 @@ describe('WareneintragErfassen', () => {
     const body = request.request.body as FormData;
     expect(body.get('avvCodeId')).toBe('avv-1');
     expect(body.get('freitext')).toBe('Bauschutt am Eingang');
-    expect((body.get('foto') as File).name).toBe('foto.jpg');
+    expect(body.get('fotoFern')).toBeNull();
+    expect(body.get('fotoNah')).toBeNull();
+    expect(body.get('fotoDetail')).toBeNull();
     request.flush({ id: 'wareneintrag-1' });
     await submitPromise;
 
     expect(component.angelegt()).toEqual({ id: 'wareneintrag-1' });
   });
 
+  it('submits only the fotos that were actually taken, under their own field names', async () => {
+    const fixture = createComponent();
+    const component = asTestable(fixture.componentInstance);
+    component.ausgewaehlterAvvCode = { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' };
+    fixture.componentInstance.freitext = 'Bauschutt am Eingang';
+    const fotoFern = new File(['fern'], 'fern.jpg', { type: 'image/jpeg' });
+    const fotoDetail = new File(['detail'], 'detail.jpg', { type: 'image/jpeg' });
+    component.onFotoAusgewaehlt('fotoFern', fotoAuswahlEvent(fotoFern));
+    component.onFotoAusgewaehlt('fotoDetail', fotoAuswahlEvent(fotoDetail));
+
+    const submitPromise = fixture.componentInstance.submit();
+    const request = httpMock.expectOne('/api/v1/wareneintraege');
+    const body = request.request.body as FormData;
+    expect((body.get('fotoFern') as File).name).toBe('fern.jpg');
+    expect(body.get('fotoNah')).toBeNull();
+    expect((body.get('fotoDetail') as File).name).toBe('detail.jpg');
+    request.flush({ id: 'wareneintrag-1' });
+    await submitPromise;
+  });
+
   it('shows an error when the request fails', async () => {
     const fixture = createComponent();
     const component = asTestable(fixture.componentInstance);
-    component.foto = new File(['foto'], 'foto.jpg', { type: 'image/jpeg' });
     component.ausgewaehlterAvvCode = { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' };
     fixture.componentInstance.freitext = 'Bauschutt am Eingang';
 
@@ -91,16 +118,16 @@ describe('WareneintragErfassen', () => {
     expect(component.fehler()).toBe('Wareneintrag konnte nicht angelegt werden.');
   });
 
-  it('resets foto, AVV-Code and freitext when starting another entry', () => {
+  it('resets fotos, AVV-Code and freitext when starting another entry', () => {
     const fixture = createComponent();
     const component = asTestable(fixture.componentInstance);
-    component.foto = new File(['foto'], 'foto.jpg', { type: 'image/jpeg' });
+    component.onFotoAusgewaehlt('fotoFern', fotoAuswahlEvent(new File(['foto'], 'foto.jpg', { type: 'image/jpeg' })));
     component.ausgewaehlterAvvCode = { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' };
     fixture.componentInstance.freitext = 'Bauschutt am Eingang';
 
     fixture.componentInstance.weitererEintrag();
 
-    expect(component.foto).toBeNull();
+    expect(component.fotoVorschau('fotoFern')).toBeNull();
     expect(component.ausgewaehlterAvvCode).toBeNull();
     expect(fixture.componentInstance.freitext).toBe('');
     expect(component.kannAbsenden).toBe(false);

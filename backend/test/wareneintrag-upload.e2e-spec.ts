@@ -3,20 +3,18 @@ import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { JwtAuthGuard } from '../src/auth/jwt-auth.guard.js';
-import { RolesGuard } from '../src/auth/roles.guard.js';
-import { Rolle } from '../src/generated/prisma/enums.js';
 import { ObjectStorageService } from '../src/object-storage/object-storage.service.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 import { WareneintragController } from '../src/wareneintrag/wareneintrag.controller.js';
 import { WareneintragService } from '../src/wareneintrag/wareneintrag.service.js';
 
-// Guards werden überschrieben, um ausschließlich die Upload-Härtung
+// Guard wird überschrieben, um ausschließlich die Upload-Härtung
 // (Größenlimit im Stream, Magic-Number-Whitelist) end-to-end zu prüfen –
-// Auth/Rollen sind bereits in anderen Tests abgedeckt (Issue #32).
-class AlsMitarbeiterAngemeldet {
+// Auth ist bereits in anderen Tests abgedeckt (Issue #32).
+class AlsNutzerAngemeldet {
   canActivate(context: ExecutionContext): boolean {
     const req = context.switchToHttp().getRequest();
-    req.user = { id: 'nutzer-1', rolle: Rolle.MITARBEITER };
+    req.user = { id: 'nutzer-1' };
     return true;
   }
 }
@@ -37,9 +35,7 @@ describe('Wareneintrag-Foto-Upload: Härtung', () => {
       ],
     })
       .overrideGuard(JwtAuthGuard)
-      .useClass(AlsMitarbeiterAngemeldet)
-      .overrideGuard(RolesGuard)
-      .useValue({ canActivate: () => true })
+      .useClass(AlsNutzerAngemeldet)
       .compile();
 
     app = moduleRef.createNestApplication();
@@ -62,7 +58,16 @@ describe('Wareneintrag-Foto-Upload: Härtung', () => {
       .post('/wareneintraege')
       .field('avvCodeId', 'f8a3632d-6b2c-4843-b223-85a711b4a9a7')
       .field('freitext', 'Testeintrag')
-      .attach('foto', pngBytes, { filename: 'foto.png', contentType: 'image/png' });
+      .attach('fotoFern', pngBytes, { filename: 'foto.png', contentType: 'image/png' });
+
+    expect(response.status).toBe(201);
+  });
+
+  it('accepts a Wareneintrag without any photo, since photos are optional', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/wareneintraege')
+      .field('avvCodeId', 'f8a3632d-6b2c-4843-b223-85a711b4a9a7')
+      .field('freitext', 'Testeintrag ohne Foto');
 
     expect(response.status).toBe(201);
   });
@@ -74,7 +79,7 @@ describe('Wareneintrag-Foto-Upload: Härtung', () => {
       .post('/wareneintraege')
       .field('avvCodeId', 'f8a3632d-6b2c-4843-b223-85a711b4a9a7')
       .field('freitext', 'Testeintrag')
-      .attach('foto', htmlAlsBildGetarnt, { filename: 'foto.png', contentType: 'image/png' });
+      .attach('fotoFern', htmlAlsBildGetarnt, { filename: 'foto.png', contentType: 'image/png' });
 
     expect(response.status).toBe(400);
   });
@@ -86,7 +91,7 @@ describe('Wareneintrag-Foto-Upload: Härtung', () => {
       .post('/wareneintraege')
       .field('avvCodeId', 'f8a3632d-6b2c-4843-b223-85a711b4a9a7')
       .field('freitext', 'Testeintrag')
-      .attach('foto', svg, { filename: 'foto.svg', contentType: 'image/svg+xml' });
+      .attach('fotoFern', svg, { filename: 'foto.svg', contentType: 'image/svg+xml' });
 
     expect(response.status).toBe(400);
   });
@@ -98,7 +103,7 @@ describe('Wareneintrag-Foto-Upload: Härtung', () => {
       .post('/wareneintraege')
       .field('avvCodeId', 'f8a3632d-6b2c-4843-b223-85a711b4a9a7')
       .field('freitext', 'Testeintrag')
-      .attach('foto', zuGross, { filename: 'foto.png', contentType: 'image/png' });
+      .attach('fotoFern', zuGross, { filename: 'foto.png', contentType: 'image/png' });
 
     expect([413, 422]).toContain(response.status);
   });

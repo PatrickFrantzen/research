@@ -3,7 +3,6 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-jwt';
 import type { Request } from 'express';
 import { loadEnv } from '../config/env.js';
-import { Rolle } from '../generated/prisma/enums.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { ACCESS_TOKEN_COOKIE } from './auth-cookies.js';
 
@@ -15,7 +14,6 @@ function extractJwtFromCookie(req: Request): string | null {
 
 export interface JwtPayload {
   sub: string;
-  rolle: Rolle;
   // Von jsonwebtoken automatisch gesetzt (Sekunden seit Epoch), nicht selbst
   // signiert. Optional, da Tests/Fremdcode Payloads ohne iat konstruieren
   // können - siehe Vergleich unten.
@@ -24,7 +22,6 @@ export interface JwtPayload {
 
 export interface AuthenticatedUser {
   id: string;
-  rolle: Rolle;
 }
 
 export interface AuthenticatedRequest extends Request {
@@ -60,6 +57,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (payload.iat !== undefined && payload.iat * 1000 < nutzer.passwortGeaendertAm.getTime()) {
       throw new UnauthorizedException();
     }
-    return { id: nutzer.id, rolle: nutzer.rolle };
+    return { id: nutzer.id };
   }
 }

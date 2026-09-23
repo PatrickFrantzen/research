@@ -9,11 +9,11 @@ import { MatSelectModule } from '@angular/material/select';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
-import { NeuerMitarbeiter, NutzerApi } from '../../core/nutzer-api.js';
+import { NeuerNutzer, NutzerApi } from '../../core/nutzer-api.js';
 import { StandortApi } from '../../core/standort-api.js';
 
 @Component({
-  selector: 'app-mitarbeiter-anlegen',
+  selector: 'app-nutzer-anlegen',
   imports: [
     FormField,
     MatCardModule,
@@ -23,10 +23,10 @@ import { StandortApi } from '../../core/standort-api.js';
     MatButtonModule,
     RouterLink,
   ],
-  templateUrl: './mitarbeiter-anlegen.html',
-  styleUrl: './mitarbeiter-anlegen.scss',
+  templateUrl: './nutzer-anlegen.html',
+  styleUrl: './nutzer-anlegen.scss',
 })
-export class MitarbeiterAnlegen {
+export class NutzerAnlegen {
   private readonly nutzerApi = inject(NutzerApi);
   private readonly standortApi = inject(StandortApi);
 
@@ -34,8 +34,8 @@ export class MitarbeiterAnlegen {
     stream: () => this.standortApi.liste(),
   });
 
-  protected readonly mitarbeiterDaten = signal({ vorname: '', nachname: '', email: '', standortId: '' });
-  protected readonly mitarbeiterForm = form(this.mitarbeiterDaten, (pfad) => {
+  protected readonly nutzerDaten = signal({ vorname: '', nachname: '', email: '', standortId: '' });
+  protected readonly nutzerForm = form(this.nutzerDaten, (pfad) => {
     required(pfad.vorname);
     required(pfad.nachname);
     required(pfad.email);
@@ -43,49 +43,49 @@ export class MitarbeiterAnlegen {
     required(pfad.standortId);
   });
 
-  protected readonly angelegt = signal<NeuerMitarbeiter | null>(null);
+  protected readonly angelegt = signal<NeuerNutzer | null>(null);
   protected readonly fehler = signal<string | null>(null);
   protected readonly wirdGeladen = signal(false);
 
   get vorname(): string {
-    return this.mitarbeiterDaten().vorname;
+    return this.nutzerDaten().vorname;
   }
 
   set vorname(vorname: string) {
-    this.mitarbeiterDaten.update((daten) => ({ ...daten, vorname }));
+    this.nutzerDaten.update((daten) => ({ ...daten, vorname }));
   }
 
   get nachname(): string {
-    return this.mitarbeiterDaten().nachname;
+    return this.nutzerDaten().nachname;
   }
 
   set nachname(nachname: string) {
-    this.mitarbeiterDaten.update((daten) => ({ ...daten, nachname }));
+    this.nutzerDaten.update((daten) => ({ ...daten, nachname }));
   }
 
   get email(): string {
-    return this.mitarbeiterDaten().email;
+    return this.nutzerDaten().email;
   }
 
   set email(email: string) {
-    this.mitarbeiterDaten.update((daten) => ({ ...daten, email }));
+    this.nutzerDaten.update((daten) => ({ ...daten, email }));
   }
 
   get standortId(): string {
-    return this.mitarbeiterDaten().standortId;
+    return this.nutzerDaten().standortId;
   }
 
   set standortId(standortId: string) {
-    this.mitarbeiterDaten.update((daten) => ({ ...daten, standortId }));
+    this.nutzerDaten.update((daten) => ({ ...daten, standortId }));
   }
 
   async submit(): Promise<void> {
-    if (!this.mitarbeiterForm().valid()) return;
+    if (!this.nutzerForm().valid()) return;
     this.fehler.set(null);
     this.wirdGeladen.set(true);
     try {
       const result = await firstValueFrom(
-        this.nutzerApi.legeMitarbeiterAn({
+        this.nutzerApi.legeNutzerAn({
           vorname: this.vorname,
           nachname: this.nachname,
           email: this.email,
@@ -93,7 +93,7 @@ export class MitarbeiterAnlegen {
         }),
       );
       this.angelegt.set(result);
-      this.mitarbeiterDaten.set({ vorname: '', nachname: '', email: '', standortId: '' });
+      this.nutzerDaten.set({ vorname: '', nachname: '', email: '', standortId: '' });
     } catch (error) {
       this.fehler.set(extrahiereFehlermeldung(error, 'Account konnte nicht angelegt werden.'));
     } finally {

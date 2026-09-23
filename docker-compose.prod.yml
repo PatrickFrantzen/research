@@ -80,9 +80,9 @@ services:
     build: .
     environment:
       DATABASE_URL: postgres://research:${POSTGRES_PASSWORD}@postgres:5432/research
-      INITIAL_VORGESETZTER_EMAIL: ${INITIAL_VORGESETZTER_EMAIL}
-      INITIAL_VORGESETZTER_PASSWORT: ${INITIAL_VORGESETZTER_PASSWORT}
-      INITIAL_VORGESETZTER_STANDORT: Hauptsitz
+      INITIAL_NUTZER_EMAIL: ${INITIAL_NUTZER_EMAIL}
+      INITIAL_NUTZER_PASSWORT: ${INITIAL_NUTZER_PASSWORT}
+      INITIAL_NUTZER_STANDORT: Hauptsitz
     entrypoint: sh -c "npx prisma migrate deploy && npm run db:seed"
     depends_on:
       postgres:

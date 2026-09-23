@@ -12,20 +12,17 @@ import {
   Post,
   Query,
   Req,
-  UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
-import { Roles } from '../auth/roles.decorator.js';
-import { RolesGuard } from '../auth/roles.guard.js';
 import type { AuthenticatedRequest } from '../auth/jwt.strategy.js';
-import { Rolle } from '../generated/prisma/enums.js';
 import { CreateWareneintragDto } from './dto/create-wareneintrag.dto.js';
 import { UpdateWareneintragDto } from './dto/update-wareneintrag.dto.js';
-import { WareneintragService } from './wareneintrag.service.js';
+import { WareneintragFotos, WareneintragService } from './wareneintrag.service.js';
 
 const FOTO_MAX_GROESSE_BYTES = 10 * 1024 * 1024; // 10 MB
 const STANDARD_PRO_SEITE = 20;
@@ -40,9 +37,23 @@ const ERLAUBTE_FOTO_TYPEN = /^(image\/jpeg|image\/png|image\/webp)$/;
 // die komplette (potenziell riesige) Datei erst in den RAM zu puffern.
 const FOTO_UPLOAD_OPTIONS = { storage: memoryStorage(), limits: { fileSize: FOTO_MAX_GROESSE_BYTES } };
 
-function fotoValidators(fileIsRequired: boolean) {
+// Alle drei Ansichten sind optional – der Nutzer entscheidet selbst, wie
+// viele Fotos er aufnimmt (0 bis 3), siehe CONTEXT.md.
+const FOTO_FELDER = [
+  { name: 'fotoFern', maxCount: 1 },
+  { name: 'fotoNah', maxCount: 1 },
+  { name: 'fotoDetail', maxCount: 1 },
+];
+
+interface HochgeladeneFotos {
+  fotoFern?: Express.Multer.File[];
+  fotoNah?: Express.Multer.File[];
+  fotoDetail?: Express.Multer.File[];
+}
+
+function fotoValidators() {
   return new ParseFilePipe({
-    fileIsRequired,
+    fileIsRequired: false,
     validators: [
       // fallbackToMimetype: false – bei nicht erkennbarem Dateisignatur wird
       // abgelehnt statt dem client-kontrollierten MIME-Type zu vertrauen.
@@ -52,13 +63,27 @@ function fotoValidators(fileIsRequired: boolean) {
   });
 }
 
+// ParseFilePipe validiert nur ein einzelnes File oder ein flaches Array,
+// nicht die benannte Feldstruktur, die FileFieldsInterceptor liefert
+// (`{fotoFern: [File], ...}`) – deshalb hier manuell auf die tatsächlich
+// hochgeladenen Dateien anwenden, statt es der Pipe direkt zu übergeben.
+async function extrahiereUndValidiereFotos(dateien: HochgeladeneFotos): Promise<WareneintragFotos> {
+  const fotoFern = dateien.fotoFern?.[0];
+  const fotoNah = dateien.fotoNah?.[0];
+  const fotoDetail = dateien.fotoDetail?.[0];
+  const vorhandeneFotos = [fotoFern, fotoNah, fotoDetail].filter(
+    (foto): foto is Express.Multer.File => foto !== undefined,
+  );
+  await fotoValidators().transform(vorhandeneFotos);
+  return { fotoFern, fotoNah, fotoDetail };
+}
+
 @Controller('wareneintraege')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard)
 export class WareneintragController {
   constructor(private readonly wareneintragService: WareneintragService) {}
 
   @Get()
-  @Roles(Rolle.VORGESETZTER)
   async findAll(
     @Query('avvCodeId') avvCodeId?: string,
     @Query('suche') suche?: string,
@@ -84,36 +109,31 @@ export class WareneintragController {
     return zahl;
   }
 
-  // Erfassen ist die Kernaufgabe des Mitarbeiters, aber auch der
-  // Vorgesetzte darf im Vertretungsfall Wareneinträge anlegen (siehe
-  // Frontend-Guard `kannWareneintragErfassenGuard`).
   @Post()
-  @Roles(Rolle.MITARBEITER, Rolle.VORGESETZTER)
-  @UseInterceptors(FileInterceptor('foto', FOTO_UPLOAD_OPTIONS))
+  @UseInterceptors(FileFieldsInterceptor(FOTO_FELDER, FOTO_UPLOAD_OPTIONS))
   async create(
     @Req() request: AuthenticatedRequest,
-    @UploadedFile(fotoValidators(true))
-    foto: Express.Multer.File,
+    @UploadedFiles() dateien: HochgeladeneFotos,
     @Body() dto: CreateWareneintragDto,
   ) {
-    return this.wareneintragService.create(request.user.id, foto, dto);
+    const fotos = await extrahiereUndValidiereFotos(dateien);
+    return this.wareneintragService.create(request.user.id, dto, fotos);
   }
 
   @Patch(':id')
-  @Roles(Rolle.VORGESETZTER)
-  @UseInterceptors(FileInterceptor('foto', FOTO_UPLOAD_OPTIONS))
+  @UseInterceptors(FileFieldsInterceptor(FOTO_FELDER, FOTO_UPLOAD_OPTIONS))
   async update(
+    @Req() request: AuthenticatedRequest,
     @Param('id') id: string,
     @Body() dto: UpdateWareneintragDto,
-    @UploadedFile(fotoValidators(false))
-    foto?: Express.Multer.File,
+    @UploadedFiles() dateien: HochgeladeneFotos,
   ) {
-    return this.wareneintragService.update(id, dto, foto);
+    const fotos = await extrahiereUndValidiereFotos(dateien);
+    return this.wareneintragService.update(id, request.user.id, dto, fotos);
   }
 
   @Delete(':id')
-  @Roles(Rolle.VORGESETZTER)
-  async remove(@Param('id') id: string) {
-    return this.wareneintragService.remove(id);
+  async remove(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
+    return this.wareneintragService.remove(id, request.user.id);
   }
 }

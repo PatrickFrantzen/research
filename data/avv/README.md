@@ -18,7 +18,7 @@ Abfallverzeichnisses (Abfallverzeichnisverordnung, AVV):
   gefährlicher Abfall)
 
 Für RESEARCH relevant ist laut Spezifikation primär `codes` – das ist die
-Ebene, aus der Mitarbeiter beim Erfassen eines Wareneintrags auswählen
+Ebene, aus der Nutzer beim Erfassen eines Wareneintrags auswählen
 (Abschnitt 3.3 der Spezifikation, Abschnitt 4.3 der Architektur). `kapitel`
 und `gruppen` liegen bei, falls sich eine hierarchische Auswahl/Suche als
 sinnvoll erweist.

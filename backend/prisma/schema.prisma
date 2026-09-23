@@ -7,11 +7,6 @@ datasource db {
   provider = "postgresql"
 }
 
-enum Rolle {
-  MITARBEITER
-  VORGESETZTER
-}
-
 model Standort {
   id     String @id @default(uuid())
   name   String @unique
@@ -25,7 +20,6 @@ model Nutzer {
   id     String @id @default(uuid())
   vorname   String
   nachname  String
-  rolle     Rolle
   email     String @unique
   standortId String @map("standort_id")
   standort   Standort @relation(fields: [standortId], references: [id])
@@ -67,7 +61,12 @@ model AvvCode {
 
 model Wareneintrag {
   id     String @id @default(uuid())
-  fotoUrl String @map("foto_url")
+
+  // Alle drei optional: der Nutzer entscheidet selbst, wie viele Ansichten
+  // er fotografiert (0 bis 3), siehe CONTEXT.md.
+  fotoFernUrl   String? @map("foto_fern_url")
+  fotoNahUrl    String? @map("foto_nah_url")
+  fotoDetailUrl String? @map("foto_detail_url")
 
   avvCodeId String  @map("avv_code_id")
   avvCode   AvvCode @relation(fields: [avvCodeId], references: [id])

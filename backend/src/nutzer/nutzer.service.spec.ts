@@ -1,10 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
-import { Rolle } from '../generated/prisma/enums.js';
 import { hashPasswortSetzenToken } from '../auth/passwort-setzen-token.js';
 import { NutzerService } from './nutzer.service.js';
 
 describe('NutzerService', () => {
-  it('creates a Mitarbeiter account with a placeholder password and a setup token', async () => {
+  it('creates a Nutzer account with a placeholder password and a setup token', async () => {
     const created = {
       id: 'nutzer-2',
       vorname: 'Max',
@@ -15,7 +14,7 @@ describe('NutzerService', () => {
     const prisma = { nutzer: { create: vi.fn().mockResolvedValue(created) } };
     const service = new NutzerService(prisma as never);
 
-    const result = await service.createMitarbeiter('vorgesetzter-1', {
+    const result = await service.createNutzer('erstellender-nutzer-1', {
       vorname: 'Max',
       nachname: 'Mustermann',
       email: 'max@research.local',
@@ -24,14 +23,13 @@ describe('NutzerService', () => {
 
     expect(prisma.nutzer.create).toHaveBeenCalledOnce();
     const createArgs = prisma.nutzer.create.mock.calls[0][0].data;
-    expect(createArgs.rolle).toBe(Rolle.MITARBEITER);
     expect(createArgs.mussPasswortSetzen).toBe(true);
-    expect(createArgs.erstelltVonId).toBe('vorgesetzter-1');
+    expect(createArgs.erstelltVonId).toBe('erstellender-nutzer-1');
     expect(createArgs.passwortSetzenToken).toBeTypeOf('string');
 
     expect(result.passwortSetzenLink).toContain('/passwort-setzen?token=');
     const rawToken = result.passwortSetzenLink.split('token=')[1];
-    // Persisted value must be the hash of the raw token handed to the Vorgesetzter, not the raw token itself.
+    // Persisted value must be the hash of the raw token handed to the erstellenden Nutzer, not the raw token itself.
     expect(createArgs.passwortSetzenToken).toBe(hashPasswortSetzenToken(rawToken));
     expect(result.email).toBe('max@research.local');
   });

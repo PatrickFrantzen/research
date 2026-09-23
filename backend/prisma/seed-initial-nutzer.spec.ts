@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { assertNichtDefaultBootstrapPasswort } from './seed-initial-vorgesetzter-guard.js';
+import { assertNichtDefaultBootstrapPasswort } from './seed-initial-nutzer-guard.js';
 
 describe('assertNichtDefaultBootstrapPasswort', () => {
   it('rejects known default bootstrap passwords in production', () => {
     expect(() => assertNichtDefaultBootstrapPasswort('change-me-now', 'production')).toThrow(
-      /INITIAL_VORGESETZTER_PASSWORT.*insecure default/i,
+      /INITIAL_NUTZER_PASSWORT.*insecure default/i,
     );
     expect(() => assertNichtDefaultBootstrapPasswort('change-me', 'production')).toThrow(
-      /INITIAL_VORGESETZTER_PASSWORT.*insecure default/i,
+      /INITIAL_NUTZER_PASSWORT.*insecure default/i,
     );
   });
 

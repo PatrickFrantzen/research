@@ -1,22 +1,21 @@
 import { randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { Rolle } from '../generated/prisma/enums.js';
 import { erzeugePasswortSetzenToken } from '../auth/passwort-setzen-token.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { CreateMitarbeiterDto } from './dto/create-mitarbeiter.dto.js';
+import { CreateNutzerDto } from './dto/create-nutzer.dto.js';
 import { UpdateEigeneDatenDto } from './dto/update-eigene-daten.dto.js';
 
 const INITIAL_ZUGANG_GUELTIGKEIT_MS = 7 * 24 * 60 * 60 * 1000; // 7 Tage
 
-export interface NeuerMitarbeiter {
+export interface NeuerNutzer {
   id: string;
   vorname: string;
   nachname: string;
   email: string;
   standortId: string;
-  // Vorgesetzter übergibt den Link direkt an den Mitarbeiter (kein Mailversand,
-  // siehe docs/research/01-projektbeschreibung-spezifikation.md Abschnitt 2).
+  // Erstellender Nutzer übergibt den Link direkt (kein Mailversand, siehe
+  // docs/research/01-projektbeschreibung-spezifikation.md Abschnitt 2).
   passwortSetzenLink: string;
 }
 
@@ -24,8 +23,8 @@ export interface NeuerMitarbeiter {
 export class NutzerService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createMitarbeiter(erstelltVonId: string, dto: CreateMitarbeiterDto): Promise<NeuerMitarbeiter> {
-    // Platzhalter-Passwort: unbrauchbar, bis der Mitarbeiter über den
+  async createNutzer(erstelltVonId: string, dto: CreateNutzerDto): Promise<NeuerNutzer> {
+    // Platzhalter-Passwort: unbrauchbar, bis der neue Nutzer über den
     // Initial-Zugang sein eigenes Passwort setzt.
     const platzhalterPasswortHash = await bcrypt.hash(randomUUID(), 12);
     const { rawToken, hashedToken } = erzeugePasswortSetzenToken();
@@ -36,7 +35,6 @@ export class NutzerService {
         nachname: dto.nachname,
         email: dto.email,
         standortId: dto.standortId,
-        rolle: Rolle.MITARBEITER,
         passwortHash: platzhalterPasswortHash,
         mussPasswortSetzen: true,
         passwortSetzenToken: hashedToken,

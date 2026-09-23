@@ -12,7 +12,6 @@ import { AuthController } from '../src/auth/auth.controller.js';
 import { AuthService } from '../src/auth/auth.service.js';
 import { JwtAuthGuard } from '../src/auth/jwt-auth.guard.js';
 import { JwtStrategy } from '../src/auth/jwt.strategy.js';
-import { Rolle } from '../src/generated/prisma/enums.js';
 import { Mailer } from '../src/mailer/mailer.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 
@@ -34,7 +33,6 @@ describe('Cookie-basierte Auth + CSRF (Issue #24)', () => {
   const nutzer = {
     id: 'nutzer-1',
     email: 'chef@research.local',
-    rolle: Rolle.VORGESETZTER,
     passwortHash,
     mussPasswortSetzen: false,
     passwortGeaendertAm: new Date(0),
@@ -93,7 +91,7 @@ describe('Cookie-basierte Auth + CSRF (Issue #24)', () => {
       .send({ email: 'chef@research.local', passwort: 'geheim1234567' });
 
     expect(response.status).toBe(201);
-    expect(response.body).toEqual({ mussPasswortSetzen: false, rolle: Rolle.VORGESETZTER });
+    expect(response.body).toEqual({ mussPasswortSetzen: false, id: 'nutzer-1' });
     expect(response.body.accessToken).toBeUndefined();
 
     const cookies = response.headers['set-cookie'] as unknown as string[];
@@ -104,12 +102,12 @@ describe('Cookie-basierte Auth + CSRF (Issue #24)', () => {
     expect(csrfCookie).not.toContain('HttpOnly');
   });
 
-  it('GET /auth/me returns the role for a valid cookie, 401 without one', async () => {
+  it('GET /auth/me returns the id for a valid cookie, 401 without one', async () => {
     const cookies = await loginCookies();
 
     const mit = await request(app.getHttpServer()).get('/api/v1/auth/me').set('Cookie', cookies);
     expect(mit.status).toBe(200);
-    expect(mit.body).toEqual({ rolle: Rolle.VORGESETZTER });
+    expect(mit.body).toEqual({ id: 'nutzer-1' });
 
     const ohne = await request(app.getHttpServer()).get('/api/v1/auth/me');
     expect(ohne.status).toBe(401);

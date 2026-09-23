@@ -1,9 +1,6 @@
 import { Controller, Get, HttpStatus, Res, UseGuards } from '@nestjs/common';
 import type { Response } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
-import { Roles } from '../auth/roles.decorator.js';
-import { RolesGuard } from '../auth/roles.guard.js';
-import { Rolle } from '../generated/prisma/enums.js';
 import { HealthService } from './health.service.js';
 
 @Controller('health')
@@ -18,11 +15,10 @@ export class HealthController {
   }
 
   // Detaillierter Readiness-/Dependency-Check bleibt authentifizierten
-  // Vorgesetzten vorbehalten, statt öffentlich Infrastrukturdetails
+  // Nutzern vorbehalten, statt öffentlich Infrastrukturdetails
   // preiszugeben (Issue #37).
   @Get('details')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Rolle.VORGESETZTER)
+  @UseGuards(JwtAuthGuard)
   async details(@Res() res: Response): Promise<void> {
     const result = await this.healthService.check();
     res.status(result.status === 'ok' ? HttpStatus.OK : HttpStatus.SERVICE_UNAVAILABLE).json(result);

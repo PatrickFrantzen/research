@@ -8,20 +8,33 @@ import { WareneintragBearbeitenDialog } from './wareneintrag-bearbeiten-dialog.j
 
 const WARENEINTRAG: Wareneintrag = {
   id: 'wareneintrag-1',
-  fotoUrl: '/foto.jpg',
+  fotoFernUrl: '/foto.jpg',
+  fotoNahUrl: null,
+  fotoDetailUrl: null,
   freitext: 'alter Text',
   erstelltAm: '2026-09-19T20:08:00',
   avvCode: { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' },
+  standort: { id: 'standort-1', name: 'Hauptsitz' },
+  erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
 };
 
 interface TestableDialog {
   freitext: string;
   kannSpeichern: boolean;
   fehler: () => string | null;
+  fotoErsetzen: (ansicht: 'fotoFern' | 'fotoNah' | 'fotoDetail', event: Event) => void;
 }
 
 function asTestable(component: WareneintragBearbeitenDialog): TestableDialog {
   return component as unknown as TestableDialog;
+}
+
+function fotoAuswahlEvent(datei: File): Event {
+  const input = document.createElement('input');
+  input.type = 'file';
+  const files = Object.assign([datei], { item: (index: number) => [datei][index] ?? null });
+  Object.defineProperty(input, 'files', { value: files });
+  return { target: input } as unknown as Event;
 }
 
 describe('WareneintragBearbeitenDialog', () => {
@@ -102,8 +115,9 @@ describe('WareneintragBearbeitenDialog', () => {
     expect(component.kannSpeichern).toBe(true);
   }));
 
-  it('submits avvCodeId, freitext and an optional foto as FormData and closes with true on success', fakeAsync(() => {
+  it('submits avvCodeId, freitext and only the replaced fotos as FormData and closes with true on success', fakeAsync(() => {
     const fixture = createComponent();
+    const component = asTestable(fixture.componentInstance);
     fixture.componentInstance.onAvvSucheEingabe('20 03');
     tick(300);
     fixture.detectChanges();
@@ -112,7 +126,7 @@ describe('WareneintragBearbeitenDialog', () => {
       .flush([{ id: 'avv-2', code: '20 03 01', bezeichnung: 'Siedlungsabfälle', gefaehrlich: false }]);
     tick();
     fixture.componentInstance.onAvvCodeAusgewaehlt({ option: { value: 'avv-2' } } as never);
-    fixture.componentInstance.foto = new File(['foto'], 'neu.jpg', { type: 'image/jpeg' });
+    component.fotoErsetzen('fotoDetail', fotoAuswahlEvent(new File(['foto'], 'neu.jpg', { type: 'image/jpeg' })));
 
     void fixture.componentInstance.speichern();
 
@@ -121,7 +135,9 @@ describe('WareneintragBearbeitenDialog', () => {
     const body = request.request.body as FormData;
     expect(body.get('avvCodeId')).toBe('avv-2');
     expect(body.get('freitext')).toBe('alter Text');
-    expect((body.get('foto') as File).name).toBe('neu.jpg');
+    expect(body.get('fotoFern')).toBeNull();
+    expect(body.get('fotoNah')).toBeNull();
+    expect((body.get('fotoDetail') as File).name).toBe('neu.jpg');
     request.flush({});
     tick();
 
