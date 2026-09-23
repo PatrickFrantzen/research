@@ -1,4 +1,4 @@
-import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, computed, inject, signal, viewChildren } from '@angular/core';
 import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormField, form, required } from '@angular/forms/signals';
 import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
@@ -11,6 +11,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterLink } from '@angular/router';
 import { debounceTime, distinctUntilChanged, firstValueFrom, Subject } from 'rxjs';
 import { AvvCode, AvvCodeApi } from '../../core/avv-code-api.js';
+import { pruefeFoto } from '../../core/foto-validierung.js';
 import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
 import { WareneintragApi } from '../../core/wareneintrag-api.js';
 
@@ -104,6 +105,8 @@ export class WareneintragErfassen {
   }
 
   protected readonly fehler = signal<string | null>(null);
+  protected readonly fotoFehler = signal<string | null>(null);
+  private readonly fotoInputs = viewChildren<ElementRef<HTMLInputElement>>('fotoInput');
   protected readonly wirdGeladen = signal(false);
 
   fotoVorschau(ansicht: FotoAnsicht): string | null {
@@ -112,7 +115,11 @@ export class WareneintragErfassen {
 
   onFotoAusgewaehlt(ansicht: FotoAnsicht, event: Event): void {
     const input = event.target as HTMLInputElement;
-    const datei = input.files?.[0] ?? null;
+    const auswahl = input.files?.[0] ?? null;
+    const meldung = auswahl ? pruefeFoto(auswahl) : null;
+    const label = this.fotoKacheln.find((kachel) => kachel.ansicht === ansicht)?.label;
+    this.fotoFehler.set(meldung ? `${label}: ${meldung}` : null);
+    const datei = meldung ? null : auswahl;
     this.fotos[ansicht] = datei;
     this.setzeFotoVorschau(ansicht, datei);
   }
@@ -172,6 +179,9 @@ export class WareneintragErfassen {
   }
 
   weitererEintrag(): void {
+    // Sonst löst die erneute Auswahl derselben Datei kein change aus (Issue #59).
+    for (const input of this.fotoInputs()) input.nativeElement.value = '';
+    this.fotoFehler.set(null);
     this.fotos.fotoFern = null;
     this.fotos.fotoNah = null;
     this.fotos.fotoDetail = null;

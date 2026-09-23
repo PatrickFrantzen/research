@@ -13,7 +13,7 @@
               <input
                 #fotoInput
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp"
                 capture="environment"
                 (change)="onFotoAusgewaehlt(kachel.ansicht, $event)"
                 hidden
@@ -35,6 +35,9 @@
             </div>
           }
         </div>
+        @if (fotoFehler(); as meldung) {
+          <p class="fehler" role="alert">{{ meldung }}</p>
+        }
 
         <mat-form-field appearance="outline">
           <mat-label>AVV-Code</mat-label>

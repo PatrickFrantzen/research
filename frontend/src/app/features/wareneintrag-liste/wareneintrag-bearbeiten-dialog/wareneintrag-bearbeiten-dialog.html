@@ -46,6 +46,10 @@
     }
   </div>
 
+  @if (fotoFehler(); as meldung) {
+    <p class="fehler" role="alert">{{ meldung }}</p>
+  }
+
   @if (fehler(); as meldung) {
     <p class="fehler" role="alert">{{ meldung }}</p>
   }
