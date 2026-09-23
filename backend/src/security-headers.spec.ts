@@ -28,12 +28,12 @@ describe('buildHelmetOptions', () => {
     expect(directives['objectSrc']).toEqual(["'none'"]);
   });
 
-  it('explicitly allows the configured Google Fonts sources', () => {
+  it('loads fonts only from the own origin (bundled, no Google Fonts)', () => {
     const options = buildHelmetOptions(buildEnv());
     const directives = (options.contentSecurityPolicy as { directives: Record<string, string[]> }).directives;
 
-    expect(directives['styleSrc']).toContain('https://fonts.googleapis.com');
-    expect(directives['fontSrc']).toContain('https://fonts.gstatic.com');
+    expect(directives['fontSrc']).toEqual(["'self'"]);
+    expect(directives['styleSrc']).not.toContain('https://fonts.googleapis.com');
   });
 
   it('allows the configured object storage origin for images, derived from the public endpoint', () => {

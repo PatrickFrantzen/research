@@ -103,3 +103,11 @@ body {
 h1[mat-card-title] {
   margin: 0;
 }
+
+// Nur auf Mobil sichtbar; Breakpoint wie $breakpoint-desktop in shell.scss,
+// ab dem der Desktop-Footer das übernimmt.
+@media (min-width: 768px) {
+  .nur-mobil {
+    display: none !important;
+  }
+}

@@ -42,7 +42,7 @@
     <div class="aktive-filter">
       <mat-chip-set aria-label="Aktive Filter">
         @if (avvFilterAnzeige(); as avv) {
-          <mat-chip data-testid="filter-avv" (removed)="avvFilterEntfernen()">
+          <mat-chip data-testid="filter-avv" [title]="'AVV: ' + avv" (removed)="avvFilterEntfernen()">
             AVV: {{ avv }}
             <button matChipRemove aria-label="AVV-Filter entfernen"><mat-icon>cancel</mat-icon></button>
           </mat-chip>

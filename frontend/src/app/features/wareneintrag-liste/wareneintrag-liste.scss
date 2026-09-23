@@ -24,6 +24,18 @@
   align-items: center;
   gap: 8px;
   margin-bottom: 16px;
+
+  // Lange AVV-Bezeichnungen: Chip auf Containerbreite begrenzen, Label kürzen.
+  mat-chip-set,
+  mat-chip {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  ::ng-deep .mat-mdc-chip-action-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 .karte {
@@ -47,4 +59,16 @@
   margin: 0 0 16px;
   font: var(--mat-sys-label-large);
   color: var(--mat-sys-on-surface-variant);
+}
+
+// Mobil: alles in einer zentrierten Spalte in Kartenbreite.
+@media (max-width: 599px) {
+  .liste {
+    max-width: 280px;
+    margin: 0 auto;
+  }
+
+  .filter mat-form-field {
+    width: 100%;
+  }
 }
