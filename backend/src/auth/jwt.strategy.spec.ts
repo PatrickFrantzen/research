@@ -60,5 +60,19 @@ describe('JwtStrategy', () => {
         id: 'nutzer-1',
       });
     });
+
+    // iat ist sekundengenau (JWT-Standard), passwortGeaendertAm
+    // millisekundengenau: ein Login in derselben Sekunde wie das Passwort-
+    // Setzen darf nicht sofort als "vor der Änderung" gelten (gefunden per E2E).
+    it('accepts a token issued in the same second as the password change', async () => {
+      const { strategy, prisma } = buildStrategy();
+      const passwortGeaendertAm = new Date('2026-01-02T00:00:00.750Z');
+      prisma.nutzer.findUnique.mockResolvedValue({ id: 'nutzer-1', passwortGeaendertAm });
+      const iatSelbeSekunde = Math.floor(new Date('2026-01-02T00:00:00.900Z').getTime() / 1000);
+
+      await expect(strategy.validate({ sub: 'nutzer-1', iat: iatSelbeSekunde })).resolves.toEqual({
+        id: 'nutzer-1',
+      });
+    });
   });
 });

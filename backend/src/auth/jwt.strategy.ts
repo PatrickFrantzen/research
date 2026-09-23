@@ -53,8 +53,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException();
     }
     // Token vor der letzten Passwortänderung ausgestellt? Dann ungültig,
-    // auch wenn es noch nicht abgelaufen ist (Issue #40).
-    if (payload.iat !== undefined && payload.iat * 1000 < nutzer.passwortGeaendertAm.getTime()) {
+    // auch wenn es noch nicht abgelaufen ist (Issue #40). Vergleich in ganzen
+    // Sekunden, weil iat sekundengenau ist: sonst wäre ein Login in derselben
+    // Sekunde wie das Passwort-Setzen sofort ungültig.
+    if (payload.iat !== undefined && payload.iat < Math.floor(nutzer.passwortGeaendertAm.getTime() / 1000)) {
       throw new UnauthorizedException();
     }
     return { id: nutzer.id };
