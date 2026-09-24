@@ -141,6 +141,18 @@ describe('WareneintragErfassen', () => {
     expect(component.kannAbsenden).toBe(true);
   });
 
+  it('cannot be submitted with a freitext longer than the backend limit of 2000 characters', () => {
+    const fixture = createComponent();
+    const component = asTestable(fixture.componentInstance);
+    component.ausgewaehlterAvvCode = { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' };
+
+    fixture.componentInstance.freitext = 'a'.repeat(2000);
+    expect(component.kannAbsenden).toBe(true);
+
+    fixture.componentInstance.freitext = 'a'.repeat(2001);
+    expect(component.kannAbsenden).toBe(false);
+  });
+
   it('does not send a request when submitted without an AVV-Code', async () => {
     const fixture = createComponent();
 
