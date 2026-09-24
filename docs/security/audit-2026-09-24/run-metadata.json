@@ -1,0 +1,49 @@
+{
+ "run_id": "research-run-1",
+ "repo": "PatrickFrantzen/research",
+ "target": ".",
+ "source_ref": {
+  "commit": "0512eaba92fe6edae10748e5402cdf4e07c95ab3",
+  "dirty": false,
+  "note": "branch claude/security-audit-skill-install-g6nwv0 = main ccd0f82 + vendored skill under .claude/skills (excluded from scope)"
+ },
+ "profile": "standard",
+ "scope_paths": [
+  "backend",
+  "frontend",
+  "Dockerfile",
+  "Caddyfile",
+  "docker-compose.yml",
+  "docker-compose.prod.yml",
+  ".github",
+  ".env.example",
+  ".env.prod.example",
+  ".gitignore",
+  ".dockerignore"
+ ],
+ "budget": null,
+ "execution_policy": "sandboxed-source-and-local-only",
+ "execution_note": "No node_modules present and dependency installation is prohibited; no target-controlled code is executed. All checks are source-only.",
+ "selected_companion_files": [
+  "WEB-PROTOCOL-AND-AUTH.md",
+  "CLIENT-SIDE.md",
+  "DATA-ISOLATION-AND-LIFECYCLE.md",
+  "CLOUD-AND-DEPLOYMENT.md",
+  "SUPPLY-CHAIN-AND-RELEASE.md",
+  "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md"
+ ],
+ "prior_runs": [],
+ "shared_file_owners": {
+  "all": "parent"
+ },
+ "run_status": "complete",
+ "agents_spent": {
+  "reconnaissance": 4,
+  "hunters": 7,
+  "post_wave_critics": 2,
+  "final_clean_critic": 1,
+  "candidate_verifiers": 6,
+  "record_verifiers": 4,
+  "total": 24
+ }
+}

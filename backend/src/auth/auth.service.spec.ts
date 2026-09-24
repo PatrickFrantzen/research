@@ -89,6 +89,33 @@ describe('AuthService', () => {
       expect(persistedToken).not.toBe(rawToken);
     });
 
+    it('keeps a still valid Initial-Zugang token instead of replacing it with an undelivered one', async () => {
+      const { service, prisma, mailer } = buildService();
+      prisma.nutzer.findUnique.mockResolvedValue({
+        id: 'nutzer-1',
+        mussPasswortSetzen: true,
+        passwortSetzenTokenAblauf: new Date(Date.now() + 1000 * 60),
+      });
+
+      await service.passwortVergessen('neu@research.local');
+
+      expect(prisma.nutzer.update).not.toHaveBeenCalled();
+      expect(mailer.sendPasswortSetzenLink).not.toHaveBeenCalled();
+    });
+
+    it('issues a new token for a pending account whose Initial-Zugang token has expired', async () => {
+      const { service, prisma } = buildService();
+      prisma.nutzer.findUnique.mockResolvedValue({
+        id: 'nutzer-1',
+        mussPasswortSetzen: true,
+        passwortSetzenTokenAblauf: new Date(Date.now() - 1000),
+      });
+
+      await service.passwortVergessen('neu@research.local');
+
+      expect(prisma.nutzer.update).toHaveBeenCalledOnce();
+    });
+
     it('does nothing observable for an unknown email (no account enumeration)', async () => {
       const { service, prisma, mailer } = buildService();
       prisma.nutzer.findUnique.mockResolvedValue(null);

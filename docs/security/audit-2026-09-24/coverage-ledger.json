@@ -1,0 +1,1961 @@
+[
+ {
+  "coverage_id": ".github%2Fworkflows%2Fci.yml%23pull_request::.github%2Fworkflows%2Fci.yml%23permissions%20contents%20read::ci::SUPPLY-CHAIN-AND-RELEASE.md%23Mutable%20and%20unbound%20build%20inputs",
+  "canonical_refs": {
+   "surface": ".github/workflows/ci.yml#pull_request",
+   "boundary": ".github/workflows/ci.yml#permissions contents read",
+   "subsystem": "ci",
+   "attack_class": "SUPPLY-CHAIN-AND-RELEASE.md#Mutable and unbound build inputs"
+  },
+  "surface": "CI and image build",
+  "boundary": "CI isolation and build input integrity",
+  "subsystem": "ci",
+  "attack_class": "Mutable and unbound build inputs",
+  "starting_paths": [
+   ".github/workflows/ci.yml",
+   "Dockerfile",
+   ".dockerignore",
+   "backend/package.json",
+   "frontend/package.json"
+  ],
+  "ordinary_attack_class_block": null,
+  "selected_companion_blocks": [
+   "SUPPLY-CHAIN-AND-RELEASE.md#Build-context inclusion",
+   "SUPPLY-CHAIN-AND-RELEASE.md#Core discipline",
+   "SUPPLY-CHAIN-AND-RELEASE.md#Mutable and unbound build inputs",
+   "SUPPLY-CHAIN-AND-RELEASE.md#Universal moves",
+   "SUPPLY-CHAIN-AND-RELEASE.md#Untrusted code in a privileged workflow",
+   "SUPPLY-CHAIN-AND-RELEASE.md#Validation rules"
+  ],
+  "excluded_blocks": [
+   {
+    "block": "MEMORY-SAFETY-AND-BINARY.md#Core discipline",
+    "reason": "no native code; TypeScript only"
+   },
+   {
+    "block": "AI-AND-LLM.md#Core discipline",
+    "reason": "no model/LLM integration in source"
+   },
+   {
+    "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+    "reason": "no RPC, queue, broker or webhook surface"
+   },
+   {
+    "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+    "reason": "PWA only; no native app or local IPC"
+   }
+  ],
+  "prior_status": "none",
+  "attempts": [],
+  "wave": 1,
+  "status": "covered",
+  "agent_id": "h5-deploy",
+  "reviewed_paths": [
+   ".dockerignore",
+   ".github/workflows/ci.yml",
+   "Dockerfile",
+   "backend/package.json",
+   "frontend/package.json"
+  ],
+  "local_checks": [
+   {
+    "agent_id": "h5-deploy",
+    "reviewed_paths": [
+     ".github/workflows/ci.yml"
+    ],
+    "invariant": "PR-triggered CI must not run contributor code with secrets, write tokens or publish/deploy authority",
+    "method": "source",
+    "result": "Workflow triggers on pull_request (not pull_request_target) and push to main; top-level permissions contents: read; no secrets referenced (only literal test credentials for ephemeral service containers); no publish, deploy, registry push or cache-write-to-trusted-consumer step; upload-artifact only on failure with .auth excluded. Fork PR code runs with read-only token and no secrets, so no privileged boundary is crossed.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h5-deploy",
+    "reviewed_paths": [
+     ".github/workflows/ci.yml",
+     "Dockerfile"
+    ],
+    "invariant": "Mutable build inputs must not let a lower-trust writer reach a trusted build output",
+    "method": "source",
+    "result": "Actions are tag-pinned (actions/checkout@v4, setup-node@v4, upload-artifact@v4) not SHA-pinned, base images are tag-pinned (node:22.23-bookworm-slim, postgres:16-alpine, redis:8.8.2-alpine), MinIO/mc pinned to release tags. CI produces no released artifact and the Dockerfile image is built locally by the operator (docker compose build), not by CI, so no source-visible path from a mutable tag writer to a published/trusted artifact. Recorded as hardening only.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h5-deploy",
+    "reviewed_paths": [
+     "Dockerfile",
+     ".dockerignore",
+     "backend/package.json",
+     "frontend/package.json"
+    ],
+    "invariant": "Build context must not place secrets or developer artifacts into the runtime image",
+    "method": "source",
+    "result": ".dockerignore excludes only node_modules, dist, .git (not .env). COPY backend/ and COPY frontend/ occur only in intermediate build stages; runtime stage copies only package*.json, dist, prisma, prisma.config.ts, src/generated, frontend/dist and data/avv, so a local backend/.env or root .env would not reach the shipped runtime image. Dockerfile uses npm install (not npm ci) with lockfiles copied; dependency resolution is lockfile-guided and no lower-trust writer is identified.",
+    "artifact": null
+   }
+  ],
+  "result_fingerprints": [],
+  "unresolved": [],
+  "hardening_notes": [
+   "docker-compose.yml publishes app 3000:3000 and minio 9000:9000 on all host interfaces while using NODE_ENV=development, JWT fallback local-dev-secret-change-me, default Nutzer change-me-now and MinIO root research/research-secret; bind to 127.0.0.1 (\"127.0.0.1:3000:3000\") so a dev stack on a LAN/VPS is not reachable with forgeable JWTs and known root credentials.",
+   "env.ts only rejects two literal placeholder JWT secrets in production; add a minimum length/entropy check (e.g. >= 32 bytes) so short non-placeholder secrets are rejected.",
+   "GitHub Actions are tag-pinned (@v4) rather than commit-SHA pinned; CI holds no secrets or write tokens so impact is limited, but SHA pinning closes the mutable-tag path if publishing is ever added.",
+   "Dockerfile uses `npm install` instead of `npm ci`; switch to `npm ci` so image builds fail rather than silently re-resolve when package.json and package-lock.json disagree.",
+   ".dockerignore does not exclude .env / **/.env; the runtime stage does not copy them, but excluding them keeps local secrets out of the build context and intermediate layers/build cache.",
+   "minio-init swallows `mc admin user add` failures with `|| true`; failures surface later at policy attach, but an explicit check would make secret-rotation failures clearer."
+  ]
+ },
+ {
+  "coverage_id": "Caddyfile%23FILES_DOMAIN%20reverse%20proxy::docker-compose.prod.yml%23minio-init%20app%20policy::deployment::CLOUD-AND-DEPLOYMENT.md%23Object%20and%20signed-URL%20policy%20confusion",
+  "canonical_refs": {
+   "surface": "Caddyfile#FILES_DOMAIN reverse proxy",
+   "boundary": "docker-compose.prod.yml#minio-init app policy",
+   "subsystem": "deployment",
+   "attack_class": "CLOUD-AND-DEPLOYMENT.md#Object and signed-URL policy confusion"
+  },
+  "surface": "Public MinIO S3 endpoint",
+  "boundary": "object store authorization and signed URL scope",
+  "subsystem": "deployment",
+  "attack_class": "Object and signed-URL policy confusion",
+  "starting_paths": [
+   "Caddyfile",
+   "docker-compose.prod.yml",
+   "docker-compose.yml",
+   "backend/src/object-storage"
+  ],
+  "ordinary_attack_class_block": null,
+  "selected_companion_blocks": [
+   "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+   "CLOUD-AND-DEPLOYMENT.md#Object and signed-URL policy confusion",
+   "CLOUD-AND-DEPLOYMENT.md#Unexpected service or management-plane reachability",
+   "CLOUD-AND-DEPLOYMENT.md#Universal moves",
+   "CLOUD-AND-DEPLOYMENT.md#Validation rules"
+  ],
+  "excluded_blocks": [
+   {
+    "block": "MEMORY-SAFETY-AND-BINARY.md#Core discipline",
+    "reason": "no native code; TypeScript only"
+   },
+   {
+    "block": "AI-AND-LLM.md#Core discipline",
+    "reason": "no model/LLM integration in source"
+   },
+   {
+    "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+    "reason": "no RPC, queue, broker or webhook surface"
+   },
+   {
+    "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+    "reason": "PWA only; no native app or local IPC"
+   }
+  ],
+  "prior_status": "none",
+  "attempts": [],
+  "wave": 1,
+  "status": "candidate",
+  "agent_id": "h5-deploy",
+  "reviewed_paths": [
+   "Caddyfile",
+   "backend/src/config/env.ts",
+   "backend/src/object-storage/object-storage.service.ts",
+   "docker-compose.prod.yml",
+   "docker-compose.yml",
+   "docs/research/03-docker-deployment-optionen.md"
+  ],
+  "local_checks": [
+   {
+    "agent_id": "h5-deploy",
+    "reviewed_paths": [
+     "backend/src/object-storage/object-storage.service.ts",
+     "backend/src/config/env.ts"
+    ],
+    "invariant": "Presigned URLs must bind operation, object key and expiry and be issued only for GET",
+    "method": "source",
+    "result": "getSignedUrl signs GetObjectCommand for a single bucket/key with expiresIn 900s using the public-endpoint client; object keys are wareneintraege/<randomUUID>; upload/delete use the internal client server-side only. No presigned PUT/DELETE/List is issued. Caddy reverse_proxy preserves the Host header by default so the SigV4 host binding matches FILES_DOMAIN.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h5-deploy",
+    "reviewed_paths": [
+     "docker-compose.prod.yml",
+     "docker-compose.yml"
+    ],
+    "invariant": "Bucket must not be anonymously readable/listable and the app identity must be scoped to the photo bucket",
+    "method": "source",
+    "result": "minio-init creates research-fotos without any anonymous/public policy (no mc anonymous set); app user research-app gets Get/Put/Delete/ListBucket limited to arn:aws:s3:::research-fotos and /*. Broad-within-bucket but only the backend holds the app secret; no lower-trust caller reaches it.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h5-deploy",
+    "reviewed_paths": [
+     "Caddyfile",
+     "docker-compose.prod.yml",
+     "docs/research/03-docker-deployment-optionen.md"
+    ],
+    "invariant": "Only photo GETs should be reachable from the internet; MinIO management plane must not be exposed (go-live checklist item 5)",
+    "method": "source",
+    "result": "Caddyfile {$FILES_DOMAIN} reverse_proxy minio:9000 forwards every path and method on MinIO's API port, which also serves the MinIO admin API and full S3 API accepting the root user 'research' (fixed, source-visible username). Console port 9001 is not proxied. Protection of the admin plane rests solely on MINIO_ROOT_PASSWORD strength from server .env; recorded as needs_validation candidate.",
+    "artifact": null
+   }
+  ],
+  "result_fingerprints": [
+   "caddy-files-domain-proxies-full-minio-api-incl-admin"
+  ],
+  "unresolved": [],
+  "hardening_notes": [],
+  "candidate_decisions": {
+   "caddy-files-domain-proxies-full-minio-api-incl-admin": {
+    "phase3_verifier": "v4",
+    "decision": "rejected"
+   }
+  }
+ },
+ {
+  "coverage_id": "backend%2Fsrc%2Fapp.module.ts%23ThrottlerGuard::backend%2Fsrc%2Fapp.module.ts%23ThrottlerModule%20tracker::backend%2Fsrc%2Fapp.module.ts::WEB-PROTOCOL-AND-AUTH.md%23Host%20and%20forwarded-header%20trust",
+  "canonical_refs": {
+   "surface": "backend/src/app.module.ts#ThrottlerGuard",
+   "boundary": "backend/src/app.module.ts#ThrottlerModule tracker",
+   "subsystem": "backend/src/app.module.ts",
+   "attack_class": "WEB-PROTOCOL-AND-AUTH.md#Host and forwarded-header trust"
+  },
+  "surface": "Global and auth rate limiting",
+  "boundary": "per-client throttle keyed on req.ip behind Caddy",
+  "subsystem": "backend/src/app.module.ts",
+  "attack_class": "Host and forwarded-header trust",
+  "starting_paths": [
+   "backend/src/app.module.ts",
+   "backend/src/main.ts",
+   "backend/src/auth/auth.controller.ts",
+   "Caddyfile",
+   "docker-compose.prod.yml"
+  ],
+  "ordinary_attack_class_block": null,
+  "selected_companion_blocks": [
+   "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md#Core discipline",
+   "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md#Pre-authentication work imbalance",
+   "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md#Universal moves",
+   "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md#Validation rules",
+   "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+   "WEB-PROTOCOL-AND-AUTH.md#Host and forwarded-header trust",
+   "WEB-PROTOCOL-AND-AUTH.md#Universal moves",
+   "WEB-PROTOCOL-AND-AUTH.md#Validation rules"
+  ],
+  "excluded_blocks": [
+   {
+    "block": "MEMORY-SAFETY-AND-BINARY.md#Core discipline",
+    "reason": "no native code; TypeScript only"
+   },
+   {
+    "block": "AI-AND-LLM.md#Core discipline",
+    "reason": "no model/LLM integration in source"
+   },
+   {
+    "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+    "reason": "no RPC, queue, broker or webhook surface"
+   },
+   {
+    "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+    "reason": "PWA only; no native app or local IPC"
+   }
+  ],
+  "prior_status": "none",
+  "attempts": [],
+  "wave": 1,
+  "status": "candidate",
+  "agent_id": "h1-auth",
+  "reviewed_paths": [
+   "Caddyfile",
+   "backend/package.json",
+   "backend/src/app.module.ts",
+   "backend/src/auth/auth.controller.ts",
+   "backend/src/main.ts",
+   "docker-compose.prod.yml"
+  ],
+  "local_checks": [
+   {
+    "agent_id": "h1-auth",
+    "reviewed_paths": [
+     "backend/src/app.module.ts",
+     "backend/src/main.ts",
+     "backend/package.json"
+    ],
+    "invariant": "Throttler tracker must identify the real client, and client-supplied X-Forwarded-For must not be trusted unless ingress strips it",
+    "method": "source",
+    "result": "Global ThrottlerGuard (app.module.ts:47) uses @nestjs/throttler ^6.7 default tracker (req.ips[0] or req.ip). main.ts never calls app.set('trust proxy', ...), so req.ips is empty and req.ip is the TCP peer. X-Forwarded-For is therefore NOT trusted (no spoofing path), but every request arriving via Caddy is keyed on the Caddy container address.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h1-auth",
+    "reviewed_paths": [
+     "Caddyfile",
+     "docker-compose.prod.yml",
+     "backend/src/auth/auth.controller.ts"
+    ],
+    "invariant": "Per-client auth throttle (5/min) must not become a single global bucket that one anonymous client can exhaust for all users",
+    "method": "source",
+    "result": "Prod compose publishes only Caddy (80/443); Caddyfile reverse_proxy app:3000 is the only path to the app, so all clients share one tracker value per handler. AUTH_THROTTLE 5/min on login, passwort-vergessen and passwort-setzen becomes a global per-route quota exhaustible by one anonymous client (candidate). Actual peer address seen by Node inside the Docker network is a deployment fact.",
+    "artifact": null
+   }
+  ],
+  "result_fingerprints": [
+   "backend/src/app.module.ts:ThrottlerGuard:shared-proxy-peer-tracker"
+  ],
+  "unresolved": [],
+  "hardening_notes": [
+   "Login and passwort-vergessen skip bcrypt for unknown emails (auth.service.ts:23, 34), which gives a timing signal for account existence. Compare against a dummy hash to equalize.",
+   "Logout (auth.controller.ts:60-64) only clears cookies. The JWT stays valid server-side until exp (default 8h) because there is no revocation list. Consider a per-user session epoch bumped on logout.",
+   "Login CSRF: POST /auth/login is public, and Nest's default urlencoded body parser accepts a cross-site top-level form POST. A victim could be logged into an attacker's Nutzer account. Impact is limited (all entries are readable by every Nutzer), but consider requiring a JSON content type or checking Origin on the public auth POSTs.",
+   "passwortSetzen is find-then-update (auth.service.ts:51-69), not atomic. Two concurrent submissions of the same token both succeed. Only the token holder benefits; consider updateMany with the token in the where clause.",
+   "The PasswortSetzenDto max length of 128 exceeds bcrypt's 72-byte truncation, so characters after byte 72 are silently ignored. LoginDto.passwort has no MaxLength (the Express body limit bounds it).",
+   "JwtStrategy skips the passwortGeaendertAm check when iat is absent (jwt.strategy.ts:59). This is reachable only with the signing secret; consider rejecting tokens without iat.",
+   "If trust proxy is later enabled as a fix, restrict it to the single Caddy hop (trust proxy 1). Otherwise a client-supplied X-Forwarded-For would let attackers rotate throttle keys."
+  ],
+  "candidate_decisions": {
+   "backend/src/app.module.ts:ThrottlerGuard:shared-proxy-peer-tracker": {
+    "phase3_verifier": "v1",
+    "decision": "needs_validation"
+   }
+  }
+ },
+ {
+  "coverage_id": "backend%2Fsrc%2Fauth%2Fauth.controller.ts%23POST%20%2Fapi%2Fv1%2Fauth%2F%7Blogin%2Cpasswort-vergessen%2Cpasswort-setzen%7D::backend%2Fsrc%2Fauth%2Fauth.service.ts%23AuthService::backend%2Fsrc%2Fauth::WEB-PROTOCOL-AND-AUTH.md%23Password%20reset%20and%20broader%20recovery",
+  "canonical_refs": {
+   "surface": "backend/src/auth/auth.controller.ts#POST /api/v1/auth/{login,passwort-vergessen,passwort-setzen}",
+   "boundary": "backend/src/auth/auth.service.ts#AuthService",
+   "subsystem": "backend/src/auth",
+   "attack_class": "WEB-PROTOCOL-AND-AUTH.md#Password reset and broader recovery"
+  },
+  "surface": "Public auth routes",
+  "boundary": "bcrypt login, reset token issue/consume",
+  "subsystem": "backend/src/auth",
+  "attack_class": "Password reset and broader recovery",
+  "starting_paths": [
+   "backend/src/auth",
+   "backend/src/mailer",
+   "backend/src/nutzer/nutzer.service.ts",
+   "backend/prisma/schema.prisma",
+   "frontend/src/app/features/passwort-setzen"
+  ],
+  "ordinary_attack_class_block": null,
+  "selected_companion_blocks": [
+   "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+   "WEB-PROTOCOL-AND-AUTH.md#Password reset and broader recovery",
+   "WEB-PROTOCOL-AND-AUTH.md#Session fixation and invalidation",
+   "WEB-PROTOCOL-AND-AUTH.md#Universal moves",
+   "WEB-PROTOCOL-AND-AUTH.md#Validation rules"
+  ],
+  "excluded_blocks": [
+   {
+    "block": "MEMORY-SAFETY-AND-BINARY.md#Core discipline",
+    "reason": "no native code; TypeScript only"
+   },
+   {
+    "block": "AI-AND-LLM.md#Core discipline",
+    "reason": "no model/LLM integration in source"
+   },
+   {
+    "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+    "reason": "no RPC, queue, broker or webhook surface"
+   },
+   {
+    "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+    "reason": "PWA only; no native app or local IPC"
+   }
+  ],
+  "prior_status": "none",
+  "attempts": [],
+  "wave": 1,
+  "status": "candidate",
+  "agent_id": "h1-auth",
+  "reviewed_paths": [
+   "backend/prisma/schema.prisma",
+   "backend/src/auth/auth.controller.ts",
+   "backend/src/auth/auth.module.ts",
+   "backend/src/auth/auth.service.spec.ts",
+   "backend/src/auth/auth.service.ts",
+   "backend/src/auth/dto/haeufiges-passwort.validator.ts",
+   "backend/src/auth/dto/login.dto.ts",
+   "backend/src/auth/dto/passwort-setzen.dto.ts",
+   "backend/src/auth/passwort-setzen-token.ts",
+   "backend/src/mailer/mailer.ts",
+   "backend/src/nutzer/nutzer.service.ts",
+   "frontend/src/app/features/passwort-setzen/passwort-setzen.ts"
+  ],
+  "local_checks": [
+   {
+    "agent_id": "h1-auth",
+    "reviewed_paths": [
+     "backend/src/auth/passwort-setzen-token.ts",
+     "backend/src/auth/auth.service.ts",
+     "backend/prisma/schema.prisma"
+    ],
+    "invariant": "Recovery token is high-entropy, stored hashed, user-bound, expiring, single-use, and consumption invalidates sessions",
+    "method": "source",
+    "result": "32-byte randomBytes, SHA-256 stored in @unique column, lookup by hash, expiry checked (auth.service.ts:54), token and expiry nulled and passwortGeaendertAm set on use (59-68). Find-then-update is non-atomic, but concurrent reuse only benefits the same token holder. Link is a relative path, so no Host-header-derived URL. Holds.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h1-auth",
+    "reviewed_paths": [
+     "backend/src/auth/auth.service.ts",
+     "backend/src/auth/auth.controller.ts",
+     "backend/src/auth/auth.module.ts",
+     "backend/src/mailer/mailer.ts",
+     "backend/src/nutzer/nutzer.service.ts",
+     "backend/prisma/schema.prisma"
+    ],
+    "invariant": "An anonymous reset request must not destroy another account's only working credential path",
+    "method": "source",
+    "result": "Initial access and reset share one token slot (schema.prisma:37-39). Anonymous passwort-vergessen (auth.service.ts:38-45) overwrites the 7-day initial-access token that NutzerService issued (nutzer.service.ts:40-41). The replacement goes to ConsoleMailer (auth.module.ts:34), which only logs and never delivers (mailer.ts:13-17). No reissue endpoint exists, and email is unique, so the account cannot be recreated. Candidate.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h1-auth",
+    "reviewed_paths": [
+     "backend/src/auth/auth.service.ts",
+     "backend/src/auth/dto/login.dto.ts",
+     "backend/src/auth/dto/passwort-setzen.dto.ts",
+     "backend/src/auth/dto/haeufiges-passwort.validator.ts",
+     "backend/src/auth/auth.service.spec.ts"
+    ],
+    "invariant": "Login verifies the bcrypt hash for the looked-up user; the new password meets the policy",
+    "method": "source",
+    "result": "bcrypt.compare against the DB hash. Pending users hold a random-UUID placeholder hash, so they cannot log in. The new password is limited to 12-128 chars plus a small denylist. The only enumeration signal is timing (bcrypt is skipped for unknown emails), which reveals account existence only. Holds; hardening noted.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h1-auth",
+    "reviewed_paths": [
+     "frontend/src/app/features/passwort-setzen/passwort-setzen.ts"
+    ],
+    "invariant": "Client strips the recovery token from URL after reading",
+    "method": "source",
+    "result": "Token read from queryParamMap then router.navigate with replaceUrl and empty queryParams. Holds.",
+    "artifact": null
+   }
+  ],
+  "result_fingerprints": [
+   "backend/src/auth/auth.service.ts:passwortVergessen:overwrites-initial-access-token"
+  ],
+  "unresolved": [],
+  "hardening_notes": [],
+  "candidate_decisions": {
+   "backend/src/auth/auth.service.ts:passwortVergessen:overwrites-initial-access-token": {
+    "phase3_verifier": "v3",
+    "decision": "needs_validation"
+   }
+  }
+ },
+ {
+  "coverage_id": "backend%2Fsrc%2Fauth%2Fauth.controller.ts%23POST%20%2Fapi%2Fv1%2Fauth%2Flogout::backend%2Fsrc%2Fauth%2Fjwt.strategy.ts%23JwtStrategy.validate%20session%20revocation::backend%2Fsrc%2Fauth::DATA-ISOLATION-AND-LIFECYCLE.md%23Stale%20authorization%20and%20derived%20copy%20use",
+  "canonical_refs": {
+   "surface": "backend/src/auth/auth.controller.ts#POST /api/v1/auth/logout",
+   "boundary": "backend/src/auth/jwt.strategy.ts#JwtStrategy.validate session revocation",
+   "subsystem": "backend/src/auth",
+   "attack_class": "DATA-ISOLATION-AND-LIFECYCLE.md#Stale authorization and derived copy use"
+  },
+  "surface": "Logout and account offboarding",
+  "boundary": "server-side session revocation",
+  "subsystem": "backend/src/auth",
+  "attack_class": "Stale authorization and derived copy use",
+  "starting_paths": [
+   "backend/src/auth/auth.controller.ts",
+   "backend/src/auth/jwt.strategy.ts",
+   "backend/src/auth/auth.module.ts",
+   "backend/src/nutzer/nutzer.service.ts",
+   "backend/prisma/schema.prisma",
+   "frontend/src/app/core/auth.service.ts",
+   "CONTEXT.md"
+  ],
+  "ordinary_attack_class_block": null,
+  "selected_companion_blocks": [
+   "DATA-ISOLATION-AND-LIFECYCLE.md#Core discipline",
+   "DATA-ISOLATION-AND-LIFECYCLE.md#Stale authorization and derived copy use",
+   "DATA-ISOLATION-AND-LIFECYCLE.md#Universal moves",
+   "DATA-ISOLATION-AND-LIFECYCLE.md#Validation rules",
+   "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+   "WEB-PROTOCOL-AND-AUTH.md#Session fixation and invalidation",
+   "WEB-PROTOCOL-AND-AUTH.md#Universal moves",
+   "WEB-PROTOCOL-AND-AUTH.md#Validation rules"
+  ],
+  "excluded_blocks": [
+   {
+    "block": "MEMORY-SAFETY-AND-BINARY.md#Core discipline",
+    "reason": "no native code; TypeScript only"
+   },
+   {
+    "block": "AI-AND-LLM.md#Core discipline",
+    "reason": "no model/LLM integration in source"
+   },
+   {
+    "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+    "reason": "no RPC, queue, broker or webhook surface"
+   },
+   {
+    "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+    "reason": "PWA only; no native app or local IPC"
+   },
+   {
+    "block": "DATA-ISOLATION-AND-LIFECYCLE.md#Restore reintroduces invalid state",
+    "reason": "no backup/restore code in source; operational only"
+   }
+  ],
+  "prior_status": "none",
+  "attempts": [],
+  "wave": 2,
+  "status": "candidate",
+  "agent_id": "h7-session",
+  "reviewed_paths": [
+   "CONTEXT.md",
+   "backend/prisma/schema.prisma",
+   "backend/src/auth/auth-cookies.ts",
+   "backend/src/auth/auth.controller.ts",
+   "backend/src/auth/auth.module.ts",
+   "backend/src/auth/auth.service.ts",
+   "backend/src/auth/jwt.strategy.ts",
+   "backend/src/config/env.ts",
+   "backend/src/nutzer/nutzer.service.ts",
+   "frontend/ngsw-config.json",
+   "frontend/src/app/core/auth.service.ts",
+   "frontend/src/app/core/shell/mehr-menu.ts",
+   "frontend/src/app/core/shell/shell.ts",
+   "frontend/src/app/core/unauthorized.interceptor.ts"
+  ],
+  "local_checks": [
+   {
+    "agent_id": "h7-session",
+    "reviewed_paths": [
+     "backend/src/auth/auth.controller.ts",
+     "backend/src/auth/jwt.strategy.ts",
+     "backend/src/auth/auth.module.ts",
+     "backend/src/auth/auth.service.ts",
+     "backend/src/auth/auth-cookies.ts",
+     "backend/src/config/env.ts"
+    ],
+    "invariant": "POST /api/v1/auth/logout must invalidate the issued access token server-side so that it is no longer accepted by JwtStrategy.validate",
+    "method": "source",
+    "result": "Logout (auth.controller.ts:60-64) only calls res.clearCookie for accessToken/csrfToken. No denylist, token version, jti, or per-user session state exists; JwtStrategy.validate (jwt.strategy.ts:47-62) accepts any validly signed HS256 token with correct iss/aud whose sub exists and whose iat >= passwortGeaendertAm. Logout does not touch passwortGeaendertAm or any other field, so a token remains accepted until its exp (JWT_EXPIRES_IN default 8h, env.ts:61, auth.module.ts:22). Candidate raised.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h7-session",
+    "reviewed_paths": [
+     "frontend/src/app/core/auth.service.ts",
+     "frontend/src/app/core/unauthorized.interceptor.ts",
+     "frontend/src/app/core/shell/shell.ts",
+     "frontend/src/app/core/shell/mehr-menu.ts",
+     "frontend/ngsw-config.json"
+    ],
+    "invariant": "Client logout must reliably remove the ambient session credential from the device",
+    "method": "source",
+    "result": "Frontend logout (auth.service.ts:49-55) clears local signals first and sends the logout POST fire-and-forget with errors swallowed; because accessToken is HttpOnly, the SPA cannot delete it itself. If the POST fails (offline PWA, network error), the cookie survives and the next app start calls GET /api/v1/auth/me (auth.service.ts:33), which re-establishes the previous Nutzer's session. The service worker caches only static assets (ngsw-config.json), so no API response copies persist. Folded into the same candidate.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h7-session",
+    "reviewed_paths": [
+     "backend/src/auth/jwt.strategy.ts",
+     "backend/src/auth/auth.service.ts",
+     "backend/prisma/schema.prisma"
+    ],
+    "invariant": "Password change/reset and account deletion revoke previously issued tokens",
+    "method": "source",
+    "result": "passwortSetzen sets passwortGeaendertAm=new Date() (auth.service.ts:67) and validate rejects tokens with iat older than that (jwt.strategy.ts:59); deleted accounts are rejected by the DB existence lookup (jwt.strategy.ts:51-54). The iat-absent skip is owned by the peer JWT claim-binding unit. passwortVergessen only rotates the reset token and does not change the password or sessions, which is correct.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h7-session",
+    "reviewed_paths": [
+     "backend/src/nutzer/nutzer.service.ts",
+     "backend/prisma/schema.prisma",
+     "CONTEXT.md"
+    ],
+    "invariant": "Account offboarding (disable/delete) revokes access",
+    "method": "source",
+    "result": "No disable/deactivate flag and no Nutzer delete path exist in the source (NutzerService only has create/findEigeneDaten/updateEigeneDaten). The only revocation levers are an operator-side DB row delete, which the existence check honours, or a password reset. So no source path grants stale authorization after offboarding. The missing disable flag is noted as hardening.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h7-session",
+    "reviewed_paths": [
+     "backend/src/auth/auth.controller.ts",
+     "backend/src/auth/auth.service.ts"
+    ],
+    "invariant": "Session fixation: login issues a fresh credential that is not attacker-preset",
+    "method": "source",
+    "result": "Login always signs a new JWT (auth.service.ts:27) and sets fresh accessToken and CSRF cookies (auth.controller.ts:26-41). No server-side session identifier can be fixed. No issue.",
+    "artifact": null
+   }
+  ],
+  "result_fingerprints": [
+   "backend/src/auth/auth.controller.ts:logout:no-server-side-token-revocation"
+  ],
+  "unresolved": [],
+  "critic_reason": "critic-w1: no unit covered logout/offboarding session revocation",
+  "hardening_notes": [
+   "No account disable/deactivate flag exists; offboarding a Nutzer currently requires deleting the DB row (which the JwtStrategy existence check honours) or forcing a password reset. Consider an aktiv flag checked in JwtStrategy.validate.",
+   "JwtStrategy.validate skips the passwortGeaendertAm comparison when iat is absent (jwt.strategy.ts:59); tokens signed by this backend always carry iat, and this is owned by the peer JWT claim-binding unit.",
+   "loescheAuthCookies calls clearCookie without the secure/sameSite attributes used when setting; this works in current browsers but mirroring the set options is more robust."
+  ],
+  "candidate_decisions": {
+   "backend/src/auth/auth.controller.ts:logout:no-server-side-token-revocation": {
+    "phase3_verifier": "v2",
+    "decision": "rejected"
+   }
+  }
+ },
+ {
+  "coverage_id": "backend%2Fsrc%2Fauth%2Fjwt-auth.guard.ts%23state-changing%20authenticated%20routes::backend%2Fsrc%2Fauth%2Fcsrf.ts%23pruefeCsrf::backend%2Fsrc%2Fauth::WEB-PROTOCOL-AND-AUTH.md%23Ordinary%20CSRF",
+  "canonical_refs": {
+   "surface": "backend/src/auth/jwt-auth.guard.ts#state-changing authenticated routes",
+   "boundary": "backend/src/auth/csrf.ts#pruefeCsrf",
+   "subsystem": "backend/src/auth",
+   "attack_class": "WEB-PROTOCOL-AND-AUTH.md#Ordinary CSRF"
+  },
+  "surface": "State-changing authenticated routes",
+  "boundary": "double-submit CSRF + SameSite",
+  "subsystem": "backend/src/auth",
+  "attack_class": "Ordinary CSRF",
+  "starting_paths": [
+   "backend/src/auth",
+   "frontend/src/app/core/csrf.interceptor.ts",
+   "frontend/src/app/core/eigene-api.ts"
+  ],
+  "ordinary_attack_class_block": null,
+  "selected_companion_blocks": [
+   "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+   "WEB-PROTOCOL-AND-AUTH.md#Ordinary CSRF",
+   "WEB-PROTOCOL-AND-AUTH.md#Universal moves",
+   "WEB-PROTOCOL-AND-AUTH.md#Validation rules"
+  ],
+  "excluded_blocks": [
+   {
+    "block": "MEMORY-SAFETY-AND-BINARY.md#Core discipline",
+    "reason": "no native code; TypeScript only"
+   },
+   {
+    "block": "AI-AND-LLM.md#Core discipline",
+    "reason": "no model/LLM integration in source"
+   },
+   {
+    "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+    "reason": "no RPC, queue, broker or webhook surface"
+   },
+   {
+    "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+    "reason": "PWA only; no native app or local IPC"
+   }
+  ],
+  "prior_status": "none",
+  "attempts": [],
+  "wave": 1,
+  "status": "covered",
+  "agent_id": "h1-auth",
+  "reviewed_paths": [
+   "backend/src/auth/auth-cookies.ts",
+   "backend/src/auth/auth.controller.ts",
+   "backend/src/auth/csrf.spec.ts",
+   "backend/src/auth/csrf.ts",
+   "backend/src/auth/jwt-auth.guard.ts",
+   "backend/src/avv/avv.controller.ts",
+   "backend/src/health/health.controller.ts",
+   "backend/src/main.ts",
+   "backend/src/nutzer/nutzer.controller.ts",
+   "backend/src/standort/standort.controller.ts",
+   "backend/src/wareneintrag/wareneintrag.controller.ts",
+   "frontend/src/app/core/csrf.interceptor.ts",
+   "frontend/src/app/core/eigene-api.ts"
+  ],
+  "local_checks": [
+   {
+    "agent_id": "h1-auth",
+    "reviewed_paths": [
+     "backend/src/auth/jwt-auth.guard.ts",
+     "backend/src/auth/csrf.ts",
+     "backend/src/auth/csrf.spec.ts",
+     "backend/src/auth/auth-cookies.ts"
+    ],
+    "invariant": "Every cookie-authenticated non-safe method requires a matching non-empty csrfToken cookie and X-CSRF-Token header",
+    "method": "source",
+    "result": "JwtAuthGuard runs csrfIstGueltig after passport auth. Non-GET/HEAD/OPTIONS requests need a string, non-empty, strictly equal cookie and header. Array or duplicate headers fail the typeof check. The token is 32 random bytes minted at login.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h1-auth",
+    "reviewed_paths": [
+     "backend/src/nutzer/nutzer.controller.ts",
+     "backend/src/wareneintrag/wareneintrag.controller.ts",
+     "backend/src/avv/avv.controller.ts",
+     "backend/src/standort/standort.controller.ts",
+     "backend/src/health/health.controller.ts",
+     "backend/src/auth/auth.controller.ts",
+     "backend/src/main.ts"
+    ],
+    "invariant": "Inventory: no authenticated mutation bypasses JwtAuthGuard, and no CORS or method-override makes a custom header forgeable cross-site",
+    "method": "source",
+    "result": "All authenticated mutations are covered by a class-level @UseGuards(JwtAuthGuard): POST/PATCH /nutzer, POST/PATCH/DELETE /wareneintraege. No controller uses the bare AuthGuard('jwt'). There is no enableCors and no method-override middleware, so a cross-site custom header triggers a preflight that fails. The accessToken cookie is also SameSite=Strict. The unauthenticated POSTs (login, logout, passwort-*) carry no ambient credential for a state change on the victim. Login/logout CSRF is noted under hardening.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h1-auth",
+    "reviewed_paths": [
+     "frontend/src/app/core/csrf.interceptor.ts",
+     "frontend/src/app/core/eigene-api.ts"
+    ],
+    "invariant": "Frontend attaches the CSRF header only to same-origin /api/ calls",
+    "method": "source",
+    "result": "istEigeneApi checks the origin and the /api/ prefix before the header is attached. Holds.",
+    "artifact": null
+   }
+  ],
+  "result_fingerprints": [],
+  "unresolved": [],
+  "hardening_notes": []
+ },
+ {
+  "coverage_id": "backend%2Fsrc%2Fauth%2Fjwt.strategy.ts%23accessToken%20cookie::backend%2Fsrc%2Fauth%2Fjwt.strategy.ts%23JwtStrategy.validate::backend%2Fsrc%2Fauth::WEB-PROTOCOL-AND-AUTH.md%23JWT%20verification%20and%20claim%20binding",
+  "canonical_refs": {
+   "surface": "backend/src/auth/jwt.strategy.ts#accessToken cookie",
+   "boundary": "backend/src/auth/jwt.strategy.ts#JwtStrategy.validate",
+   "subsystem": "backend/src/auth",
+   "attack_class": "WEB-PROTOCOL-AND-AUTH.md#JWT verification and claim binding"
+  },
+  "surface": "JWT session cookie",
+  "boundary": "JWT signature/iss/aud/iat vs passwortGeaendertAm",
+  "subsystem": "backend/src/auth",
+  "attack_class": "JWT verification and claim binding",
+  "starting_paths": [
+   "backend/src/auth",
+   "backend/src/config/env.ts"
+  ],
+  "ordinary_attack_class_block": null,
+  "selected_companion_blocks": [
+   "WEB-PROTOCOL-AND-AUTH.md#Cookie scope and transport",
+   "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+   "WEB-PROTOCOL-AND-AUTH.md#JWT verification and claim binding",
+   "WEB-PROTOCOL-AND-AUTH.md#Universal moves",
+   "WEB-PROTOCOL-AND-AUTH.md#Validation rules"
+  ],
+  "excluded_blocks": [
+   {
+    "block": "MEMORY-SAFETY-AND-BINARY.md#Core discipline",
+    "reason": "no native code; TypeScript only"
+   },
+   {
+    "block": "AI-AND-LLM.md#Core discipline",
+    "reason": "no model/LLM integration in source"
+   },
+   {
+    "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+    "reason": "no RPC, queue, broker or webhook surface"
+   },
+   {
+    "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+    "reason": "PWA only; no native app or local IPC"
+   }
+  ],
+  "prior_status": "none",
+  "attempts": [],
+  "wave": 1,
+  "status": "covered",
+  "agent_id": "h1-auth",
+  "reviewed_paths": [
+   "backend/src/auth/auth.controller.ts",
+   "backend/src/auth/auth.module.ts",
+   "backend/src/auth/jwt.strategy.spec.ts",
+   "backend/src/auth/jwt.strategy.ts",
+   "backend/src/config/env.ts"
+  ],
+  "local_checks": [
+   {
+    "agent_id": "h1-auth",
+    "reviewed_paths": [
+     "backend/src/auth/jwt.strategy.ts",
+     "backend/src/auth/auth.module.ts",
+     "backend/src/config/env.ts"
+    ],
+    "invariant": "Signature verified with a server-pinned algorithm and key; exp, iss and aud enforced; no key selectors; sign and verify options agree",
+    "method": "source",
+    "result": "passport-jwt runs with algorithms ['HS256'], secretOrKey from JWT_SECRET, and issuer/audience from env. These match JwtModule signOptions (HS256, same iss/aud, expiresIn default 8h). ignoreExpiration keeps its false default. There is no kid/jku handling and no decode-without-verify path. The default-secret guard is peer-owned (env unit).",
+    "artifact": null
+   },
+   {
+    "agent_id": "h1-auth",
+    "reviewed_paths": [
+     "backend/src/auth/jwt.strategy.ts",
+     "backend/src/auth/jwt.strategy.spec.ts"
+    ],
+    "invariant": "Principal is bound to an existing DB user, and tokens issued before a password change are rejected",
+    "method": "source",
+    "result": "validate() loads the Nutzer by sub and rejects a missing user. It rejects iat < floor(passwortGeaendertAm/1000). The iat-absent skip is reachable only with the signing secret, because jsonwebtoken always sets iat. Holds.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h1-auth",
+    "reviewed_paths": [
+     "backend/src/auth/auth.controller.ts"
+    ],
+    "invariant": "Session cookie scope and transport",
+    "method": "source",
+    "result": "accessToken is HttpOnly, SameSite=Strict, host-only (no Domain), Path=/, and Secure when NODE_ENV=production (the prod compose sets it). No sibling cookie conflict is source-visible. Holds.",
+    "artifact": null
+   }
+  ],
+  "result_fingerprints": [],
+  "unresolved": [],
+  "hardening_notes": []
+ },
+ {
+  "coverage_id": "backend%2Fsrc%2Fconfig%2Fenv.ts%23process.env::backend%2Fsrc%2Fconfig%2Fenv.ts%23production%20default-secret%20guard::deployment::CLOUD-AND-DEPLOYMENT.md%23Security-control%20precedence%20drift",
+  "canonical_refs": {
+   "surface": "backend/src/config/env.ts#process.env",
+   "boundary": "backend/src/config/env.ts#production default-secret guard",
+   "subsystem": "deployment",
+   "attack_class": "CLOUD-AND-DEPLOYMENT.md#Security-control precedence drift"
+  },
+  "surface": "Runtime configuration and secrets",
+  "boundary": "secure defaults across NODE_ENV modes",
+  "subsystem": "deployment",
+  "attack_class": "Security-control precedence drift",
+  "starting_paths": [
+   "backend/src/config",
+   "docker-compose.yml",
+   "docker-compose.prod.yml",
+   ".env.example",
+   ".env.prod.example",
+   "backend/prisma/seed-initial-nutzer.ts",
+   "backend/prisma/seed-initial-nutzer-guard.ts",
+   "Dockerfile"
+  ],
+  "ordinary_attack_class_block": null,
+  "selected_companion_blocks": [
+   "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+   "CLOUD-AND-DEPLOYMENT.md#Secret exposure across workload boundaries",
+   "CLOUD-AND-DEPLOYMENT.md#Security-control precedence drift",
+   "CLOUD-AND-DEPLOYMENT.md#Universal moves",
+   "CLOUD-AND-DEPLOYMENT.md#Validation rules"
+  ],
+  "excluded_blocks": [
+   {
+    "block": "MEMORY-SAFETY-AND-BINARY.md#Core discipline",
+    "reason": "no native code; TypeScript only"
+   },
+   {
+    "block": "AI-AND-LLM.md#Core discipline",
+    "reason": "no model/LLM integration in source"
+   },
+   {
+    "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+    "reason": "no RPC, queue, broker or webhook surface"
+   },
+   {
+    "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+    "reason": "PWA only; no native app or local IPC"
+   }
+  ],
+  "prior_status": "none",
+  "attempts": [],
+  "wave": 1,
+  "status": "covered",
+  "agent_id": "h5-deploy",
+  "reviewed_paths": [
+   ".env.example",
+   ".env.prod.example",
+   "Dockerfile",
+   "README.md",
+   "backend/prisma/seed-initial-nutzer-guard.ts",
+   "backend/prisma/seed-initial-nutzer.ts",
+   "backend/src/config/env.ts",
+   "docker-compose.prod.yml",
+   "docker-compose.yml"
+  ],
+  "local_checks": [
+   {
+    "agent_id": "h5-deploy",
+    "reviewed_paths": [
+     "backend/src/config/env.ts",
+     "docker-compose.prod.yml",
+     ".env.prod.example",
+     "Dockerfile"
+    ],
+    "invariant": "Production deployment must not start with a missing or known-default JWT secret",
+    "method": "source",
+    "result": "Prod compose sets NODE_ENV=production and JWT_SECRET=${JWT_SECRET} with no fallback; .env.prod.example leaves it blank; required() throws on empty and requiredSecret() rejects both known placeholders when NODE_ENV=production. Dockerfile runtime ENV NODE_ENV=production so any other deployment of the image also gets the guard unless explicitly overridden. OBJECT_STORAGE_SECRET_ACCESS_KEY/DATABASE_URL/REDIS_URL also required with no defaults in prod compose.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h5-deploy",
+    "reviewed_paths": [
+     "backend/prisma/seed-initial-nutzer.ts",
+     "backend/prisma/seed-initial-nutzer-guard.ts",
+     "docker-compose.prod.yml",
+     "Dockerfile"
+    ],
+    "invariant": "Bootstrap Nutzer must not be seeded with a default password in production",
+    "method": "source",
+    "result": "migrate service in prod compose inherits NODE_ENV=production from the image; assertNichtDefaultBootstrapPasswort rejects change-me-now/change-me; required() rejects empty INITIAL_NUTZER_*; seed only runs when no Nutzer exists.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h5-deploy",
+    "reviewed_paths": [
+     "docker-compose.yml",
+     ".env.example",
+     "README.md"
+    ],
+    "invariant": "Development overlay values must not reach a maintained deployed environment",
+    "method": "source",
+    "result": "docker-compose.yml sets NODE_ENV=development (disabling the default-secret guard and Secure cookies), JWT_SECRET fallback local-dev-secret-change-me, MinIO root research/research-secret, and publishes 3000 and 9000 on all interfaces. README and deployment docs scope this file to local/throwaway use and the prod path is docker-compose.prod.yml, so no maintained deployed environment consumes it in source; recorded as hardening.",
+    "artifact": null
+   }
+  ],
+  "result_fingerprints": [],
+  "unresolved": [],
+  "hardening_notes": []
+ },
+ {
+  "coverage_id": "backend%2Fsrc%2Fnutzer%2Fnutzer.controller.ts%23%2Fapi%2Fv1%2Fnutzer::backend%2Fsrc%2Fnutzer%2Fnutzer.service.ts%23NutzerService::backend%2Fsrc%2Fnutzer::ATTACK-CLASSES.md%23Access%20control",
+  "canonical_refs": {
+   "surface": "backend/src/nutzer/nutzer.controller.ts#/api/v1/nutzer",
+   "boundary": "backend/src/nutzer/nutzer.service.ts#NutzerService",
+   "subsystem": "backend/src/nutzer",
+   "attack_class": "ATTACK-CLASSES.md#Access control"
+  },
+  "surface": "Nutzer create and self-update",
+  "boundary": "account provisioning and profile update authorization",
+  "subsystem": "backend/src/nutzer",
+  "attack_class": "Access control",
+  "starting_paths": [
+   "backend/src/nutzer",
+   "backend/src/auth",
+   "CONTEXT.md",
+   "frontend/src/app/features/nutzer-anlegen"
+  ],
+  "ordinary_attack_class_block": "ATTACK-CLASSES.md#Access control",
+  "selected_companion_blocks": [],
+  "excluded_blocks": [
+   {
+    "block": "MEMORY-SAFETY-AND-BINARY.md#Core discipline",
+    "reason": "no native code; TypeScript only"
+   },
+   {
+    "block": "AI-AND-LLM.md#Core discipline",
+    "reason": "no model/LLM integration in source"
+   },
+   {
+    "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+    "reason": "no RPC, queue, broker or webhook surface"
+   },
+   {
+    "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+    "reason": "PWA only; no native app or local IPC"
+   }
+  ],
+  "prior_status": "none",
+  "attempts": [],
+  "wave": 1,
+  "status": "covered",
+  "agent_id": "h2-access",
+  "reviewed_paths": [
+   "CONTEXT.md",
+   "backend/prisma/schema.prisma",
+   "backend/src/auth/jwt-auth.guard.ts",
+   "backend/src/auth/jwt.strategy.ts",
+   "backend/src/main.ts",
+   "backend/src/nutzer/dto/create-nutzer.dto.ts",
+   "backend/src/nutzer/dto/update-eigene-daten.dto.ts",
+   "backend/src/nutzer/nutzer.controller.ts",
+   "backend/src/nutzer/nutzer.service.ts",
+   "frontend/src/app/features/nutzer-anlegen/nutzer-anlegen.ts"
+  ],
+  "local_checks": [
+   {
+    "agent_id": "h2-access",
+    "reviewed_paths": [
+     "backend/src/nutzer/nutzer.controller.ts",
+     "backend/src/auth/jwt-auth.guard.ts",
+     "backend/src/auth/jwt.strategy.ts"
+    ],
+    "invariant": "Every /api/v1/nutzer route requires an authenticated Nutzer and binds identity from the verified JWT (request.user.id), never from request input.",
+    "method": "source",
+    "result": "Class-level @UseGuards(JwtAuthGuard) at nutzer.controller.ts:9 covers POST /, GET /me, PATCH /me. All three pass request.user.id (set by JwtStrategy.validate from DB lookup of payload.sub) to the service; there is no :id route parameter, so no other Nutzer's record is addressable.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h2-access",
+    "reviewed_paths": [
+     "backend/src/nutzer/nutzer.service.ts",
+     "backend/src/nutzer/dto/update-eigene-daten.dto.ts",
+     "backend/src/nutzer/dto/create-nutzer.dto.ts",
+     "backend/src/main.ts",
+     "backend/prisma/schema.prisma"
+    ],
+    "invariant": "Body fields cannot override protected Nutzer state (email, passwortHash, passwortGeaendertAm, mussPasswortSetzen, passwortSetzenToken, erstelltVonId, id) on create or self-update.",
+    "method": "source",
+    "result": "Global ValidationPipe uses whitelist+forbidNonWhitelisted (main.ts:15), DTOs expose only vorname/nachname/(email on create)/standortId, and the service builds Prisma data from explicit fields only (nutzer.service.ts:21-35, 60-64). updateEigeneDaten uses where:{id} from the JWT and cannot change email or credentials. createNutzer sets erstelltVonId from the JWT, mussPasswortSetzen=true, a random bcrypt placeholder and a hashed 32-byte token. Email is @unique so creating an account cannot overwrite or take over an existing account.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h2-access",
+    "reviewed_paths": [
+     "CONTEXT.md",
+     "backend/src/nutzer/nutzer.service.ts",
+     "frontend/src/app/features/nutzer-anlegen/nutzer-anlegen.ts"
+    ],
+    "invariant": "Account provisioning authority and self-assigned Standort match the documented policy.",
+    "method": "source",
+    "result": "CONTEXT.md (Nutzer glossary entry) states that every Nutzer may create new Nutzer accounts, no self-signup, no roles; architecture summary records self-editable name/Standort as design. Returning the raw setup link to the creator is documented design (nutzer.service.ts:17-19). Creating an account for a new email and holding its setup link does not grant access to any pre-existing account. No weaker alternate path to the same state change exists (auth.controller only offers login/logout/password flows keyed on email/token). No violation of the stated policy.",
+    "artifact": null
+   }
+  ],
+  "result_fingerprints": [],
+  "unresolved": [],
+  "hardening_notes": [
+   "backend/src/wareneintrag/wareneintrag.service.ts:162-165,182: pruefeBesitz is find-then-act; binding ownership in the write itself (e.g. updateMany/deleteMany with where {id, erfasstVonId: nutzerId} and checking count) would keep the owner-only invariant atomic if ownership ever becomes mutable.",
+   "backend/prisma/schema.prisma:23: Nutzer.email is @unique but case-sensitive and not normalized in CreateNutzerDto/login, so a Nutzer can create a case-variant lookalike account (e.g. Victim@firma vs victim@firma); normalizing email to lowercase on create/login/passwort-vergessen avoids confusing duplicate identities. No existing account is taken over.",
+   "backend/src/wareneintrag/wareneintrag.service.ts:185-191: pruefeBesitz uses findUniqueOrThrow on an unvalidated :id param; a ParseUUIDPipe on the route would return 400/404 instead of a Prisma error (500) for malformed or unknown ids."
+  ]
+ },
+ {
+  "coverage_id": "backend%2Fsrc%2Fwareneintrag%2Fwareneintrag.controller.ts%23GET%20%2Fapi%2Fv1%2Fwareneintraege::backend%2Fsrc%2Fwareneintrag%2Fwareneintrag.service.ts%23findAll%20raw%20SQL::backend%2Fsrc%2Fwareneintrag::ATTACK-CLASSES.md%23Injection",
+  "canonical_refs": {
+   "surface": "backend/src/wareneintrag/wareneintrag.controller.ts#GET /api/v1/wareneintraege",
+   "boundary": "backend/src/wareneintrag/wareneintrag.service.ts#findAll raw SQL",
+   "subsystem": "backend/src/wareneintrag",
+   "attack_class": "ATTACK-CLASSES.md#Injection"
+  },
+  "surface": "Wareneintrag list/search",
+  "boundary": "parameterized full-text search and filters",
+  "subsystem": "backend/src/wareneintrag",
+  "attack_class": "Injection",
+  "starting_paths": [
+   "backend/src/wareneintrag",
+   "backend/src/avv",
+   "backend/prisma/migrations"
+  ],
+  "ordinary_attack_class_block": "ATTACK-CLASSES.md#Injection",
+  "selected_companion_blocks": [],
+  "excluded_blocks": [
+   {
+    "block": "MEMORY-SAFETY-AND-BINARY.md#Core discipline",
+    "reason": "no native code; TypeScript only"
+   },
+   {
+    "block": "AI-AND-LLM.md#Core discipline",
+    "reason": "no model/LLM integration in source"
+   },
+   {
+    "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+    "reason": "no RPC, queue, broker or webhook surface"
+   },
+   {
+    "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+    "reason": "PWA only; no native app or local IPC"
+   }
+  ],
+  "prior_status": "none",
+  "attempts": [],
+  "wave": 1,
+  "status": "covered",
+  "agent_id": "h3-input",
+  "reviewed_paths": [
+   "backend/prisma/migrations/20260918161204_wareneintrag_freitext_suche/migration.sql",
+   "backend/src/avv/avv.controller.ts",
+   "backend/src/main.ts",
+   "backend/src/wareneintrag/wareneintrag.controller.ts",
+   "backend/src/wareneintrag/wareneintrag.service.ts"
+  ],
+  "local_checks": [
+   {
+    "agent_id": "h3-input",
+    "reviewed_paths": [
+     "backend/src/wareneintrag/wareneintrag.service.ts"
+    ],
+    "invariant": "Full-text search raw SQL binds every caller-controlled value as a parameter, never as SQL text",
+    "method": "source",
+    "result": "sucheMitVolltext uses the Prisma.$queryRaw tagged template (service.ts:96-120); suche, praefixSuche, proSeite and the offset are interpolated as bind parameters. The optional avvCodeId/standortId filters are Prisma.sql tagged fragments (91-94) that are also parameterized; the only non-parameter composition is Prisma.empty. No $queryRawUnsafe/$executeRawUnsafe or Prisma.raw is used anywhere in the unit.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h3-input",
+    "reviewed_paths": [
+     "backend/src/wareneintrag/wareneintrag.service.ts",
+     "backend/prisma/migrations/20260918161204_wareneintrag_freitext_suche/migration.sql"
+    ],
+    "invariant": "The to_tsquery input built from user text cannot inject tsquery operators or cause a syntax error",
+    "method": "source",
+    "result": "praefixSuche is made only from /[\\p{L}\\p{N}]+/gu matches, each followed by ':*' and joined with ' & ' (service.ts:95). No ASCII tsquery operators (&|!()<>:') can reach it. An input with no words gives '' (to_tsquery returns an empty query with a NOTICE, not an error). websearch_to_tsquery never raises an error on syntax. Neither form can inject.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h3-input",
+    "reviewed_paths": [
+     "backend/src/wareneintrag/wareneintrag.service.ts",
+     "backend/src/wareneintrag/wareneintrag.controller.ts",
+     "backend/src/main.ts",
+     "backend/src/avv/avv.controller.ts"
+    ],
+    "invariant": "Query parameters used in Prisma where-objects cannot become operator objects (Prisma operator injection)",
+    "method": "source",
+    "result": "main.ts does not override the Express 5 'simple' query parser (querystring), so query values are only strings or string arrays and never nested objects. listeAlle (service.ts:60-63) and the AVV search (avv.controller.ts:17-28) therefore cannot receive {not:..}/{contains:..} operator objects. A repeated key gives an array, and that only causes a Prisma or TypeError 500. All authenticated Nutzer may read every entry by design (CONTEXT.md), so filter manipulation would not widen access anyway.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h3-input",
+    "reviewed_paths": [
+     "backend/src/wareneintrag/wareneintrag.service.ts"
+    ],
+    "invariant": "Indirect/second-order injection: stored freitext or object keys are not reused in a dangerous sink",
+    "method": "source",
+    "result": "Stored freitext only returns as JSON data. Object keys stored in the foto_*_url columns are always server-generated 'wareneintraege/<randomUUID>' (object-storage.service.ts:42) and are only passed to the S3 SDK GetObject/DeleteObject as a Key. No stored value is concatenated into SQL, shell, path or template.",
+    "artifact": null
+   }
+  ],
+  "result_fingerprints": [],
+  "unresolved": [],
+  "hardening_notes": [
+   "wareneintrag.controller.ts findAll: query params avvCodeId/standortId/suche are not validated (no DTO with @IsUUID/@IsString/@MaxLength). Repeated keys produce arrays that cause a TypeError at service.ts:95 or Prisma/Postgres type errors (HTTP 500). Add a query DTO so these return 400 and the length of suche is capped.",
+   "suche has no explicit length cap. Up to about 8k ':*' prefix terms (bounded only by Node's 16 KiB header limit) are ANDed in to_tsquery against the GIN index. The cost is bounded and throttled, but capping suche length and the number of terms would make DB work predictable.",
+   "seite is accepted up to Number.MAX_SAFE_INTEGER, so seite*proSeite can exceed 2^53 and give imprecise or invalid OFFSET/skip values (500). Cap seite at a realistic maximum, or bound it by ceil(gesamt/proSeite).",
+   "wareneintrag.service.ts update: ersetzeFoto runs concurrently via Promise.all and deletes old objects before the DB update commits. A failed sibling upload or a failed DB update leaves DB rows pointing at deleted keys, and concurrent PATCHes orphan newly uploaded objects. This is an integrity and storage-hygiene issue on one's own entry only; delete old keys after the DB update succeeds.",
+   "Add limits.files: 3 and limits.parts to FOTO_UPLOAD_OPTIONS as defense in depth, in addition to the maxCount per field."
+  ]
+ },
+ {
+  "coverage_id": "backend%2Fsrc%2Fwareneintrag%2Fwareneintrag.controller.ts%23PATCH%7CDELETE%20%2Fapi%2Fv1%2Fwareneintraege%2F%3Aid::backend%2Fsrc%2Fwareneintrag%2Fwareneintrag.service.ts%23pruefeBesitz::backend%2Fsrc%2Fwareneintrag::ATTACK-CLASSES.md%23Access%20control",
+  "canonical_refs": {
+   "surface": "backend/src/wareneintrag/wareneintrag.controller.ts#PATCH|DELETE /api/v1/wareneintraege/:id",
+   "boundary": "backend/src/wareneintrag/wareneintrag.service.ts#pruefeBesitz",
+   "subsystem": "backend/src/wareneintrag",
+   "attack_class": "ATTACK-CLASSES.md#Access control"
+  },
+  "surface": "Wareneintrag update/delete",
+  "boundary": "owner-only edit/delete",
+  "subsystem": "backend/src/wareneintrag",
+  "attack_class": "Access control",
+  "starting_paths": [
+   "backend/src/wareneintrag",
+   "backend/src/object-storage"
+  ],
+  "ordinary_attack_class_block": "ATTACK-CLASSES.md#Access control",
+  "selected_companion_blocks": [
+   "DATA-ISOLATION-AND-LIFECYCLE.md#Core discipline",
+   "DATA-ISOLATION-AND-LIFECYCLE.md#Missing tenant or owner enforcement",
+   "DATA-ISOLATION-AND-LIFECYCLE.md#Universal moves",
+   "DATA-ISOLATION-AND-LIFECYCLE.md#Validation rules"
+  ],
+  "excluded_blocks": [
+   {
+    "block": "MEMORY-SAFETY-AND-BINARY.md#Core discipline",
+    "reason": "no native code; TypeScript only"
+   },
+   {
+    "block": "AI-AND-LLM.md#Core discipline",
+    "reason": "no model/LLM integration in source"
+   },
+   {
+    "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+    "reason": "no RPC, queue, broker or webhook surface"
+   },
+   {
+    "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+    "reason": "PWA only; no native app or local IPC"
+   }
+  ],
+  "prior_status": "none",
+  "attempts": [],
+  "wave": 1,
+  "status": "covered",
+  "agent_id": "h2-access",
+  "reviewed_paths": [
+   "backend/src/main.ts",
+   "backend/src/object-storage/object-storage.service.ts",
+   "backend/src/wareneintrag/dto/create-wareneintrag.dto.ts",
+   "backend/src/wareneintrag/dto/update-wareneintrag.dto.ts",
+   "backend/src/wareneintrag/wareneintrag.controller.ts",
+   "backend/src/wareneintrag/wareneintrag.service.ts"
+  ],
+  "local_checks": [
+   {
+    "agent_id": "h2-access",
+    "reviewed_paths": [
+     "backend/src/wareneintrag/wareneintrag.controller.ts",
+     "backend/src/wareneintrag/wareneintrag.service.ts"
+    ],
+    "invariant": "PATCH and DELETE /wareneintraege/:id enforce that request.user.id equals the record's erfasstVonId before any mutation of DB rows or storage objects.",
+    "method": "source",
+    "result": "Controller passes request.user.id (JwtAuthGuard at class level, controller.ts:82). update() (service.ts:151) and remove() (service.ts:175) call pruefeBesitz first; it loads the row by id and throws ForbiddenException when erfasstVonId !== nutzerId (service.ts:186-192) before any photo upload/delete or Prisma update/delete. Non-owners cannot reach ersetzeFoto/deleteFoto or the DB write. Guards run before the multer interceptor, so unauthenticated uploads are not buffered; authenticated non-owners reach only the ownership check after photo validation.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h2-access",
+    "reviewed_paths": [
+     "backend/src/wareneintrag/dto/update-wareneintrag.dto.ts",
+     "backend/src/wareneintrag/dto/create-wareneintrag.dto.ts",
+     "backend/src/wareneintrag/wareneintrag.service.ts",
+     "backend/src/main.ts"
+    ],
+    "invariant": "Request body cannot change ownership (erfasstVonId), standortId snapshot, or foto*Url storage keys of an entry.",
+    "method": "source",
+    "result": "DTOs only accept avvCodeId (UUID) and freitext; forbidNonWhitelisted rejects extra fields. update() writes only avvCodeId, freitext and server-generated photo keys (service.ts:163-164); create() sets erfasstVonId from the JWT and standortId from the DB Nutzer. erfasstVonId is never updated anywhere, so the non-atomic check-then-update in pruefeBesitz has no exploitable TOCTOU (ownership is immutable).",
+    "artifact": null
+   },
+   {
+    "agent_id": "h2-access",
+    "reviewed_paths": [
+     "backend/src/object-storage/object-storage.service.ts",
+     "backend/src/wareneintrag/wareneintrag.service.ts"
+    ],
+    "invariant": "Photo object deletion/replacement can only target the keys referenced by the caller's own entry, and keys cannot be supplied or shared across entries.",
+    "method": "source",
+    "result": "Keys are server-generated `wareneintraege/<randomUUID>` (object-storage.service.ts:42); deleteFoto is invoked only with keys read from the owner-checked row (service.ts:170-172, 176-181). No client-supplied key reaches DeleteObjectCommand. No bulk/batch update or delete endpoint exists. MinIO bucket/ingress policy is owned by a peer unit.",
+    "artifact": null
+   }
+  ],
+  "result_fingerprints": [],
+  "unresolved": [],
+  "hardening_notes": []
+ },
+ {
+  "coverage_id": "backend%2Fsrc%2Fwareneintrag%2Fwareneintrag.controller.ts%23POST%7CPATCH%20multipart%20photos::backend%2Fsrc%2Fobject-storage%2Fobject-storage.service.ts%23ObjectStorageService::backend%2Fsrc%2Fobject-storage::ATTACK-CLASSES.md%23Resource%20and%20file%20handling",
+  "canonical_refs": {
+   "surface": "backend/src/wareneintrag/wareneintrag.controller.ts#POST|PATCH multipart photos",
+   "boundary": "backend/src/object-storage/object-storage.service.ts#ObjectStorageService",
+   "subsystem": "backend/src/object-storage",
+   "attack_class": "ATTACK-CLASSES.md#Resource and file handling"
+  },
+  "surface": "Photo upload",
+  "boundary": "upload type validation, object keys, presigned URLs",
+  "subsystem": "backend/src/object-storage",
+  "attack_class": "Resource and file handling",
+  "starting_paths": [
+   "backend/src/wareneintrag",
+   "backend/src/object-storage",
+   "backend/src/security-headers.ts"
+  ],
+  "ordinary_attack_class_block": "ATTACK-CLASSES.md#Resource and file handling",
+  "selected_companion_blocks": [
+   "DATA-ISOLATION-AND-LIFECYCLE.md#Blob and signed-reference overreach",
+   "DATA-ISOLATION-AND-LIFECYCLE.md#Core discipline",
+   "DATA-ISOLATION-AND-LIFECYCLE.md#Stale authorization and derived copy use",
+   "DATA-ISOLATION-AND-LIFECYCLE.md#Universal moves",
+   "DATA-ISOLATION-AND-LIFECYCLE.md#Validation rules"
+  ],
+  "excluded_blocks": [
+   {
+    "block": "MEMORY-SAFETY-AND-BINARY.md#Core discipline",
+    "reason": "no native code; TypeScript only"
+   },
+   {
+    "block": "AI-AND-LLM.md#Core discipline",
+    "reason": "no model/LLM integration in source"
+   },
+   {
+    "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+    "reason": "no RPC, queue, broker or webhook surface"
+   },
+   {
+    "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+    "reason": "PWA only; no native app or local IPC"
+   }
+  ],
+  "prior_status": "none",
+  "attempts": [],
+  "wave": 1,
+  "status": "covered",
+  "agent_id": "h3-input",
+  "reviewed_paths": [
+   "backend/src/auth/jwt-auth.guard.ts",
+   "backend/src/object-storage/object-storage.service.ts",
+   "backend/src/wareneintrag/wareneintrag.controller.ts",
+   "backend/src/wareneintrag/wareneintrag.service.ts"
+  ],
+  "local_checks": [
+   {
+    "agent_id": "h3-input",
+    "reviewed_paths": [
+     "backend/src/object-storage/object-storage.service.ts",
+     "backend/src/wareneintrag/wareneintrag.service.ts"
+    ],
+    "invariant": "Object keys cannot be chosen or traversed by the client",
+    "method": "source",
+    "result": "uploadFoto always builds the key 'wareneintraege/' + randomUUID() (object-storage.service.ts:42). The client original filename and field names are never used. update/remove read keys only from the DB row after the pruefeBesitz ownership check (service.ts:151,175,186-192). No client-supplied key reaches PutObject, DeleteObject or GetObject.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h3-input",
+    "reviewed_paths": [
+     "backend/src/wareneintrag/wareneintrag.controller.ts",
+     "backend/src/wareneintrag/wareneintrag.service.ts"
+    ],
+    "invariant": "Only real JPEG/PNG/WebP content is stored, with a content-derived Content-Type",
+    "method": "source",
+    "result": "Every present file is validated by FileTypeValidator with a strict jpeg|png|webp regex and fallbackToMimetype:false (controller.ts:34,54-64,70-78), plus a 10 MB MaxFileSizeValidator. The stored ContentType comes from fileTypeFromBuffer (service.ts:19-27). The fallback to the declared type can only be reached for files that the magic-byte validator already accepted, so SVG/HTML content types cannot be stored for browser rendering on FILES_DOMAIN.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h3-input",
+    "reviewed_paths": [
+     "backend/src/object-storage/object-storage.service.ts",
+     "backend/src/wareneintrag/wareneintrag.service.ts"
+    ],
+    "invariant": "Presigned references are bound to operation, exact key and short expiry, and do not outlive deletion",
+    "method": "source",
+    "result": "getSignedUrl signs a GetObjectCommand for one exact bucket/key with expiresIn 900 s (object-storage.service.ts:10,60-63). URLs are issued only to authenticated Nutzer, who may read all entries by design. After deleteFoto the object no longer exists, so earlier presigned GETs fail. The URL cannot be used to put, delete or list. Bucket and MinIO policy exposure through Caddy is owned by the peer deployment unit.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h3-input",
+    "reviewed_paths": [
+     "backend/src/wareneintrag/wareneintrag.controller.ts",
+     "backend/src/auth/jwt-auth.guard.ts"
+    ],
+    "invariant": "Upload processing (multer buffering) happens only after authentication and CSRF",
+    "method": "source",
+    "result": "The controller has @UseGuards(JwtAuthGuard) (controller.ts:82). Nest runs guards (the global ThrottlerGuard, then the JWT and CSRF check in jwt-auth.guard.ts:8-23) before the FileFieldsInterceptor, so an anonymous client cannot make the server buffer multipart content.",
+    "artifact": null
+   }
+  ],
+  "result_fingerprints": [],
+  "unresolved": [],
+  "hardening_notes": []
+ },
+ {
+  "coverage_id": "backend%2Fsrc%2Fwareneintrag%2Fwareneintrag.controller.ts%23multipart%20and%20query%20inputs::backend%2Fsrc%2Fwareneintrag%2Fwareneintrag.controller.ts%23multer%20limits%20and%20pagination::backend%2Fsrc%2Fwareneintrag::RESOURCE-EXHAUSTION-AND-AVAILABILITY.md%23Unbounded%20buffering%20and%20cardinality",
+  "canonical_refs": {
+   "surface": "backend/src/wareneintrag/wareneintrag.controller.ts#multipart and query inputs",
+   "boundary": "backend/src/wareneintrag/wareneintrag.controller.ts#multer limits and pagination",
+   "subsystem": "backend/src/wareneintrag",
+   "attack_class": "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md#Unbounded buffering and cardinality"
+  },
+  "surface": "Request size and query cost",
+  "boundary": "bounded memory and DB work per request",
+  "subsystem": "backend/src/wareneintrag",
+  "attack_class": "Unbounded buffering and cardinality",
+  "starting_paths": [
+   "backend/src/wareneintrag",
+   "backend/src/avv",
+   "backend/src/nutzer/dto",
+   "backend/src/auth/dto",
+   "backend/src/main.ts"
+  ],
+  "ordinary_attack_class_block": null,
+  "selected_companion_blocks": [
+   "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md#Core discipline",
+   "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md#Database and downstream query amplification",
+   "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md#Reachable fatal error or deadlock",
+   "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md#Unbounded buffering and cardinality",
+   "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md#Universal moves",
+   "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md#Validation rules"
+  ],
+  "excluded_blocks": [
+   {
+    "block": "MEMORY-SAFETY-AND-BINARY.md#Core discipline",
+    "reason": "no native code; TypeScript only"
+   },
+   {
+    "block": "AI-AND-LLM.md#Core discipline",
+    "reason": "no model/LLM integration in source"
+   },
+   {
+    "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+    "reason": "no RPC, queue, broker or webhook surface"
+   },
+   {
+    "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+    "reason": "PWA only; no native app or local IPC"
+   }
+  ],
+  "prior_status": "none",
+  "attempts": [],
+  "wave": 1,
+  "status": "candidate",
+  "agent_id": "h3-input",
+  "reviewed_paths": [
+   "Caddyfile",
+   "backend/src/app.module.ts",
+   "backend/src/avv/avv.controller.ts",
+   "backend/src/wareneintrag/dto/create-wareneintrag.dto.ts",
+   "backend/src/wareneintrag/dto/update-wareneintrag.dto.ts",
+   "backend/src/wareneintrag/wareneintrag.controller.ts",
+   "backend/src/wareneintrag/wareneintrag.service.ts",
+   "docker-compose.prod.yml"
+  ],
+  "local_checks": [
+   {
+    "agent_id": "h3-input",
+    "reviewed_paths": [
+     "backend/src/wareneintrag/wareneintrag.controller.ts",
+     "Caddyfile",
+     "docker-compose.prod.yml"
+    ],
+    "invariant": "Multipart parsing has aggregate bounds on non-file fields (count, size, parts), not only a per-file size",
+    "method": "source",
+    "result": "FOTO_UPLOAD_OPTIONS only sets limits.fileSize (controller.ts:38). No fields, fieldSize, parts or files limit is set. File parts are bounded (3 named fields with maxCount 1; an unexpected file field aborts). Text fields fall back to busboy defaults (fields/parts Infinity, fieldSize 1 MiB) and are all kept in req.body before ValidationPipe's forbidNonWhitelisted runs. Caddyfile reverse_proxy sets no request_body max_size, and the prod compose sets no memory limit on app. Candidate h3-input:wareneintrag-multipart-unbounded-fields.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h3-input",
+    "reviewed_paths": [
+     "backend/src/wareneintrag/dto/create-wareneintrag.dto.ts",
+     "backend/src/wareneintrag/dto/update-wareneintrag.dto.ts",
+     "backend/src/wareneintrag/wareneintrag.service.ts",
+     "backend/src/wareneintrag/wareneintrag.controller.ts"
+    ],
+    "invariant": "Persisted per-entry free text has a maximum length so shared list responses stay bounded",
+    "method": "source",
+    "result": "The freitext DTOs have only @IsString @MinLength(1) and no @MaxLength (dto lines 7-9). Through multipart the value can reach the busboy 1 MiB fieldSize default. The column is TEXT, and the generated tsvector stays small for repetitive text. Every GET list (default 20, max 100 per page, controller.ts:28-29,94-95) returns the full freitext of the newest entries to all Nutzer. Candidate h3-input:wareneintrag-freitext-unbounded-length.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h3-input",
+    "reviewed_paths": [
+     "backend/src/wareneintrag/wareneintrag.controller.ts",
+     "backend/src/wareneintrag/wareneintrag.service.ts"
+    ],
+    "invariant": "Pagination parameters are bounded integers",
+    "method": "source",
+    "result": "parseGanzeZahl requires an integer, proSeite in 1..100 and seite in 0..MAX_SAFE_INTEGER (controller.ts:94-112). LIMIT/take is bounded at 100. A very large seite gives a very large OFFSET, which at worst makes a table-bounded scan or a 500 when seite*proSeite leaves the safe integer range. This is not amplification beyond the table size.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h3-input",
+    "reviewed_paths": [
+     "backend/src/wareneintrag/wareneintrag.service.ts",
+     "backend/src/avv/avv.controller.ts",
+     "backend/src/app.module.ts"
+    ],
+    "invariant": "Search input size and resulting DB work are bounded",
+    "method": "source",
+    "result": "No explicit length cap on suche. It is bounded by Node's 16 KiB header limit to about 8k prefix terms against a GIN index, and requests are throttled at 60/min per tracker (app.module.ts:31). The AVV search is ILIKE over 834 rows with take 50. I found no superlinear or persistent shared effect, so I recorded this as hardening.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h3-input",
+    "reviewed_paths": [
+     "backend/src/wareneintrag/wareneintrag.service.ts",
+     "backend/src/wareneintrag/wareneintrag.controller.ts"
+    ],
+    "invariant": "Untrusted query shapes do not reach a process-fatal error",
+    "method": "source",
+    "result": "A repeated ?suche=a&suche=b gives an array, and filter.suche.match throws a TypeError inside an async handler (service.ts:95). Array avvCodeId/standortId values cause Prisma or Postgres errors. All of these are caught by Nest's exception layer and return 500. The process does not exit.",
+    "artifact": null
+   }
+  ],
+  "result_fingerprints": [
+   "h3-input:wareneintrag-multipart-unbounded-fields",
+   "h3-input:wareneintrag-freitext-unbounded-length"
+  ],
+  "unresolved": [],
+  "hardening_notes": [],
+  "candidate_decisions": {
+   "h3-input:wareneintrag-freitext-unbounded-length": {
+    "phase3_verifier": "v5",
+    "decision": "needs_validation"
+   },
+   "h3-input:wareneintrag-multipart-unbounded-fields": {
+    "phase3_verifier": "v6",
+    "decision": "needs_validation"
+   }
+  }
+ },
+ {
+  "coverage_id": "frontend%2Fsrc%2Fapp%23Angular%20SPA::backend%2Fsrc%2Fsecurity-headers.ts%23CSP%20and%20Angular%20sanitization::frontend%2Fsrc::CLIENT-SIDE.md%23DOM-based%20XSS",
+  "canonical_refs": {
+   "surface": "frontend/src/app#Angular SPA",
+   "boundary": "backend/src/security-headers.ts#CSP and Angular sanitization",
+   "subsystem": "frontend/src",
+   "attack_class": "CLIENT-SIDE.md#DOM-based XSS"
+  },
+  "surface": "Angular SPA and service worker",
+  "boundary": "DOM rendering, URL token handling, SW cache",
+  "subsystem": "frontend/src",
+  "attack_class": "DOM-based XSS",
+  "starting_paths": [
+   "frontend/src",
+   "frontend/ngsw-config.json",
+   "backend/src/security-headers.ts"
+  ],
+  "ordinary_attack_class_block": null,
+  "selected_companion_blocks": [
+   "CLIENT-SIDE.md#Clickjacking",
+   "CLIENT-SIDE.md#Client-side navigation confusion",
+   "CLIENT-SIDE.md#Core discipline",
+   "CLIENT-SIDE.md#DOM-based XSS",
+   "CLIENT-SIDE.md#Service-worker cache and identity confusion",
+   "CLIENT-SIDE.md#Universal moves",
+   "CLIENT-SIDE.md#Validation rules"
+  ],
+  "excluded_blocks": [
+   {
+    "block": "MEMORY-SAFETY-AND-BINARY.md#Core discipline",
+    "reason": "no native code; TypeScript only"
+   },
+   {
+    "block": "AI-AND-LLM.md#Core discipline",
+    "reason": "no model/LLM integration in source"
+   },
+   {
+    "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+    "reason": "no RPC, queue, broker or webhook surface"
+   },
+   {
+    "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+    "reason": "PWA only; no native app or local IPC"
+   }
+  ],
+  "prior_status": "none",
+  "attempts": [],
+  "wave": 1,
+  "status": "covered",
+  "agent_id": "h4-client",
+  "reviewed_paths": [
+   "backend/src/app.module.ts",
+   "backend/src/main.ts",
+   "backend/src/security-headers.ts",
+   "frontend/ngsw-config.json",
+   "frontend/public/manifest.webmanifest",
+   "frontend/src/app/app.config.ts",
+   "frontend/src/app/app.routes.ts",
+   "frontend/src/app/core/auth.guard.ts",
+   "frontend/src/app/core/auth.service.ts",
+   "frontend/src/app/core/confirm-dialog/confirm-dialog.html",
+   "frontend/src/app/core/csrf.interceptor.ts",
+   "frontend/src/app/core/eigene-api.ts",
+   "frontend/src/app/core/theme.service.ts",
+   "frontend/src/app/core/unauthorized.interceptor.ts",
+   "frontend/src/app/features/login/login.ts",
+   "frontend/src/app/features/nutzer-anlegen/nutzer-anlegen.html",
+   "frontend/src/app/features/passwort-setzen/passwort-setzen.ts",
+   "frontend/src/app/features/wareneintrag-erfassen/wareneintrag-erfassen.html",
+   "frontend/src/app/features/wareneintrag-liste/wareneintrag-bearbeiten-dialog/wareneintrag-bearbeiten-dialog.html",
+   "frontend/src/app/features/wareneintrag-liste/wareneintrag-liste.html",
+   "frontend/src/index.html"
+  ],
+  "local_checks": [
+   {
+    "agent_id": "h4-client",
+    "reviewed_paths": [
+     "frontend/src/app/features/wareneintrag-liste/wareneintrag-liste.html",
+     "frontend/src/app/features/wareneintrag-liste/wareneintrag-bearbeiten-dialog/wareneintrag-bearbeiten-dialog.html",
+     "frontend/src/app/features/wareneintrag-erfassen/wareneintrag-erfassen.html",
+     "frontend/src/app/features/nutzer-anlegen/nutzer-anlegen.html",
+     "frontend/src/app/core/confirm-dialog/confirm-dialog.html",
+     "frontend/src/index.html"
+    ],
+    "invariant": "Server- or other-user-controlled data (freitext, Nutzer names, Standort names, AVV bezeichnung, email, error messages, presigned photo URLs) never reaches an HTML/script/URL execution sink without Angular escaping or sanitization.",
+    "method": "source",
+    "result": "Repo-wide grep over frontend/src finds no innerHTML/outerHTML, document.write, bypassSecurityTrust*, DomSanitizer, eval/new Function, [href] or [attr.href] bindings, window.open, postMessage listeners. All untrusted text is rendered via {{ }} interpolation or [value]/[title]/[alt] property bindings (escaped). Photo URLs bind to <img [src]> (URL context sanitized by Angular; img src is not script-executing). The raw setup link is bound only to input [value] and cdkCopyToClipboard, not to an anchor. No DOM-XSS source-to-sink path exists.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h4-client",
+    "reviewed_paths": [
+     "frontend/src/app/features/passwort-setzen/passwort-setzen.ts",
+     "frontend/src/app/features/login/login.ts",
+     "frontend/src/app/core/unauthorized.interceptor.ts",
+     "frontend/src/app/core/auth.guard.ts",
+     "frontend/src/app/app.routes.ts"
+    ],
+    "invariant": "No URL/query-controlled value drives navigation or redirect to an attacker-chosen destination (open redirect, javascript:/data: navigation).",
+    "method": "source",
+    "result": "All navigateByUrl/createUrlTree targets are hard-coded literals ('/', '/login', '/login?passwortGesetzt=1', '/wareneintraege'). No returnUrl/redirect parameter is read. passwort-setzen reads ?token only into a private field sent as JSON body to the same-origin API, then strips it from the URL via replaceUrl; login only checks presence of passwortGesetzt to show a fixed snackbar string. No navigation confusion.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h4-client",
+    "reviewed_paths": [
+     "frontend/ngsw-config.json",
+     "frontend/src/app/app.config.ts",
+     "frontend/src/app/core/auth.service.ts",
+     "frontend/src/app/core/theme.service.ts",
+     "frontend/public/manifest.webmanifest"
+    ],
+    "invariant": "Service worker and browser storage do not persist personalized/authenticated responses that could be served to a later account or after logout.",
+    "method": "source",
+    "result": "ngsw-config.json defines only assetGroups (index.html, *.js, *.css, favicon, manifest, and same-origin image/font extensions); there are no dataGroups, so /api/* responses are not cached by the SW. API paths do not end in the cached image/font extensions, and photos are served from FILES_DOMAIN (a different origin, outside SW asset matching). Auth state is held only in in-memory signals derived from /api/v1/auth/me with the token in an HttpOnly cookie; the only localStorage key is 'farbmodus' with values whitelisted to 'hell'|'dunkel'. No cross-account or post-logout cache path.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h4-client",
+    "reviewed_paths": [
+     "backend/src/security-headers.ts",
+     "backend/src/main.ts",
+     "backend/src/app.module.ts"
+    ],
+    "invariant": "State-changing SPA pages cannot be framed cross-origin and CSP limits script execution to same-origin bundles.",
+    "method": "source",
+    "result": "helmet is applied globally via app.use in main.ts before listen (ServeStaticModule-served SPA included by source ordering) with CSP default-src 'self', script-src 'self' (no unsafe-inline/eval), object-src 'none', base-uri 'self', frame-ancestors 'self'; helmet defaults also emit X-Frame-Options SAMEORIGIN; Referrer-Policy no-referrer protects the setup/reset token during the brief window before URL stripping. Cross-origin clickjacking of state-changing actions is prevented by source-visible headers (deployed header passthrough via Caddy reverse_proxy is default-preserving).",
+    "artifact": null
+   },
+   {
+    "agent_id": "h4-client",
+    "reviewed_paths": [
+     "frontend/src/app/core/csrf.interceptor.ts",
+     "frontend/src/app/core/eigene-api.ts",
+     "frontend/src/app/core/unauthorized.interceptor.ts"
+    ],
+    "invariant": "Client code does not leak the CSRF token or session handling to foreign origins.",
+    "method": "source",
+    "result": "istEigeneApi requires a '/api/' relative prefix or an absolute URL whose origin equals window.location.origin with /api/ pathname; the X-CSRF-Token header is attached only then. Note that '/api/...' prefix check also accepts only path-relative URLs (a protocol-relative '//host/api' does not start with '/api/'). No leak path.",
+    "artifact": null
+   }
+  ],
+  "result_fingerprints": [],
+  "unresolved": [],
+  "hardening_notes": [
+   "CSP style-src includes 'unsafe-inline' (backend/src/security-headers.ts); no script injection sink exists, so this only widens CSS-injection impact if a future HTML sink is introduced.",
+   "frame-ancestors 'self' permits same-origin framing; 'none' would be stricter since the SPA does not frame itself.",
+   "No Cache-Control: no-store is set on authenticated /api/v1 JSON responses (no match for Cache-Control in backend/src); browser HTTP cache could retain entry lists after logout on a shared device. Not a SW issue; consider no-store on API responses.",
+   "The password-setup/reset token is present in the initial URL (history entry replaced after component construction); Referrer-Policy no-referrer and replaceUrl mitigate, but the token is also visible to the raw setup link shown in nutzer-anlegen (by design)."
+  ]
+ },
+ {
+  "coverage_id": "repo%23all::repo%23basic%20exposures::repo::ATTACK-CLASSES.md%23Obvious%20things",
+  "canonical_refs": {
+   "surface": "repo#all",
+   "boundary": "repo#basic exposures",
+   "subsystem": "repo",
+   "attack_class": "ATTACK-CLASSES.md#Obvious things"
+  },
+  "surface": "Whole repository",
+  "boundary": "secrets, debug, cookies, CORS, error leakage",
+  "subsystem": "repo",
+  "attack_class": "Obvious things",
+  "starting_paths": [
+   "backend",
+   "frontend",
+   ".gitignore",
+   ".angular",
+   "Caddyfile",
+   "Dockerfile",
+   "docker-compose.yml",
+   "docker-compose.prod.yml"
+  ],
+  "ordinary_attack_class_block": "ATTACK-CLASSES.md#Obvious things",
+  "selected_companion_blocks": [],
+  "excluded_blocks": [
+   {
+    "block": "MEMORY-SAFETY-AND-BINARY.md#Core discipline",
+    "reason": "no native code; TypeScript only"
+   },
+   {
+    "block": "AI-AND-LLM.md#Core discipline",
+    "reason": "no model/LLM integration in source"
+   },
+   {
+    "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+    "reason": "no RPC, queue, broker or webhook surface"
+   },
+   {
+    "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+    "reason": "PWA only; no native app or local IPC"
+   }
+  ],
+  "prior_status": "none",
+  "attempts": [],
+  "wave": 1,
+  "status": "covered",
+  "agent_id": "h6-wild",
+  "reviewed_paths": [
+   ".angular/cache/22.1.8/frontend/angular-compiler.db",
+   ".dockerignore",
+   ".env.example",
+   ".env.prod.example",
+   ".gitignore",
+   "Caddyfile",
+   "Dockerfile",
+   "backend/.env.example",
+   "backend/.gitignore",
+   "backend/SECURITY-ADVISORIES.md",
+   "backend/prisma/seed-initial-nutzer-guard.ts",
+   "backend/prisma/seed-initial-nutzer.ts",
+   "backend/src/app.module.ts",
+   "backend/src/auth/auth-cookies.ts",
+   "backend/src/auth/auth.controller.ts",
+   "backend/src/config/env.ts",
+   "backend/src/health/health.controller.ts",
+   "backend/src/health/health.service.ts",
+   "backend/src/mailer/mailer.ts",
+   "backend/src/main.ts",
+   "docker-compose.prod.yml",
+   "docker-compose.yml",
+   "frontend/.gitignore",
+   "frontend/src/app/core/eigene-api.ts",
+   "frontend/src/app/core/unauthorized.interceptor.ts",
+   "frontend/src/app/features/passwort-setzen/passwort-setzen.ts"
+  ],
+  "local_checks": [
+   {
+    "agent_id": "h6-wild",
+    "reviewed_paths": [
+     ".gitignore",
+     "backend/.gitignore",
+     "frontend/.gitignore",
+     ".dockerignore",
+     ".env.example",
+     ".env.prod.example",
+     "backend/.env.example",
+     ".angular/cache/22.1.8/frontend/angular-compiler.db"
+    ],
+    "invariant": "No real secrets, keys, .env or credential files are tracked in the repo or git history; ignore files cover .env and build output",
+    "method": "source",
+    "result": "git grep for private keys/API keys/Bearer/AKIA/ghp_ found nothing. Only *.example env files are tracked, and they hold placeholders. The dev compose defaults are local-only. Deleted backend/src/dump.rdb (commit 251d5c9) holds only throttler hit counters under hashed keys, no secrets. The tracked .angular compiler cache has no secrets. .env is ignored at root and in backend.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h6-wild",
+    "reviewed_paths": [
+     "backend/src/main.ts",
+     "backend/src/app.module.ts",
+     "backend/src/config/env.ts",
+     "backend/src/health/health.controller.ts",
+     "backend/src/health/health.service.ts"
+    ],
+    "invariant": "No debug, admin, env or config endpoints are exposed; no CORS wildcard; production errors do not leak stack traces",
+    "method": "source",
+    "result": "enableCors is never called (same-origin SPA). There is no debug, admin or metrics route. Public GET /api/v1/health returns only {status:'ok'}; /health/details requires JwtAuthGuard and returns only ok/error flags. There is no custom exception filter, so Nest's default returns a generic 500 body for unknown errors. There is no eval, Function or child_process in the app source.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h6-wild",
+    "reviewed_paths": [
+     "backend/src/auth/auth.controller.ts",
+     "backend/src/auth/auth-cookies.ts"
+    ],
+    "invariant": "The session cookie is HttpOnly, SameSite=Strict and Secure in production; the CSRF cookie is readable by JS on purpose",
+    "method": "source",
+    "result": "accessToken is httpOnly, sameSite strict, secure when NODE_ENV=production and path /. csrfToken is deliberately non-HttpOnly for the double-submit pattern. The Dockerfile and prod compose set NODE_ENV=production. Dev compose sets development on HTTP localhost.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h6-wild",
+    "reviewed_paths": [
+     "backend/prisma/seed-initial-nutzer.ts",
+     "backend/prisma/seed-initial-nutzer-guard.ts",
+     "docker-compose.prod.yml",
+     "docker-compose.yml"
+    ],
+    "invariant": "Seed credentials cannot silently work in production",
+    "method": "source",
+    "result": "The prod compose passes INITIAL_NUTZER_PASSWORT and JWT_SECRET from the server .env with no defaults. required() throws on empty values. The known defaults 'change-me-now', 'change-me', 'local-dev-secret-change-me' and 'change-me-to-a-long-random-string' are rejected when NODE_ENV=production. The seed runs only when no Nutzer exists.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h6-wild",
+    "reviewed_paths": [
+     "frontend/src/app/core/unauthorized.interceptor.ts",
+     "frontend/src/app/core/eigene-api.ts",
+     "frontend/src/app/features/passwort-setzen/passwort-setzen.ts",
+     "Caddyfile",
+     "Dockerfile",
+     "backend/SECURITY-ADVISORIES.md",
+     "backend/src/mailer/mailer.ts"
+    ],
+    "invariant": "No open redirects; TLS is enforced at ingress; no security TODOs or token logging; dependency advisories are tracked",
+    "method": "source",
+    "result": "All navigateByUrl targets are constant strings, so there are no redirect/next/url parameters. Caddy site blocks use automatic HTTPS. ConsoleMailer logs only the recipient, never the raw token. There are no security TODO/FIXME/HACK comments. The accepted Prisma transitive advisories are documented. Lockfiles exist, but the Dockerfile uses npm install rather than npm ci (supply chain is peer-owned).",
+    "artifact": null
+   }
+  ],
+  "result_fingerprints": [],
+  "unresolved": [],
+  "hardening_notes": [
+   "Logout only clears cookies; the HS256 JWT stays valid until expiry (8h default) with no server-side revocation, so a copied token survives logout.",
+   "WareneintragService.ersetzeFoto (wareneintrag.service.ts:308-313) deletes the old object before the DB update commits, so a failed update (e.g. an invalid avvCodeId FK) leaves the owner's entry referencing a deleted key. Delete old objects only after the DB update succeeds.",
+   "The dev docker-compose.yml publishes MinIO 9000 and app 3000 on all interfaces with hardcoded MinIO root credentials (research/research-secret) and a default JWT secret. These are safe only on a developer workstation; binding to 127.0.0.1 would prevent accidental LAN exposure.",
+   "passwortVergessen performs an extra DB write for existing accounts only, which is a small timing difference relative to the comment's claim of non-disclosure (peer recovery unit owns enumeration).",
+   "Email lookup is case-sensitive (findUnique on the raw string), so 'Max@x' and 'max@x' can exist as separate Nutzer accounts."
+  ]
+ },
+ {
+  "coverage_id": "repo%23backend%20business%20workflows::backend%2Fsrc%23workflow%20invariants::backend%2Fsrc::ATTACK-CLASSES.md%23Business%20logic",
+  "canonical_refs": {
+   "surface": "repo#backend business workflows",
+   "boundary": "backend/src#workflow invariants",
+   "subsystem": "backend/src",
+   "attack_class": "ATTACK-CLASSES.md#Business logic"
+  },
+  "surface": "Business workflows",
+  "boundary": "state machine, standort attribution, token lifecycle",
+  "subsystem": "backend/src",
+  "attack_class": "Business logic",
+  "starting_paths": [
+   "backend/src",
+   "backend/prisma",
+   "CONTEXT.md"
+  ],
+  "ordinary_attack_class_block": "ATTACK-CLASSES.md#Business logic",
+  "selected_companion_blocks": [],
+  "excluded_blocks": [
+   {
+    "block": "MEMORY-SAFETY-AND-BINARY.md#Core discipline",
+    "reason": "no native code; TypeScript only"
+   },
+   {
+    "block": "AI-AND-LLM.md#Core discipline",
+    "reason": "no model/LLM integration in source"
+   },
+   {
+    "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+    "reason": "no RPC, queue, broker or webhook surface"
+   },
+   {
+    "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+    "reason": "PWA only; no native app or local IPC"
+   }
+  ],
+  "prior_status": "none",
+  "attempts": [],
+  "wave": 1,
+  "status": "candidate",
+  "agent_id": "h6-wild",
+  "reviewed_paths": [
+   "CONTEXT.md",
+   "backend/prisma/schema.prisma",
+   "backend/src/auth/auth.controller.ts",
+   "backend/src/auth/auth.service.ts",
+   "backend/src/auth/passwort-setzen-token.ts",
+   "backend/src/mailer/mailer.ts",
+   "backend/src/nutzer/nutzer.controller.ts",
+   "backend/src/nutzer/nutzer.service.ts",
+   "backend/src/wareneintrag/wareneintrag.service.ts"
+  ],
+  "local_checks": [
+   {
+    "agent_id": "h6-wild",
+    "reviewed_paths": [
+     "backend/src/auth/auth.service.ts",
+     "backend/src/auth/auth.controller.ts",
+     "backend/src/auth/passwort-setzen-token.ts",
+     "backend/src/mailer/mailer.ts",
+     "backend/src/nutzer/nutzer.service.ts",
+     "backend/src/nutzer/nutzer.controller.ts",
+     "backend/prisma/schema.prisma",
+     "CONTEXT.md"
+    ],
+    "invariant": "An anonymous caller cannot invalidate or replace the 7-day Initial-Zugang token that a Nutzer issued for a new account, and there is a path to recover or reissue it",
+    "method": "source",
+    "result": "The invariant is violated. Anonymous POST /auth/passwort-vergessen overwrites the single shared passwortSetzenToken/Ablauf columns of any existing Nutzer, including a mussPasswortSetzen=true account. The replacement token goes only to ConsoleMailer, which does not deliver it. No endpoint reissues the setup link, and email is @unique, so the account cannot be recreated either. Recorded as candidate backend/src/auth/auth.service.ts:passwortVergessen:overwrites-initial-zugang-token.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h6-wild",
+    "reviewed_paths": [
+     "backend/src/auth/auth.service.ts"
+    ],
+    "invariant": "Password-set tokens are single use and time bound",
+    "method": "source",
+    "result": "The token is 32 random bytes and stored as a SHA-256 hash with @unique. Expiry is checked with a strict < comparison against now. Success nulls the token and sets passwortGeaendertAm. The find-then-update is not atomic, so two concurrent submissions with the same valid token could both succeed. Both come from the token holder, so there is no cross-principal gain (race detail belongs to the peer recovery unit).",
+    "artifact": null
+   },
+   {
+    "agent_id": "h6-wild",
+    "reviewed_paths": [
+     "backend/src/wareneintrag/wareneintrag.service.ts",
+     "backend/src/nutzer/nutzer.service.ts"
+    ],
+    "invariant": "Standort attribution and the edit state transitions of an entry cannot be forged by another principal",
+    "method": "source",
+    "result": "create() takes standortId from the DB copy of the caller's current Nutzer.standortId, not from client input. A Nutzer can self-assign any Standort via PATCH /nutzer/me, which CONTEXT.md and the architecture document as intended. update() and remove() check ownership before acting. ersetzeFoto deletes the old object before the DB update. If the DB update fails (for example on an invalid avvCodeId FK), the owner's own entry points at a deleted key. That affects only the same principal (hardening).",
+    "artifact": null
+   }
+  ],
+  "result_fingerprints": [
+   "backend/src/auth/auth.service.ts:passwortVergessen:overwrites-initial-access-token"
+  ],
+  "unresolved": [],
+  "hardening_notes": [],
+  "candidate_decisions": {
+   "backend/src/auth/auth.service.ts:passwortVergessen:overwrites-initial-access-token": {
+    "phase3_verifier": "v3",
+    "decision": "needs_validation"
+   }
+  }
+ },
+ {
+  "coverage_id": "repo%23backend%20business%20workflows::backend%2Fsrc%23workflow%20invariants::backend%2Fsrc::ATTACK-CLASSES.md%23Wildcard",
+  "canonical_refs": {
+   "surface": "repo#backend business workflows",
+   "boundary": "backend/src#workflow invariants",
+   "subsystem": "backend/src",
+   "attack_class": "ATTACK-CLASSES.md#Wildcard"
+  },
+  "surface": "Business workflows",
+  "boundary": "state machine, standort attribution, token lifecycle",
+  "subsystem": "backend/src",
+  "attack_class": "Wildcard",
+  "starting_paths": [
+   "backend/src",
+   "frontend/src",
+   "backend/prisma"
+  ],
+  "ordinary_attack_class_block": "ATTACK-CLASSES.md#Wildcard",
+  "selected_companion_blocks": [],
+  "excluded_blocks": [
+   {
+    "block": "MEMORY-SAFETY-AND-BINARY.md#Core discipline",
+    "reason": "no native code; TypeScript only"
+   },
+   {
+    "block": "AI-AND-LLM.md#Core discipline",
+    "reason": "no model/LLM integration in source"
+   },
+   {
+    "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+    "reason": "no RPC, queue, broker or webhook surface"
+   },
+   {
+    "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+    "reason": "PWA only; no native app or local IPC"
+   }
+  ],
+  "prior_status": "none",
+  "attempts": [],
+  "wave": 1,
+  "status": "covered",
+  "agent_id": "h6-wild",
+  "reviewed_paths": [
+   "backend/prisma/e2e-vorbereiten.ts",
+   "backend/src/auth/auth.controller.ts",
+   "backend/src/auth/csrf.ts",
+   "backend/src/auth/jwt-auth.guard.ts",
+   "backend/src/avv/avv.controller.ts",
+   "backend/src/standort/standort.controller.ts",
+   "frontend/ngsw-config.json",
+   "frontend/src/app/app.routes.ts",
+   "frontend/src/app/core/csrf.interceptor.ts"
+  ],
+  "local_checks": [
+   {
+    "agent_id": "h6-wild",
+    "reviewed_paths": [
+     "backend/src/auth/auth.controller.ts",
+     "backend/src/auth/jwt-auth.guard.ts",
+     "backend/src/auth/csrf.ts",
+     "backend/src/avv/avv.controller.ts",
+     "backend/src/standort/standort.controller.ts"
+    ],
+    "invariant": "No hidden or undocumented routes and no API-only parameters give more than the UI allows",
+    "method": "source",
+    "result": "The route set is auth (login, logout, me, passwort-vergessen, passwort-setzen), nutzer, wareneintraege, avv-codes, standorte and health. Every non-auth controller has class-level JwtAuthGuard. The ValidationPipe uses whitelist plus forbidNonWhitelisted. Unguarded logout only clears cookies. No hidden debug parameters or headers.",
+    "artifact": null
+   },
+   {
+    "agent_id": "h6-wild",
+    "reviewed_paths": [
+     "backend/prisma/e2e-vorbereiten.ts",
+     "frontend/ngsw-config.json",
+     "frontend/src/app/app.routes.ts",
+     "frontend/src/app/core/csrf.interceptor.ts"
+    ],
+    "invariant": "Test/E2E helpers cannot run against production data, and the service worker does not cache authenticated API data",
+    "method": "source",
+    "result": "e2e-vorbereiten.ts refuses to run unless the DB name contains 'e2e', and it is not wired into the prod migrate entrypoint (db:seed). ngsw-config caches only static assets, with no dataGroups for /api. Frontend guards are client-only, and the backend enforces auth independently.",
+    "artifact": null
+   }
+  ],
+  "result_fingerprints": [],
+  "unresolved": [],
+  "hardening_notes": []
+ }
+]

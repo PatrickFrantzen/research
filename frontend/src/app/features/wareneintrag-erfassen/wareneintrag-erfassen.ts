@@ -1,6 +1,6 @@
 import { Component, DestroyRef, ElementRef, computed, inject, signal, viewChildren } from '@angular/core';
 import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormField, form, required } from '@angular/forms/signals';
+import { FormField, form, maxLength, required } from '@angular/forms/signals';
 import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -13,7 +13,7 @@ import { debounceTime, distinctUntilChanged, firstValueFrom, Subject } from 'rxj
 import { AvvCode, AvvCodeApi } from '../../core/avv-code-api.js';
 import { pruefeFoto } from '../../core/foto-validierung.js';
 import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
-import { WareneintragApi } from '../../core/wareneintrag-api.js';
+import { FREITEXT_MAX_LAENGE, WareneintragApi } from '../../core/wareneintrag-api.js';
 import { FokusBeiAnzeige } from '../../core/fokus-bei-anzeige.js';
 
 // Die drei Ansichten sind optional – der Nutzer entscheidet selbst, wie
@@ -65,9 +65,11 @@ export class WareneintragErfassen {
     fotoDetail: null,
   });
 
+  protected readonly freitextMaxLaenge = FREITEXT_MAX_LAENGE;
   protected readonly wareneintragDaten = signal({ avvSucheAnzeige: '', freitext: '' });
   protected readonly wareneintragForm = form(this.wareneintragDaten, (pfad) => {
     required(pfad.freitext);
+    maxLength(pfad.freitext, FREITEXT_MAX_LAENGE);
   });
 
   protected ausgewaehlterAvvCode: AvvCode | null = null;
@@ -151,7 +153,11 @@ export class WareneintragErfassen {
   }
 
   protected get kannAbsenden(): boolean {
-    return this.ausgewaehlterAvvCode !== null && this.freitext.trim().length > 0;
+    return (
+      this.ausgewaehlterAvvCode !== null &&
+      this.freitext.trim().length > 0 &&
+      this.freitext.length <= FREITEXT_MAX_LAENGE
+    );
   }
 
   async submit(): Promise<void> {

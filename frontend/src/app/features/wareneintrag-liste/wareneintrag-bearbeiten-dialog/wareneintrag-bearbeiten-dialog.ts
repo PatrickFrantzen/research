@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormField, form, required } from '@angular/forms/signals';
+import { FormField, form, maxLength, required } from '@angular/forms/signals';
 import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -11,7 +11,7 @@ import { debounceTime, distinctUntilChanged, firstValueFrom, Subject } from 'rxj
 import { AvvCodeApi } from '../../../core/avv-code-api.js';
 import { pruefeFoto } from '../../../core/foto-validierung.js';
 import { extrahiereFehlermeldung } from '../../../core/http-fehler.js';
-import { Wareneintrag, WareneintragApi } from '../../../core/wareneintrag-api.js';
+import { FREITEXT_MAX_LAENGE, Wareneintrag, WareneintragApi } from '../../../core/wareneintrag-api.js';
 import { FokusBeiAnzeige } from '../../../core/fokus-bei-anzeige.js';
 
 export interface WareneintragBearbeitenDialogDaten {
@@ -82,8 +82,10 @@ export class WareneintragBearbeitenDialog {
     avvSucheAnzeige: `${this.daten.wareneintrag.avvCode.code} – ${this.daten.wareneintrag.avvCode.bezeichnung}`,
     freitext: this.daten.wareneintrag.freitext,
   });
+  protected readonly freitextMaxLaenge = FREITEXT_MAX_LAENGE;
   protected readonly bearbeitenForm = form(this.bearbeitungDaten, (pfad) => {
     required(pfad.freitext);
+    maxLength(pfad.freitext, FREITEXT_MAX_LAENGE);
   });
 
   private readonly avvSucheEingabe = new Subject<string>();

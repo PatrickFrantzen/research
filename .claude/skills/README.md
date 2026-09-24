@@ -36,3 +36,16 @@ Projekt-Chat) – bei Bedarf manuell aus dem Quell-Repo neu kopieren.
 werden (fragt u.a. Issue-Tracker-Präferenz ab, GitHub Issues/Linear/lokale
 Dateien) – das ist eine Patrick-Entscheidung und wurde hier noch nicht
 ausgeführt.
+
+## security-audit (Cloudflare)
+
+Quelle: [github.com/cloudflare/security-audit-skill](https://github.com/cloudflare/security-audit-skill)
+(`skills/security-audit`, Commit `c1c8a8c`), Lizenz: MIT (`security-audit/LICENSE`).
+
+Mehrphasiger Security-Audit-Workflow (Recon → Hunting → Validierung →
+`findings.json` → unabhängige Verifikation → Report). Aufruf z.B. mit
+„security audit this codebase“. Output landet standardmäßig **außerhalb**
+des Repos (`~/security-audit-skill/<repo>/run-<N>`); Ziel-Code wird nur in
+einer OS-Sandbox ausgeführt, sonst bleibt es bei statischer Analyse.
+
+**Aktualisierung**: manuell aus dem Quell-Repo neu kopieren.

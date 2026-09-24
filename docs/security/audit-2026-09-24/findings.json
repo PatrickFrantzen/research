@@ -1,0 +1,500 @@
+[
+ {
+  "verdict": "needs_validation",
+  "fingerprint": "backend/src/app.module.ts:ThrottlerGuard:shared-proxy-peer-tracker",
+  "title": "Auth rate limit is keyed on the reverse-proxy peer address, so one anonymous client can block login, passwort-vergessen and passwort-setzen for every user",
+  "description": "The global ThrottlerGuard (app.module.ts:47) has no custom getTracker, so it uses the @nestjs/throttler default tracker, which is derived from the client IP (req.ips/req.ip). main.ts never sets Express 'trust proxy'. As a result req.ip is the TCP peer and X-Forwarded-For is ignored, which also means it cannot be spoofed. In the production topology (docker-compose.prod.yml) only Caddy publishes ports 80/443, and the Caddyfile reverse-proxies {$DOMAIN} to app:3000. The TCP peer for every public request should therefore be the Caddy container, so all users share one throttle bucket per handler. The storage is Redis, shared across instances. AUTH_THROTTLE (5 requests per 60 s) applies to POST /api/v1/auth/login, /passwort-vergessen and /passwort-setzen. An anonymous client sending about 5 requests per minute to one of these routes would get HTTP 429 returned to every other user of that route for the rest of the window. That includes first-time onboarding through the initial-access passwort-setzen link. All other handlers share one 60/min bucket per handler across the whole user base. The impact is availability only: there is no bypass of authentication and no disclosure. Code comments (auth-throttling-redis.e2e-spec.ts:56, 'schlüsselt standardmäßig nach Client-IP') show the intended design is a per-client limit. The dev compose publishes app:3000 directly and is not affected in the same way.",
+  "claimed_root_cause": "The throttler tracker falls back to the socket peer address because Express 'trust proxy' is not configured for the single known Caddy hop, and no getTracker override exists. Behind the reverse proxy, the intended per-client-IP limit collapses into one global quota per route handler.",
+  "trace": [
+   {
+    "kind": "entrypoint",
+    "file": "Caddyfile",
+    "line": 7,
+    "scope": "{$DOMAIN} site block",
+    "description": "reverse_proxy app:3000: all public app traffic (anonymous internet) reaches the backend only through Caddy."
+   },
+   {
+    "kind": "propagation",
+    "file": "backend/src/main.ts",
+    "line": 9,
+    "scope": "bootstrap",
+    "description": "The Nest/Express app is created and configured (lines 9-16) without app.set('trust proxy', ...). req.ip is therefore the TCP peer (Caddy) and X-Forwarded-For is ignored."
+   },
+   {
+    "kind": "propagation",
+    "file": "backend/src/app.module.ts",
+    "line": 47,
+    "scope": "AppModule providers",
+    "description": "Global APP_GUARD ThrottlerGuard with the default IP-based tracker (no subclass or getTracker override anywhere in the repo). Throttle state is kept in Redis storage shared across instances (line 32)."
+   },
+   {
+    "kind": "sink",
+    "file": "backend/src/auth/auth.controller.ts",
+    "line": 53,
+    "scope": "AuthController.login",
+    "description": "@Throttle(AUTH_THROTTLE) 5/60s is enforced against the tracker value, which is expected to be the same for all users, so one client exhausting it makes the guard return 429 to every login attempt in the window."
+   }
+  ],
+  "evidence": [
+   {
+    "file": "backend/src/app.module.ts",
+    "line": 31,
+    "description": "Default throttler ttl 60000 and limit 60. ThrottlerModule options set no custom tracker or key generator."
+   },
+   {
+    "file": "backend/src/auth/auth.controller.ts",
+    "line": 14,
+    "description": "AUTH_THROTTLE = { default: { limit: 5, ttl: 60_000 } }. It is applied at line 53 (login), line 76 (passwort-vergessen) and line 83 (passwort-setzen), all of which are public."
+   },
+   {
+    "file": "backend/src/main.ts",
+    "line": 9,
+    "description": "No 'trust proxy' setting. A repo-wide grep (excluding .claude and node_modules) finds no 'trust proxy', trustProxy or getTracker."
+   },
+   {
+    "file": "docker-compose.prod.yml",
+    "line": 15,
+    "description": "Only the caddy service publishes ports (80/443). The app service (lines 28-53) has no ports, so public requests reach it only via Caddy on the compose network."
+   },
+   {
+    "file": "Caddyfile",
+    "line": 7,
+    "description": "reverse_proxy app:3000 with default header handling. Caddy sets X-Forwarded-For, which the app does not trust."
+   },
+   {
+    "file": "backend/test/auth-throttling-redis.e2e-spec.ts",
+    "line": 56,
+    "description": "A comment states that the tracker is intended to key by client IP, which confirms the per-client design intent that the proxy topology defeats."
+   },
+   {
+    "file": "backend/package.json",
+    "line": 37,
+    "description": "@nestjs/throttler ^6.7.0. Its default tracker is IP-based. The exact installed version cannot be verified locally because node_modules is absent."
+   }
+  ],
+  "blockers": [
+   "No target execution is permitted in this run: node_modules is absent, installs are prohibited, and there is no OS-enforced sandbox. So no local NestJS fixture can be run to observe the tracker key and a 429 for a second client, and the @nestjs/throttler default getTracker cannot be read from the installed package.",
+   "Deployment fact that is not visible in source: the remote address Node sees for requests proxied by Caddy on the production compose network. It is expected to be the single Caddy container IP for every client."
+  ],
+  "validation_plan": {
+   "local": "This requires an isolated sandbox with no network and the dependencies installed from the lockfile. Build a Test.createTestingModule with ThrottlerModule.forRoot([{ ttl: 60_000, limit: 60 }]) and in-memory storage, an APP_GUARD ThrottlerGuard and AuthController with a stubbed AuthService, as in backend/test/auth-throttling.e2e-spec.ts, and apply setGlobalPrefix('api/v1'). (1) Using supertest, whose socket peer is always 127.0.0.1, send 5 POST /api/v1/auth/login requests with header X-Forwarded-For: 203.0.113.1. Then send 1 request with X-Forwarded-For: 198.51.100.2. If the 6th request gets 429, the forwarded header is ignored and all clients behind one peer share a bucket. (2) Repeat with app.getHttpAdapter().getInstance().set('trust proxy', 1) before init. If the 6th request with a distinct X-Forwarded-For then gets 200/401, the fix works. Also print ThrottlerGuard.prototype.getTracker.toString() from the installed package to confirm the default tracker.",
+   "deployment": "Owner check on the production VPS, non-destructive: run docker compose -f docker-compose.prod.yml exec redis redis-cli --scan and inspect the throttler keys, or temporarily log req.ip and req.headers['x-forwarded-for'] in a middleware. Then have two users on different networks each make one login attempt. If req.ip is identical for both (the Caddy container IP, e.g. 172.x.x.x) and they fall into the same throttler key, the finding is confirmed. Do not deliberately exhaust the limit on production. Fix: in main.ts, call app.set('trust proxy', 1) on the NestExpressApplication (or restrict it to the Caddy/compose subnet) so that req.ip is the client address from the X-Forwarded-For that Caddy sets."
+  }
+ },
+ {
+  "verdict": "rejected",
+  "fingerprint": "backend/src/auth/auth.controller.ts:logout:no-server-side-token-revocation",
+  "title": "Logout clears only the auth cookies and does not revoke the stateless JWT server-side (hardening gap, not an exploitable boundary crossing)",
+  "description": "POST /api/v1/auth/logout (auth.controller.ts:60-64) only sends Set-Cookie headers that clear accessToken and csrfToken (loescheAuthCookies, auth.controller.ts:43-46). Sessions are stateless HS256 JWTs signed with only sub plus iat/exp/iss/aud (auth.service.ts:27, auth.module.ts:20-28). JwtStrategy.validate (jwt.strategy.ts:47-63) rejects a token only when its Nutzer no longer exists or its iat is before passwortGeaendertAm. Logout changes neither. A token value that was copied before logout therefore stays accepted until exp (JWT_EXPIRES_IN, default '8h', env.ts:61). The frontend logout (frontend/src/app/core/auth.service.ts:49-55) clears the local signals first and sends the POST best-effort, ignoring errors. If that request fails, the HttpOnly session cookie survives until the browser session ends, and init() at the next app start (auth.service.ts:31-40) calls GET /api/v1/auth/me and restores the session. Every trace and evidence line was checked against the source and is accurate. However, the server-side replay needs an attacker who already holds a valid bearer token. That token already gives the attacker the same Nutzer access for the same remaining lifetime whether or not the victim logs out, so logout only fails to shorten an existing compromise and does not cross any new boundary. The client-side path needs the logout request to fail unnoticed, followed by a different person using the same browser session before it closes. That is a robustness gap in a best-effort UI flow, not a source-demonstrated authorization bypass.",
+  "claimed_root_cause": "Stateless JWT sessions with no per-token or per-user revocation state except Nutzer existence and iat vs passwortGeaendertAm (jwt.strategy.ts:51-59). The logout handler (auth.controller.ts:60-64) changes neither, and the frontend logout (frontend/src/app/core/auth.service.ts:49-55) is fire-and-forget with errors suppressed.",
+  "trace": [
+   {
+    "kind": "entrypoint",
+    "file": "backend/src/auth/auth.controller.ts",
+    "line": 62,
+    "scope": "AuthController.logout",
+    "description": "Unguarded POST /api/v1/auth/logout. It only calls loescheAuthCookies(res) and changes no server-side state."
+   },
+   {
+    "kind": "propagation",
+    "file": "backend/src/auth/auth.controller.ts",
+    "line": 44,
+    "scope": "loescheAuthCookies",
+    "description": "res.clearCookie for accessToken (and csrfToken at line 45) with path '/'. Only the client-side cookie is removed."
+   },
+   {
+    "kind": "propagation",
+    "file": "frontend/src/app/core/auth.service.ts",
+    "line": 54,
+    "scope": "AuthService.logout (frontend)",
+    "description": "The logout POST is fire-and-forget with .catch(() => undefined). The local signals are already cleared at lines 50-51."
+   },
+   {
+    "kind": "propagation",
+    "file": "backend/src/auth/auth.service.ts",
+    "line": 27,
+    "scope": "AuthService.login",
+    "description": "The JWT carries only sub plus the module-level iat/exp/iss/aud. There is no jti or token version."
+   },
+   {
+    "kind": "sink",
+    "file": "backend/src/auth/jwt.strategy.ts",
+    "line": 59,
+    "scope": "JwtStrategy.validate",
+    "description": "The only revocation checks are Nutzer existence (line 51) and iat < passwortGeaendertAm. A token copied before logout still passes and returns {id}."
+   }
+  ],
+  "evidence": [
+   {
+    "file": "backend/src/auth/auth.controller.ts",
+    "line": 60,
+    "description": "@Post('logout') has no guard and no service call. It only clears the cookies (lines 62-63)."
+   },
+   {
+    "file": "backend/src/auth/jwt.strategy.ts",
+    "line": 51,
+    "description": "DB lookup only checks that the Nutzer still exists."
+   },
+   {
+    "file": "backend/src/auth/jwt.strategy.ts",
+    "line": 59,
+    "description": "iat is compared only to passwortGeaendertAm, which logout never updates."
+   },
+   {
+    "file": "backend/src/auth/auth.service.ts",
+    "line": 67,
+    "description": "The documented revocation mechanism (Issue #40) is a password change via passwortSetzen, which sets passwortGeaendertAm = now. Logout is not a documented revocation point."
+   },
+   {
+    "file": "backend/prisma/schema.prisma",
+    "line": 32,
+    "description": "passwortGeaendertAm is the only per-user token-revocation field. There is no session table or token-version column."
+   },
+   {
+    "file": "backend/src/config/env.ts",
+    "line": 61,
+    "description": "JWT_EXPIRES_IN defaults to '8h'. This limits how long a token stays valid after logout."
+   },
+   {
+    "file": "backend/src/auth/auth.module.ts",
+    "line": 22,
+    "description": "expiresIn from env is the only lifetime limit on issued tokens."
+   },
+   {
+    "file": "backend/src/auth/auth.controller.ts",
+    "line": 24,
+    "description": "By design the cookie has no maxAge/expires, so it is a browser-session cookie. This limits how long a cookie survives after a failed client logout."
+   },
+   {
+    "file": "frontend/src/app/core/auth.service.ts",
+    "line": 33,
+    "description": "init() calls GET /api/v1/auth/me at app start and restores the session from any cookie that survived."
+   }
+  ],
+  "reason": "Rejected as a defense-in-depth hardening gap with no meaningful impact across a real boundary. (1) Server-side replay: the precondition is that a lower-trust party already holds the victim's valid accessToken, which is HttpOnly, SameSite=Strict, and Secure in production. Holding that token already gives the full Nutzer session until exp, whatever the victim does. Logout not revoking it does not create or widen access, it only fails to shorten a compromise that already happened. The theft vectors named in the candidate (proxy or TLS-terminating logs, a copied browser profile, a stolen device) are not source-visible and would be separate findings. The source documents password change as the intended revocation lever (auth.service.ts:66-67, jwt.strategy.ts:55-59, Issue #40), and no spec or ADR (docs/research/01-projektbeschreibung-spezifikation.md lists only 'Login / Logout'; docs/adr/0001-0005) requires logout to revoke tokens server-side. (2) Client path: this needs the best-effort logout POST to fail unnoticed and then a different person to use the same still-open browser session. The cookie is a browser-session cookie (auth.controller.ts:24-25). This is a reliability issue in the UI logout flow that depends on usage, not a source-demonstrated authorization bypass. The candidate's own deployment plan says it should be downgraded to hardening when these usage facts are absent, which confirms it has no decisive, source-grounded exploit. Recommended hardening, not a vulnerability: add a per-Nutzer sessionsGueltigAb/tokenVersion that logout updates and JwtStrategy.validate enforces, reject tokens without iat, and have the frontend retry or show a warning when the logout POST fails."
+ },
+ {
+  "verdict": "needs_validation",
+  "fingerprint": "backend/src/auth/auth.service.ts:passwortVergessen:overwrites-initial-access-token",
+  "title": "Anonymous 'Passwort vergessen' request overwrites a pending Nutzer's 7-day Initial-Zugang token with a link that is never delivered, blocking account activation",
+  "description": "When an authenticated Nutzer creates a colleague, NutzerService.createNutzer gives the account a random placeholder password (nutzer.service.ts:29) and mussPasswortSetzen=true. It stores the SHA-256 hash of a 7-day setup token in Nutzer.passwortSetzenToken/passwortSetzenTokenAblauf (nutzer.service.ts:39-41). The raw link is returned once, only to the creator (nutzer.service.ts:52). The unauthenticated POST /api/v1/auth/passwort-vergessen (auth.controller.ts:75-80, @IsEmail DTO, 5/min throttle) finds any Nutzer by email (auth.service.ts:32). It then writes a new token hash and a 1-hour expiry into the same columns without any condition (auth.service.ts:39-45). The column is shared by design (schema.prisma:37-38). The request does not check mussPasswortSetzen and does not keep a still-valid token. The new raw token goes to the Mailer, and the only bound implementation is ConsoleMailer (auth.module.ts:34). ConsoleMailer ignores the link and only logs the recipient (mailer.ts:13-16); the code comment says SMTP is not yet connected. After the overwrite, the creator's link hashes to a value no row holds, so passwortSetzen throws 'Link ist ungültig oder abgelaufen.' (auth.service.ts:51-55). The pending account cannot log in, because its password hash is from a random UUID. The source has no reissue route: NutzerController only has POST /nutzer and GET/PATCH /nutzer/me. Recreating the account fails because email is @unique (schema.prisma:23). The seed script only runs when no Nutzer exists (seed-initial-nutzer.ts:23-25). Recovery therefore needs an operator to edit the database, and the attacker can repeat the request afterwards. The attacker needs only the target's email address, which is often a predictable company address, and one request. The request also replaces pending reset tokens of established users. Those users lose nothing real, because the ConsoleMailer never delivers their reset links either. The impact is limited to account availability, specifically onboarding. It gives no credential disclosure or takeover.",
+  "claimed_root_cause": "The Initial-Zugang and 'Passwort vergessen' flows share a single passwortSetzenToken/passwortSetzenTokenAblauf slot. AuthService.passwortVergessen overwrites that slot for any existing email without checking mussPasswortSetzen or whether a still-valid Initial-Zugang token exists. The replacement token is only handed to the non-delivering ConsoleMailer, and no authenticated reissue path exists. An anonymous caller can therefore revoke a pending account's only working credential path.",
+  "trace": [
+   {
+    "kind": "entrypoint",
+    "file": "backend/src/auth/auth.controller.ts",
+    "line": 78,
+    "scope": "AuthController.passwortVergessen",
+    "description": "Public POST /api/v1/auth/passwort-vergessen (decorators at lines 75-77). No JwtAuthGuard, 5 requests/min throttle, and the body is only validated as @IsEmail (dto/passwort-vergessen.dto.ts)."
+   },
+   {
+    "kind": "propagation",
+    "file": "backend/src/auth/auth.service.ts",
+    "line": 32,
+    "scope": "AuthService.passwortVergessen",
+    "description": "prisma.nutzer.findUnique by email. Every existing Nutzer proceeds, including accounts with mussPasswortSetzen=true, which are not filtered."
+   },
+   {
+    "kind": "propagation",
+    "file": "backend/src/auth/auth.service.ts",
+    "line": 39,
+    "scope": "AuthService.passwortVergessen",
+    "description": "prisma.nutzer.update overwrites passwortSetzenToken with a new hash and sets passwortSetzenTokenAblauf to now+1h (lines 39-45). This replaces the 7-day Initial-Zugang hash written at nutzer.service.ts:40-41."
+   },
+   {
+    "kind": "sink",
+    "file": "backend/src/mailer/mailer.ts",
+    "line": 16,
+    "scope": "ConsoleMailer.sendPasswortSetzenLink",
+    "description": "The only bound Mailer discards the new raw link (the _link parameter is unused, line 13) and only logs the recipient. No usable token reaches anyone, and the creator's original link no longer matches the stored hash."
+   }
+  ],
+  "evidence": [
+   {
+    "file": "backend/prisma/schema.prisma",
+    "line": 38,
+    "description": "A single @unique passwortSetzenToken column (plus Ablauf on line 39). The comment on line 37 says it is the shared mechanism for Initial-Zugang and 'Passwort vergessen'."
+   },
+   {
+    "file": "backend/prisma/schema.prisma",
+    "line": 23,
+    "description": "email is @unique, so POST /nutzer cannot recreate the blocked account."
+   },
+   {
+    "file": "backend/src/nutzer/nutzer.service.ts",
+    "line": 41,
+    "description": "The Initial-Zugang token is stored with a 7-day expiry in the shared columns. The placeholder password is a random UUID hash (line 29), and the raw link is returned only to the creator (line 52)."
+   },
+   {
+    "file": "backend/src/auth/auth.module.ts",
+    "line": 34,
+    "description": "Mailer is bound unconditionally to ConsoleMailer. No other Mailer implementation exists in the source."
+   },
+   {
+    "file": "backend/src/mailer/mailer.ts",
+    "line": 13,
+    "description": "sendPasswortSetzenLink ignores _link. The comment at lines 7-8 says SMTP delivery is not yet connected."
+   },
+   {
+    "file": "backend/src/auth/auth.service.ts",
+    "line": 54,
+    "description": "passwortSetzen looks up by the hash of the presented token (lines 51-53). The overwritten original token finds no row, so line 55 throws BadRequest 'Link ist ungültig oder abgelaufen.'"
+   },
+   {
+    "file": "backend/src/nutzer/nutzer.controller.ts",
+    "line": 13,
+    "description": "The only account-management routes are POST /nutzer (create) and GET/PATCH /nutzer/me. No route reissues an Initial-Zugang link."
+   },
+   {
+    "file": "backend/prisma/seed-initial-nutzer.ts",
+    "line": 23,
+    "description": "The bootstrap seed exits when any Nutzer exists, so it offers no recovery path for a blocked pending account."
+   },
+   {
+    "file": "backend/src/auth/auth.service.spec.ts",
+    "line": 73,
+    "description": "The existing unit test asserts that passwortVergessen always updates the token. No test covers keeping a pending Initial-Zugang token, which supports the conclusion that the overwrite is unconditional."
+   }
+  ],
+  "blockers": [
+   "This run cannot execute target code: there is no OS-enforced sandbox, no node_modules, and no Postgres, so the overwrite and the resulting 400 on the creator's link were not observed at runtime. The source trace is complete, and the only missing step is a bounded local reproduction.",
+   "Deployment fact outside the source: whether the deployed build binds a delivering Mailer instead of ConsoleMailer, and whether operators have a documented DB-level procedure to reissue Initial-Zugang links. Either would reduce the impact from a lockout that needs an operator to a forced switch to a 1-hour emailed link or a manual fix."
+  ],
+  "validation_plan": {
+   "local": "Run in an isolated sandbox with no network and a throwaway Postgres, or run a vitest unit test with an in-memory Prisma mock that implements findUnique by email and by passwortSetzenToken, plus update. (1) Call NutzerService.createNutzer('creator-id', {vorname:'B', nachname:'Test', email:'b@example.test', standortId:<seeded>}) and record the raw token from passwortSetzenLink. (2) Call AuthService.passwortVergessen('b@example.test'), or anonymously POST /api/v1/auth/passwort-vergessen {\"email\":\"b@example.test\"}, and check that the stored passwortSetzenToken changed and Ablauf is about now+1h. (3) Call AuthService.passwortSetzen(<original raw token>, 'Korrekt-Pferd-Batterie-42'), or POST /api/v1/auth/passwort-setzen, and expect BadRequestException / HTTP 400 'Link ist ungültig oder abgelaufen.' (4) Confirm that the ConsoleMailer mock received the new link but ConsoleMailer never outputs it, that login for b@example.test fails, and that a second POST /api/v1/nutzer with the same email fails on the unique constraint. Use only dummy principals.",
+   "deployment": "Owner check, read-only: confirm which Mailer class is bound in the production image (auth.module.ts:34) and whether reset emails actually reach recipients. Confirm whether an operator runbook exists for reissuing an Initial-Zugang link. Suggested fix: in passwortVergessen, skip the overwrite (or return without changes) while mussPasswortSetzen is true and passwortSetzenTokenAblauf is still in the future, or keep separate columns for the Initial-Zugang and reset tokens. Also add an authenticated route (for example, for the creating Nutzer) that reissues a fresh Initial-Zugang link for a pending account."
+  }
+ },
+ {
+  "verdict": "rejected",
+  "fingerprint": "caddy-files-domain-proxies-full-minio-api-incl-admin",
+  "title": "FILES_DOMAIN reverse proxy forwards the full MinIO S3/admin API surface (credential-gated), not only signed photo GETs",
+  "description": "The production Caddyfile site block {$FILES_DOMAIN} proxies every path and method to minio:9000. The browser only needs presigned GETs for research-fotos/wareneintraege/<uuid>, but the same port also serves MinIO's SigV4-authenticated S3 and admin APIs. Every non-presigned operation on that surface needs a valid SigV4 signature from the root account (username 'research', password ${MINIO_ROOT_PASSWORD}) or the research-app key (${MINIO_APP_SECRET}). Both secrets exist only in the server .env, and .env.prod.example tells the operator to set long random values. No anonymous bucket policy is set. The MinIO console (:9001) is not proxied.",
+  "claimed_root_cause": "Caddyfile uses an unrestricted `reverse_proxy minio:9000` for {$FILES_DOMAIN} instead of limiting the public route to GET/HEAD on the photo bucket path, so the MinIO S3 write/list plane and admin API share the public photo ingress.",
+  "trace": [
+   {
+    "kind": "entrypoint",
+    "file": "Caddyfile",
+    "line": 13,
+    "scope": "{$FILES_DOMAIN} site block",
+    "description": "Public HTTPS site on FILES_DOMAIN that anonymous internet clients can reach (Caddy publishes 80/443, docker-compose.prod.yml:15-17)."
+   },
+   {
+    "kind": "propagation",
+    "file": "Caddyfile",
+    "line": 14,
+    "scope": "reverse_proxy minio:9000",
+    "description": "All paths and methods are forwarded unfiltered to MinIO's S3 API port."
+   },
+   {
+    "kind": "propagation",
+    "file": "docker-compose.prod.yml",
+    "line": 96,
+    "scope": "minio service environment",
+    "description": "Root username is the fixed value 'research'. The root password comes only from the server-side ${MINIO_ROOT_PASSWORD} (line 97)."
+   },
+   {
+    "kind": "sink",
+    "file": "docker-compose.prod.yml",
+    "line": 94,
+    "scope": "minio command server /data --console-address :9001",
+    "description": "MinIO serves the S3 and admin APIs on :9000 behind SigV4 authentication. The console is on :9001, which is not proxied."
+   }
+  ],
+  "evidence": [
+   {
+    "file": "Caddyfile",
+    "line": 14,
+    "description": "`reverse_proxy minio:9000` with no path or method matcher."
+   },
+   {
+    "file": "docker-compose.prod.yml",
+    "line": 35,
+    "description": "OBJECT_STORAGE_PUBLIC_ENDPOINT=https://${FILES_DOMAIN}; the public host is used for presigned URLs."
+   },
+   {
+    "file": "backend/src/object-storage/object-storage.service.ts",
+    "line": 62,
+    "description": "Only GetObjectCommand is presigned with the public client (15 min). Put and Delete use the internal endpoint client (lines 43, 55), so no presigned write or list URL is ever issued."
+   },
+   {
+    "file": "docker-compose.prod.yml",
+    "line": 116,
+    "description": "minio-init sets no anonymous or public bucket policy. research-app is scoped to research-fotos; only the backend holds its secret."
+   },
+   {
+    "file": ".env.prod.example",
+    "line": 2,
+    "description": "The operator is told to replace every value with long random strings. MINIO_ROOT_PASSWORD and MINIO_APP_SECRET ship empty, with no weak default for production."
+   },
+   {
+    "file": "docs/research/03-docker-deployment-optionen.md",
+    "line": 126,
+    "description": "Checklist item 5 forbids internet exposure of the 'MinIO-Admin-Konsole' (the console on :9001). That console is not proxied, so the checklist is not violated as written."
+   },
+   {
+    "file": "docker-compose.prod.yml",
+    "line": 94,
+    "description": "--console-address \":9001\" separates the admin console from :9000. Caddy proxies only :9000."
+   }
+  ],
+  "reason": "The candidate has no impact that a lower-trust principal can reach. Anonymous clients on FILES_DOMAIN get only what MinIO's SigV4 authentication allows. There is no anonymous bucket policy (docker-compose.prod.yml:111-118), and the app never presigns anything except GetObject for a random-UUID key (object-storage.service.ts:60-63). Every admin, list, write or delete operation that the candidate describes needs a secret that already grants that power: the root password or the research-app secret. Both are server-only .env values, and .env.prod.example:2 says to make them long random strings. The attack therefore assumes credential compromise, which is not a vulnerability in this code path. MinIO's S3 port always serves its admin API behind the same SigV4 check, so that is documented platform design, not a bypass. The cited go-live item 5 names the admin console, which is bound to :9001 and not proxied, so the claimed conflict with project policy does not exist. Restricting Caddy to GET/HEAD on /research-fotos/wareneintraege/* would be sensible defense in depth, but it is a hardening gap, not a source-grounded vulnerability. needs_validation does not fit because no remaining deployment fact (password strength, WAF) would change the source result: it is weak or leaked credentials that would be the issue, not this route."
+ },
+ {
+  "verdict": "needs_validation",
+  "fingerprint": "h3-input:wareneintrag-freitext-unbounded-length",
+  "title": "Wareneintrag freitext has no maximum length, so one Nutzer can store roughly 1 MiB entries that every other Nutzer's default list view downloads and renders",
+  "description": "CreateWareneintragDto and UpdateWareneintragDto check freitext only with @IsString and @MinLength(1) and have no @MaxLength. POST and PATCH /api/v1/wareneintraege are parsed by FileFieldsInterceptor with limits set to { fileSize } only (controller.ts:38). Text fields therefore fall back to the multer 2.4.0 / busboy 1.6.0 default fieldSize, which is 1 MiB according to the lockfile versions. The global ValidationPipe (main.ts:15) does not bound them either. The value is stored as-is in a TEXT column (migration 20260918130318). The generated to_tsvector column does not reject repetitive text, although diverse text near 1 MiB may exceed the tsvector size limit and fail the insert. Any authenticated Nutzer can read all entries by design. GET /api/v1/wareneintraege (listeAlle findMany, and the raw full-text path) returns the full freitext of the newest entries: 20 by default in the frontend (wareneintrag-liste.ts:70) and up to 100 via proSeite. The Angular list renders every freitext in full (wareneintrag-liste.html:97). So 20 entries of about 1 MiB from one Nutzer make every Nutzer's default list load serialize, transfer and render about 20 MiB (about 100 MiB at proSeite=100). This lasts until the author deletes them, because only the author may delete or edit (pruefeBesitz) and there is no admin path in the app. The attacker must be authenticated and is attributable through erfasstVon. The impact is persistent degradation of backend memory/bandwidth and of other users' (often mobile PWA) clients. It is not cross-tenant data exposure.",
+  "claimed_root_cause": "freitext has no upper length bound in CreateWareneintragDto/UpdateWareneintragDto and no multer limits.fieldSize (only limits.fileSize), while the shared list responses and the list UI embed and render freitext in full for every Nutzer.",
+  "trace": [
+   {
+    "kind": "entrypoint",
+    "file": "backend/src/wareneintrag/wareneintrag.controller.ts",
+    "line": 119,
+    "scope": "WareneintragController.create @Body() dto (POST /api/v1/wareneintraege, JwtAuthGuard)",
+    "description": "An authenticated Nutzer submits freitext as a multipart text field. FileFieldsInterceptor uses FOTO_UPLOAD_OPTIONS, which sets only limits.fileSize (line 38), so text fields fall back to busboy's default fieldSize (1 MiB for busboy 1.6.0 / multer 2.4.0 in backend/package-lock.json). PATCH /:id (line 130) accepts the same field for the author's own entries."
+   },
+   {
+    "kind": "propagation",
+    "file": "backend/src/wareneintrag/dto/create-wareneintrag.dto.ts",
+    "line": 9,
+    "scope": "CreateWareneintragDto.freitext",
+    "description": "Only @IsString and @MinLength(1) apply, with no @MaxLength. UpdateWareneintragDto (update-wareneintrag.dto.ts:9) is identical. The ValidationPipe whitelist/forbidNonWhitelisted setting (main.ts:15) does not bound lengths."
+   },
+   {
+    "kind": "propagation",
+    "file": "backend/src/wareneintrag/wareneintrag.service.ts",
+    "line": 143,
+    "scope": "WareneintragService.create prisma.wareneintrag.create",
+    "description": "freitext is persisted unchanged into the TEXT NOT NULL column. The generated to_tsvector('german', freitext) column accepts repetitive text."
+   },
+   {
+    "kind": "sink",
+    "file": "backend/src/wareneintrag/wareneintrag.service.ts",
+    "line": 66,
+    "scope": "WareneintragService.listeAlle prisma.wareneintrag.findMany",
+    "description": "Returns all scalar columns, including the full freitext, for up to proSeite (default 20, max 100) newest entries to any Nutzer. The full-text path (line 102) also selects wareneintraege.freitext. The frontend renders each freitext in full (frontend/src/app/features/wareneintrag-liste/wareneintrag-liste.html:97)."
+   }
+  ],
+  "evidence": [
+   {
+    "file": "backend/src/wareneintrag/dto/create-wareneintrag.dto.ts",
+    "line": 8,
+    "description": "@MinLength(1) is the only length constraint on freitext."
+   },
+   {
+    "file": "backend/src/wareneintrag/dto/update-wareneintrag.dto.ts",
+    "line": 8,
+    "description": "The update DTO has the same missing upper bound."
+   },
+   {
+    "file": "backend/src/wareneintrag/wareneintrag.controller.ts",
+    "line": 38,
+    "description": "FOTO_UPLOAD_OPTIONS sets limits only for fileSize. There is no fieldSize/fields/parts limit, so the busboy defaults apply to freitext."
+   },
+   {
+    "file": "backend/src/wareneintrag/wareneintrag.controller.ts",
+    "line": 29,
+    "description": "MAX_PRO_SEITE = 100 bounds the number of rows per page but not the bytes per row."
+   },
+   {
+    "file": "backend/prisma/migrations/20260918130318_avv_codes_wareneintraege/migration.sql",
+    "line": 16,
+    "description": "freitext is an unbounded TEXT column with no CHECK on length."
+   },
+   {
+    "file": "frontend/src/app/features/wareneintrag-liste/wareneintrag-liste.ts",
+    "line": 70,
+    "description": "The default list page size is 20, so every Nutzer's default list load includes the 20 newest entries in full."
+   },
+   {
+    "file": "backend/src/wareneintrag/wareneintrag.service.ts",
+    "line": 186,
+    "description": "pruefeBesitz lets only the author edit or delete an entry, so other Nutzer cannot remove oversized entries through the app."
+   },
+   {
+    "file": "backend/src/auth/dto/passwort-setzen.dto.ts",
+    "line": 12,
+    "description": "A sibling DTO applies @MaxLength(128), which shows the codebase uses the length-cap pattern but omits it for freitext."
+   }
+  ],
+  "blockers": [
+   "No target execution was permitted this run (no node_modules, no Postgres). Three things are still unobserved: the effective per-field limit of multer 2.4.0 / busboy 1.6.0 (1 MiB expected, rejected with LIMIT_FIELD_VALUE above it), whether the generated tsvector insert succeeds for a 1 MiB value, and the actual response size and backend heap delta of GET /api/v1/wareneintraege with 20 such rows.",
+   "Whether the shared effect is meaningful in production depends on deployment facts that source cannot decide: the VPS app container memory (docker-compose.prod.yml sets no limit), the uplink bandwidth, and client devices and networks. Caddy sets no request_body or response size cap in the repository Caddyfile, but a server-side override cannot be ruled out from source."
+  ],
+  "validation_plan": {
+   "local": "In an OS-enforced sandbox with vendored dependencies (lockfile versions), a disposable Postgres 16 and a stubbed or local MinIO, seed two dummy Nutzer A and B. As A (with a valid accessToken and CSRF double-submit header), POST 20 multipart /api/v1/wareneintraege requests with no photos, a valid avvCodeId and freitext set to the word 'abfall ' repeated to 1,048,000 bytes. Also send one request of 1,048,577 bytes to confirm rejection at the field limit. As B, run GET /api/v1/wareneintraege and GET ?proSeite=100, and record the HTTP status, the response Content-Length and the backend RSS/heap delta. Expected: about 20 MiB and about 100 MiB responses with status 200. Then add @MaxLength(2000) to both DTOs and limits.fieldSize (for example 16 KiB) plus fields/parts limits to FOTO_UPLOAD_OPTIONS, and confirm the oversized POST returns 400/413.",
+   "deployment": "Read-only owner checks: run SELECT id, erfasst_von_id, length(freitext) FROM wareneintraege ORDER BY length(freitext) DESC LIMIT 10 to look for existing oversized entries. Confirm that the deployed Caddy configuration has no request_body max_size or other response or body cap in front of app:3000. Also confirm the app container's memory limit and whether an operator process exists to delete another Nutzer's entry."
+  }
+ },
+ {
+  "verdict": "needs_validation",
+  "fingerprint": "h3-input:wareneintrag-multipart-unbounded-fields",
+  "title": "Wareneintrag multipart parser does not limit the number or total size of text fields it buffers in memory",
+  "description": "POST /api/v1/wareneintraege and PATCH /api/v1/wareneintraege/:id use FileFieldsInterceptor with memoryStorage(), and the only limit set is limits.fileSize (10 MB). Unless the multer version in the lockfile (2.4.0) sets its own defaults, busboy 1.6.0 defaults apply to non-file parts: fields=Infinity, parts=Infinity, fieldSize=1 MiB. Multer then appends every text field to req.body inside the one shared Node process. ValidationPipe (whitelist + forbidNonWhitelisted) only rejects the unknown keys after multer has finished parsing the whole body. The global ThrottlerGuard and JwtAuthGuard (JWT cookie + CSRF double submit) run before the interceptor, so the attacker needs a Nutzer session. By design, any Nutzer can create further Nutzer accounts. One such request carrying many ~1 MiB text fields grows the heap roughly in proportion to the body size. The repository sets no body cap in Caddy, no Node heap flag and no container memory limit, so one large enough body could exhaust the heap of the single app instance. Every Nutzer would lose service until Docker's restart: unless-stopped brings the app back. Whether heap exhaustion is actually reached depends on the installed multer defaults and on deployment memory, proxy and timeout facts that cannot be observed here.",
+  "claimed_root_cause": "FOTO_UPLOAD_OPTIONS (backend/src/wareneintrag/wareneintrag.controller.ts:38) sets limits: { fileSize } only. It sets no fields, fieldSize, parts or files limit, so text parts are not bounded in total. No upstream request-body cap exists in the Caddyfile, and the Dockerfile and prod compose set no heap or memory limit.",
+  "trace": [
+   {
+    "kind": "entrypoint",
+    "file": "backend/src/wareneintrag/wareneintrag.controller.ts",
+    "line": 115,
+    "scope": "WareneintragController.create (POST /api/v1/wareneintraege)",
+    "description": "Authenticated multipart POST. The class-level JwtAuthGuard (line 82) and the global ThrottlerGuard (60/min) run before the FileFieldsInterceptor, so a Nutzer session plus a CSRF token is required. PATCH :id (line 126) uses the same interceptor options."
+   },
+   {
+    "kind": "propagation",
+    "file": "backend/src/wareneintrag/wareneintrag.controller.ts",
+    "line": 38,
+    "scope": "FOTO_UPLOAD_OPTIONS",
+    "description": "The multer options are memoryStorage() with limits: { fileSize: 10 MB } only. No fields/fieldSize/parts/files limit is passed, so the busboy 1.6.0 defaults (fields and parts Infinity, fieldSize 1 MiB) govern text parts, unless multer 2.4.0 adds its own defaults."
+   },
+   {
+    "kind": "sink",
+    "file": "backend/src/wareneintrag/wareneintrag.controller.ts",
+    "line": 119,
+    "scope": "@Body() dto populated from multer req.body",
+    "description": "Multer has already appended every text field to req.body in process memory by the time the handler's parameters are resolved. ValidationPipe forbidNonWhitelisted (main.ts:15) rejects the extra keys only afterwards, so the memory stays held for the whole request."
+   }
+  ],
+  "evidence": [
+   {
+    "file": "backend/src/wareneintrag/wareneintrag.controller.ts",
+    "line": 38,
+    "description": "const FOTO_UPLOAD_OPTIONS = { storage: memoryStorage(), limits: { fileSize: FOTO_MAX_GROESSE_BYTES } }; is the only multipart limit configured anywhere in the source (a grep finds no MulterModule.register or other multer config)."
+   },
+   {
+    "file": "backend/src/wareneintrag/wareneintrag.controller.ts",
+    "line": 36,
+    "description": "The comment states the intent to abort oversized uploads instead of buffering them in RAM, but the configured bound covers only file parts."
+   },
+   {
+    "file": "backend/package-lock.json",
+    "line": 6398,
+    "description": "The lockfile pins multer 2.4.0 (and busboy 1.6.0 at line 3953). Whether this multer version adds default field/part limits cannot be checked because node_modules is absent."
+   },
+   {
+    "file": "Caddyfile",
+    "line": 7,
+    "description": "reverse_proxy app:3000 has no request_body max_size directive, so the ingress sets no body-size cap."
+   },
+   {
+    "file": "backend/src/main.ts",
+    "line": 15,
+    "description": "The global ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }) runs after the interceptor has fully parsed the multipart body."
+   },
+   {
+    "file": "docker-compose.prod.yml",
+    "line": 30,
+    "description": "The app service has restart: unless-stopped and no mem_limit or deploy resources. The Dockerfile (CMD node dist/main.js, line 49) sets no --max-old-space-size or NODE_OPTIONS. There is a single app instance."
+   }
+  ],
+  "blockers": [
+   "The effective default limits of the locked multer 2.4.0 / busboy 1.6.0 for text fields (fields, parts, fieldSize), and the pass-through by the Nest 12 FileFieldsInterceptor, could not be observed. node_modules is absent, installs are prohibited, and no OS-enforced sandbox is available for a bounded memory harness.",
+   "Deployment facts outside the repository decide whether retained memory reaches process failure: the effective heap limit of the production Node process and the host/container memory, any request-body cap in front of Caddy (CDN, WAF, host proxy), and whether Node's default requestTimeout (300 s) lets a multi-GB body finish at the attacker's upload bandwidth."
+  ],
+  "validation_plan": {
+   "local": "In an OS-enforced sandbox (no network, read-only target, scratch-only writes), provide the lockfile-pinned multer-2.4.0 and busboy-1.6.0 tarballs, verified against the package-lock integrity hashes, read-only. First read multer's lib/make-middleware.js (and any limits handling) to see whether it sets default fields/parts/fieldSize limits. Then start the Nest app under node --max-old-space-size=128 in a 256 MiB cgroup, with a stub JwtStrategy/CSRF, an in-memory Throttler storage and a mocked ObjectStorageService/Prisma. Send one multipart POST to /api/v1/wareneintraege with 200 distinct text fields of 1 MiB each (dummy Nutzer, no files). Record whether multer raises LIMIT_FIELD_COUNT/LIMIT_PART_COUNT or accepts all of them, and sample process.memoryUsage().heapUsed while the body arrives, before the 400 from forbidNonWhitelisted. Stop at the first heap-growth observation or OOM. Repeat with limits { fields: 5, fieldSize: 64*1024, parts: 8, files: 3 } and confirm the request aborts early with a 4xx.",
+   "deployment": "The owner reads, without sending any load to production: the live Caddyfile and anything in front of it (CDN/WAF/host proxy) for a request_body max_size or equivalent cap; `docker inspect` of the app container for Memory/NanoCpus limits; the app's NODE_OPTIONS/--max-old-space-size (or `node -e \"console.log(v8.getHeapStatistics().heap_size_limit)\"` inside the container); and the host RAM. If there is no body cap and the body a Nutzer can upload within 300 s exceeds the heap limit, the single app instance can be killed and all Nutzer lose service until the restart."
+  }
+ }
+]
