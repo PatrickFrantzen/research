@@ -16,9 +16,9 @@ Durchgeführt mit dem vendorten Skill `.claude/skills/security-audit` (Profil `s
 
 Die kleinsten Fixes zu allen vier Leads sind im selben PR wie dieser Report umgesetzt, jeweils mit Regressionstest:
 
-1. `passwortVergessen` überschreibt keinen noch gültigen Initial-Zugang-Token mehr (`backend/src/auth/auth.service.ts`). Offen: authentifizierter Weg, einen Initial-Zugang-Link neu auszustellen.
+1. `passwortVergessen` überschreibt keinen noch gültigen Initial-Zugang-Token mehr (`backend/src/auth/auth.service.ts`). Offen: authentifizierter Weg, einen Initial-Zugang-Link neu auszustellen (#80).
 2. `trust proxy` = 1 Hop, damit das Rate-Limit pro Client statt pro Caddy greift (`backend/src/reverse-proxy.ts`, `backend/src/main.ts`).
 3. Multipart-Limits für Textfelder, Dateien und Parts beim Foto-Upload (`backend/src/wareneintrag/wareneintrag.controller.ts`).
-4. `freitext` max. 2000 Zeichen (`backend/src/wareneintrag/dto/`).
+4. `freitext` max. 2000 Zeichen (`backend/src/wareneintrag/dto/`), im Frontend mit Formularvalidierung und Zeichenzähler.
 
-Die Hardening-Hinweise aus `REPORT.md` Abschnitt 5 sind nicht umgesetzt.
+Die Hardening-Hinweise aus `REPORT.md` Abschnitt 5 sind nicht umgesetzt, siehe #81.
