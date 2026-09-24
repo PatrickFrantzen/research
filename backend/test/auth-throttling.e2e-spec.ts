@@ -4,12 +4,14 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AuthController } from '../src/auth/auth.controller.js';
 import { AuthService } from '../src/auth/auth.service.js';
 import { Mailer } from '../src/mailer/mailer.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
+import { vertraueReverseProxy } from '../src/reverse-proxy.js';
 
 // Prisma/Mailer sind gemockt, damit dieser e2e-Test ohne echte DB/SMTP läuft
 // und ausschließlich die Throttling-Kette (Guard + @Throttle-Dekoratoren)
@@ -67,5 +69,59 @@ describe('Auth-Endpunkte: Rate-Limiting', () => {
 
     const geblockt = await request(server).post('/api/v1/auth/passwort-vergessen').send(payload);
     expect(geblockt.status).toBe(429);
+  });
+});
+
+// Hinter Caddy ist der TCP-Peer für alle Clients derselbe. Ohne `trust proxy`
+// teilen sich alle Nutzer einen Throttle-Bucket und ein einzelner Client kann
+// den Login für alle sperren (Security-Audit run-1).
+describe('Auth-Endpunkte: Rate-Limiting hinter dem Reverse-Proxy', () => {
+  let app: NestExpressApplication;
+
+  beforeAll(async () => {
+    const moduleRef = await Test.createTestingModule({
+      imports: [
+        ThrottlerModule.forRoot([{ ttl: 60_000, limit: 60 }]),
+        PassportModule.register({ defaultStrategy: 'jwt' }),
+        JwtModule.register({ secret: 'test-secret' }),
+      ],
+      controllers: [AuthController],
+      providers: [
+        AuthService,
+        { provide: APP_GUARD, useClass: ThrottlerGuard },
+        { provide: PrismaService, useValue: { nutzer: { findUnique: async () => null, update: async () => ({}) } } },
+        { provide: Mailer, useValue: { sendPasswortSetzenLink: async () => undefined } },
+      ],
+    }).compile();
+
+    app = moduleRef.createNestApplication<NestExpressApplication>();
+    vertraueReverseProxy(app);
+    app.setGlobalPrefix('api/v1');
+    app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }));
+    await app.init();
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('keys the login limit on the client address forwarded by the proxy, not on the proxy itself', async () => {
+    const server = app.getHttpServer();
+    const payload = { email: 'angreifer@research.local', passwort: 'irrelevant' };
+
+    for (let i = 0; i < 5; i++) {
+      await request(server).post('/api/v1/auth/login').set('X-Forwarded-For', '203.0.113.1').send(payload);
+    }
+    const angreiferGeblockt = await request(server)
+      .post('/api/v1/auth/login')
+      .set('X-Forwarded-For', '203.0.113.1')
+      .send(payload);
+    const andererNutzer = await request(server)
+      .post('/api/v1/auth/login')
+      .set('X-Forwarded-For', '198.51.100.2')
+      .send({ email: 'kollege@research.local', passwort: 'irrelevant' });
+
+    expect(angreiferGeblockt.status).toBe(429);
+    expect(andererNutzer.status).not.toBe(429);
   });
 });
