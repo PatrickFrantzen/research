@@ -1,16 +1,16 @@
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { TestBed } from '@angular/core/testing';
 import { Router, UrlTree } from '@angular/router';
-import { authGuard, startseiteRedirectGuard } from './auth.guard.js';
+import { adminGuard, authGuard, startseiteRedirectGuard } from './auth.guard.js';
 import { AuthService } from './auth.service.js';
 
 describe('auth guards', () => {
-  let authService: { istEingeloggt: () => boolean };
+  let authService: { istEingeloggt: () => boolean; istAdmin: () => boolean };
   let breakpointObserver: { isMatched: (query: string) => boolean };
   let router: Router;
 
   beforeEach(() => {
-    authService = { istEingeloggt: () => false };
+    authService = { istEingeloggt: () => false, istAdmin: () => false };
     breakpointObserver = { isMatched: () => false };
     TestBed.configureTestingModule({
       providers: [
@@ -24,6 +24,17 @@ describe('auth guards', () => {
   function runGuard(guard: typeof authGuard) {
     return TestBed.runInInjectionContext(() => guard({} as never, {} as never)) as boolean | UrlTree;
   }
+
+  describe('adminGuard', () => {
+    it('lässt Admins durch', () => {
+      authService.istAdmin = () => true;
+      expect(runGuard(adminGuard)).toBe(true);
+    });
+
+    it('schickt Nicht-Admins auf die Startseite', () => {
+      expect(runGuard(adminGuard)).toEqual(router.createUrlTree(['/']));
+    });
+  });
 
   describe('authGuard', () => {
     it('allows access when logged in', () => {

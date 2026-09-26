@@ -47,6 +47,16 @@ describe('AuthService', () => {
       expect(jwtService.signAsync).toHaveBeenCalledWith({ sub: 'nutzer-1' });
     });
 
+    it('findet den Nutzer unabhängig von Groß-/Kleinschreibung der E-Mail', async () => {
+      const { service, prisma } = buildService();
+      const passwortHash = await bcrypt.hash('geheim123', 4);
+      prisma.nutzer.findUnique.mockResolvedValue({ id: 'nutzer-1', passwortHash, mussPasswortSetzen: false });
+
+      await service.login(' Thomas@Research.local', 'geheim123');
+
+      expect(prisma.nutzer.findUnique).toHaveBeenCalledWith({ where: { email: 'thomas@research.local' } });
+    });
+
     it('rejects an unknown email', async () => {
       const { service, prisma } = buildService();
       prisma.nutzer.findUnique.mockResolvedValue(null);
@@ -87,6 +97,16 @@ describe('AuthService', () => {
       // Persisted value must be the SHA-256 hash of the raw token, not the raw token itself.
       expect(persistedToken).toBe(sha256(rawToken));
       expect(persistedToken).not.toBe(rawToken);
+    });
+
+    it('sucht und mailt an die klein geschriebene E-Mail', async () => {
+      const { service, prisma, mailer } = buildService();
+      prisma.nutzer.findUnique.mockResolvedValue({ id: 'nutzer-1' });
+
+      await service.passwortVergessen('Max@Research.local');
+
+      expect(prisma.nutzer.findUnique).toHaveBeenCalledWith({ where: { email: 'max@research.local' } });
+      expect(mailer.sendPasswortSetzenLink.mock.calls[0][0]).toBe('max@research.local');
     });
 
     it('does nothing observable for an unknown email (no account enumeration)', async () => {

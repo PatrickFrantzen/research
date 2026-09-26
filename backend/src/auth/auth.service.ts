@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { Mailer } from '../mailer/mailer.js';
+import { normalisiereEmail } from '../nutzer/email.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { erzeugePasswortSetzenToken, hashPasswortSetzenToken } from './passwort-setzen-token.js';
 
@@ -18,17 +19,18 @@ export class AuthService {
   async login(
     email: string,
     passwort: string,
-  ): Promise<{ accessToken: string; mussPasswortSetzen: boolean; id: string }> {
-    const nutzer = await this.prisma.nutzer.findUnique({ where: { email } });
+  ): Promise<{ accessToken: string; mussPasswortSetzen: boolean; id: string; istAdmin: boolean }> {
+    const nutzer = await this.prisma.nutzer.findUnique({ where: { email: normalisiereEmail(email) } });
     if (!nutzer || !(await bcrypt.compare(passwort, nutzer.passwortHash))) {
       throw new UnauthorizedException('E-Mail oder Passwort ungültig.');
     }
 
     const accessToken = await this.jwtService.signAsync({ sub: nutzer.id });
-    return { accessToken, mussPasswortSetzen: nutzer.mussPasswortSetzen, id: nutzer.id };
+    return { accessToken, mussPasswortSetzen: nutzer.mussPasswortSetzen, id: nutzer.id, istAdmin: nutzer.istAdmin };
   }
 
-  async passwortVergessen(email: string): Promise<void> {
+  async passwortVergessen(rohEmail: string): Promise<void> {
+    const email = normalisiereEmail(rohEmail);
     const nutzer = await this.prisma.nutzer.findUnique({ where: { email } });
     // Existenz des Accounts nicht per Antwortzeit/Fehler verraten.
     if (!nutzer) {

@@ -25,7 +25,7 @@ async function main(): Promise<void> {
       return;
     }
 
-    const email = required('INITIAL_NUTZER_EMAIL');
+    const email = required('INITIAL_NUTZER_EMAIL').trim().toLowerCase();
     const passwort = required('INITIAL_NUTZER_PASSWORT');
     assertNichtDefaultBootstrapPasswort(passwort, process.env['NODE_ENV']);
     const standortName = process.env['INITIAL_NUTZER_STANDORT'] ?? 'Hauptsitz';
@@ -41,6 +41,7 @@ async function main(): Promise<void> {
         standortId: standort.id,
         passwortHash,
         mussPasswortSetzen: false,
+        istAdmin: true,
       },
     });
     console.log(`Initialer Nutzer-Account angelegt: ${email}`);

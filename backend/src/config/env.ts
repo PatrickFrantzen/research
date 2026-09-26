@@ -17,6 +17,16 @@ export interface EnvConfig {
   redis: {
     url: string;
   };
+  // Ohne SMTP_HOST werden Mails nur geloggt (lokale Entwicklung).
+  mail?: {
+    host: string;
+    port: number;
+    user: string;
+    passwort: string;
+    absender: string;
+    // Basis für absolute Links in Mails, z.B. https://research.patrickfrantzen.de
+    appUrl: string;
+  };
 }
 
 // Bekannte Platzhalterwerte aus docker-compose.yml/.env.example. Wenn diese in
@@ -40,6 +50,22 @@ function requiredSecret(name: string, knownDefaults: Set<string>): string {
     throw new Error(`Environment variable ${name} still has an insecure default value. Set a strong secret before running in production.`);
   }
   return value;
+}
+
+function loadMail(): EnvConfig['mail'] {
+  const host = process.env['SMTP_HOST'];
+  if (!host) {
+    return undefined;
+  }
+  const user = required('SMTP_USER');
+  return {
+    host,
+    port: Number(process.env['SMTP_PORT'] ?? 587),
+    user,
+    passwort: required('SMTP_PASSWORT'),
+    absender: process.env['MAIL_FROM'] || user,
+    appUrl: required('APP_URL').replace(/\/+$/, ''),
+  };
 }
 
 export function loadEnv(): EnvConfig {
@@ -69,5 +95,6 @@ export function loadEnv(): EnvConfig {
     redis: {
       url: required('REDIS_URL'),
     },
+    mail: loadMail(),
   };
 }

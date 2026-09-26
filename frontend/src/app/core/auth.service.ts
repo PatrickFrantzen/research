@@ -5,10 +5,12 @@ import { firstValueFrom } from 'rxjs';
 interface LoginResponse {
   mussPasswortSetzen: boolean;
   id: string;
+  istAdmin: boolean;
 }
 
 interface MeResponse {
   id: string;
+  istAdmin: boolean;
 }
 
 // Der Access-Token liegt seit Issue #24 in einem HttpOnly-Cookie und ist für
@@ -19,11 +21,14 @@ export class AuthService {
 
   private readonly nutzerIdSignal = signal<string | null>(null);
   private readonly istEingeloggtSignal = signal(false);
+  private readonly istAdminSignal = signal(false);
 
   // Eigene Nutzer-ID, u.a. für Besitz-Checks bei Wareneinträgen (nur der
   // erfassende Nutzer darf seinen eigenen Eintrag bearbeiten/löschen).
   readonly nutzerId = this.nutzerIdSignal.asReadonly();
   readonly istEingeloggt = this.istEingeloggtSignal.asReadonly();
+  // Nur für die Anzeige (Navigation, Guard); das Backend prüft selbst.
+  readonly istAdmin = this.istAdminSignal.asReadonly();
 
   // Beim App-Start aufgerufen (siehe app.config.ts, provideAppInitializer),
   // bevor die erste Route aufgelöst wird – die Guards lesen danach nur noch
@@ -33,9 +38,11 @@ export class AuthService {
       const response = await firstValueFrom(this.http.get<MeResponse>('/api/v1/auth/me'));
       this.nutzerIdSignal.set(response.id);
       this.istEingeloggtSignal.set(true);
+      this.istAdminSignal.set(response.istAdmin);
     } catch {
       this.nutzerIdSignal.set(null);
       this.istEingeloggtSignal.set(false);
+      this.istAdminSignal.set(false);
     }
   }
 
@@ -43,12 +50,14 @@ export class AuthService {
     const response = await firstValueFrom(this.http.post<LoginResponse>('/api/v1/auth/login', { email, passwort }));
     this.nutzerIdSignal.set(response.id);
     this.istEingeloggtSignal.set(true);
+    this.istAdminSignal.set(response.istAdmin);
     return { mussPasswortSetzen: response.mussPasswortSetzen };
   }
 
   logout(): void {
     this.nutzerIdSignal.set(null);
     this.istEingeloggtSignal.set(false);
+    this.istAdminSignal.set(false);
     // Best effort: lokaler Zustand ist sofort weg, unabhängig davon, ob der
     // Request den Server erreicht.
     void firstValueFrom(this.http.post('/api/v1/auth/logout', {})).catch(() => undefined);

@@ -22,6 +22,7 @@ export interface JwtPayload {
 
 export interface AuthenticatedUser {
   id: string;
+  istAdmin: boolean;
 }
 
 export interface AuthenticatedRequest extends Request {
@@ -59,6 +60,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (payload.iat !== undefined && payload.iat < Math.floor(nutzer.passwortGeaendertAm.getTime() / 1000)) {
       throw new UnauthorizedException();
     }
-    return { id: nutzer.id };
+    return { id: nutzer.id, istAdmin: nutzer.istAdmin };
   }
 }

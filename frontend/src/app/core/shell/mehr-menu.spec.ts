@@ -1,3 +1,4 @@
+import { signal, WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { provideRouter, Router } from '@angular/router';
@@ -6,12 +7,12 @@ import { ThemeService } from '../theme.service.js';
 import { MehrMenu } from './mehr-menu.js';
 
 describe('MehrMenu', () => {
-  let authService: { logout: jasmine.Spy };
+  let authService: { logout: jasmine.Spy; istAdmin: WritableSignal<boolean> };
   let bottomSheetRef: { dismiss: jasmine.Spy };
   let router: Router;
 
   beforeEach(async () => {
-    authService = { logout: jasmine.createSpy('logout') };
+    authService = { logout: jasmine.createSpy('logout'), istAdmin: signal(false) };
     bottomSheetRef = { dismiss: jasmine.createSpy('dismiss') };
     await TestBed.configureTestingModule({
       imports: [MehrMenu],
@@ -23,6 +24,17 @@ describe('MehrMenu', () => {
     }).compileComponents();
     router = TestBed.inject(Router);
     spyOn(router, 'navigateByUrl').and.resolveTo(true);
+  });
+
+  it('zeigt die Nutzerverwaltung nur Admins', () => {
+    const fixture = TestBed.createComponent(MehrMenu);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('a[href="/nutzerverwaltung"]')).toBeNull();
+
+    authService.istAdmin.set(true);
+    fixture.detectChanges();
+    expect(element.querySelector('a[href="/nutzerverwaltung"]')).not.toBeNull();
   });
 
   it('toggles the color mode on mobile via the Mehr menu', () => {
