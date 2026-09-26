@@ -7,7 +7,11 @@
     @if (angelegt(); as ergebnis) {
       <mat-card-content class="formular">
         <p role="status" appFokusBeiAnzeige>Account für {{ ergebnis.email }} wurde angelegt.</p>
-        <p>Initial-Zugang an den Nutzer weitergeben (kein Mailversand):</p>
+        @if (ergebnis.mailVersendet) {
+          <p>Die Einladung wurde per Mail verschickt. Alternativ kannst du den Link direkt weitergeben:</p>
+        } @else {
+          <p class="fehler">Die Einladungsmail konnte nicht verschickt werden. Bitte gib den Link direkt weiter:</p>
+        }
         <mat-form-field appearance="outline">
           <mat-label>Link zum Passwort-Setzen</mat-label>
           <input matInput readonly data-testid="passwort-setzen-link" [value]="ergebnis.passwortSetzenLink" />
@@ -25,6 +29,7 @@
         </mat-form-field>
       </mat-card-content>
       <mat-card-actions align="end">
+        <a matButton routerLink="/nutzerverwaltung">Zur Nutzerverwaltung</a>
         <button matButton="filled" type="button" data-testid="weiterer-nutzer" (click)="weitererNutzer()">
           Weiteren Nutzer anlegen
         </button>
@@ -67,7 +72,7 @@
         </mat-card-content>
 
         <mat-card-actions align="end">
-          <a matButton routerLink="/">Abbrechen</a>
+          <a matButton routerLink="/nutzerverwaltung">Abbrechen</a>
           <button matButton="filled" type="submit" [disabled]="!standorte.hasValue() || !nutzerForm().valid() || wirdGeladen()">
             Anlegen
           </button>

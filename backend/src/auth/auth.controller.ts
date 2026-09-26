@@ -52,9 +52,9 @@ export class AuthController {
   @Post('login')
   @Throttle(AUTH_THROTTLE)
   async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
-    const { accessToken, mussPasswortSetzen, id } = await this.authService.login(dto.email, dto.passwort);
+    const { accessToken, mussPasswortSetzen, id, istAdmin } = await this.authService.login(dto.email, dto.passwort);
     setzeAuthCookies(res, accessToken);
-    return { mussPasswortSetzen, id };
+    return { mussPasswortSetzen, id, istAdmin };
   }
 
   @Post('logout')
@@ -69,7 +69,7 @@ export class AuthController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   me(@Req() req: AuthenticatedRequest) {
-    return { id: req.user.id };
+    return { id: req.user.id, istAdmin: req.user.istAdmin };
   }
 
   @Post('passwort-vergessen')

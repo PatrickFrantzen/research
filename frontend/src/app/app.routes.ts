@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, startseiteRedirectGuard } from './core/auth.guard.js';
+import { adminGuard, authGuard, startseiteRedirectGuard } from './core/auth.guard.js';
 
 // Jede Route mit eigenem Seitentitel (WCAG 2.4.2, Issue #54): Screenreader
 // sagen ihn beim Seitenwechsel an, Browser-Tabs und Verlauf werden lesbar.
@@ -37,7 +37,15 @@ export const routes: Routes = [
         loadComponent: () => import('./features/dashboard/dashboard.js').then((m) => m.Dashboard),
       },
       {
+        path: 'nutzerverwaltung',
+        canActivate: [adminGuard],
+        title: 'Nutzerverwaltung – RE-SEARCH',
+        loadComponent: () =>
+          import('./features/nutzerverwaltung/nutzerverwaltung.js').then((m) => m.Nutzerverwaltung),
+      },
+      {
         path: 'nutzer-anlegen',
+        canActivate: [adminGuard],
         title: 'Nutzer anlegen – RE-SEARCH',
         loadComponent: () => import('./features/nutzer-anlegen/nutzer-anlegen.js').then((m) => m.NutzerAnlegen),
       },

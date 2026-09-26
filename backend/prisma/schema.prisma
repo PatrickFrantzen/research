@@ -26,6 +26,10 @@ model Nutzer {
 
   passwortHash String @map("passwort_hash")
 
+  // Sieht den Admin-Bereich (Nutzerliste, Nutzer anlegen, Passwort-Mails).
+  // Initial der Bootstrap-Nutzer, siehe ADR-0006.
+  istAdmin Boolean @default(false) @map("ist_admin")
+
   // Zeitpunkt der letzten Passwortänderung. JwtStrategy lehnt Tokens ab,
   // die vor diesem Zeitpunkt ausgestellt wurden (Invalidierung nach
   // Passwortänderung/-Reset, siehe Issue #40).

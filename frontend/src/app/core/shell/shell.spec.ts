@@ -1,3 +1,4 @@
+import { signal, WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { provideRouter, Router } from '@angular/router';
@@ -8,11 +9,11 @@ import { MehrMenu } from './mehr-menu.js';
 import { Shell } from './shell.js';
 
 describe('Shell', () => {
-  let authService: { logout: jasmine.Spy };
+  let authService: { logout: jasmine.Spy; istAdmin: WritableSignal<boolean> };
   let router: Router;
 
   beforeEach(async () => {
-    authService = { logout: jasmine.createSpy('logout') };
+    authService = { logout: jasmine.createSpy('logout'), istAdmin: signal(false) };
     await TestBed.configureTestingModule({
       imports: [Shell],
       providers: [provideRouter([]), { provide: AuthService, useValue: authService }],
@@ -29,12 +30,22 @@ describe('Shell', () => {
     expect(fixture.nativeElement.querySelector('.desktop-toolbar')).not.toBeNull();
     expect(text).toContain('Wareneinträge');
     expect(text).toContain('Wareneintrag erfassen');
-    expect(text).toContain('Nutzer anlegen');
     expect(text).toContain('Einstellungen');
     expect(text).toContain('Erfassen');
     expect(text).toContain('Mehr');
     const logo = fixture.nativeElement.querySelector('.marke') as HTMLImageElement | null;
     expect(logo?.getAttribute('src')).toBe('brand/re-search-header.svg');
+  });
+
+  it('zeigt die Nutzerverwaltung nur Admins', () => {
+    const fixture = TestBed.createComponent(Shell);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('a[href="/nutzerverwaltung"]')).toBeNull();
+
+    authService.istAdmin.set(true);
+    fixture.detectChanges();
+    expect(element.querySelector('a[href="/nutzerverwaltung"]')).not.toBeNull();
   });
 
   it('links to the Impressum in the desktop footer', () => {

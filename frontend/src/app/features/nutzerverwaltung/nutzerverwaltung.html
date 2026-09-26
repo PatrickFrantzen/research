@@ -1,0 +1,47 @@
+<div class="seite">
+  <mat-card class="karte">
+    <mat-card-header>
+      <h1 mat-card-title>Nutzerverwaltung</h1>
+    </mat-card-header>
+
+    <mat-card-content>
+      <app-lade-zustand [ressource]="nutzer" meldung="Nutzer konnten nicht geladen werden." />
+
+      @if (meldung()) {
+        <p role="status" appFokusBeiAnzeige>{{ meldung() }}</p>
+      }
+      @if (fehler()) {
+        <p class="fehler" role="alert" appFokusBeiAnzeige>{{ fehler() }}</p>
+      }
+
+      <mat-list>
+        @for (n of nutzerListe(); track n.id) {
+          <mat-list-item lines="3">
+            <span matListItemTitle>{{ n.vorname }} {{ n.nachname }}@if (n.istAdmin) { (Admin)}</span>
+            <span matListItemLine>{{ n.email }}</span>
+            <span matListItemLine>{{ n.standort }}@if (n.einladungOffen) { · Einladung offen}</span>
+            <button
+              matButton
+              matListItemMeta
+              type="button"
+              [attr.data-testid]="'passwort-mail-' + n.id"
+              [attr.aria-label]="'Passwort-Mail an ' + n.email + ' senden'"
+              [disabled]="wirdGesendet() === n.id"
+              (click)="passwortMailSenden(n)"
+            >
+              <mat-icon>mail</mat-icon>
+              Passwort-Mail
+            </button>
+          </mat-list-item>
+        }
+      </mat-list>
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      <a matButton="filled" routerLink="/nutzer-anlegen">
+        <mat-icon>person_add</mat-icon>
+        Nutzer anlegen
+      </a>
+    </mat-card-actions>
+  </mat-card>
+</div>

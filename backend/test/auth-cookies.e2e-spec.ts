@@ -35,6 +35,7 @@ describe('Cookie-basierte Auth + CSRF (Issue #24)', () => {
     email: 'chef@research.local',
     passwortHash,
     mussPasswortSetzen: false,
+    istAdmin: true,
     passwortGeaendertAm: new Date(0),
   };
 
@@ -91,7 +92,7 @@ describe('Cookie-basierte Auth + CSRF (Issue #24)', () => {
       .send({ email: 'chef@research.local', passwort: 'geheim1234567' });
 
     expect(response.status).toBe(201);
-    expect(response.body).toEqual({ mussPasswortSetzen: false, id: 'nutzer-1' });
+    expect(response.body).toEqual({ mussPasswortSetzen: false, id: 'nutzer-1', istAdmin: true });
     expect(response.body.accessToken).toBeUndefined();
 
     const cookies = response.headers['set-cookie'] as unknown as string[];
@@ -107,7 +108,7 @@ describe('Cookie-basierte Auth + CSRF (Issue #24)', () => {
 
     const mit = await request(app.getHttpServer()).get('/api/v1/auth/me').set('Cookie', cookies);
     expect(mit.status).toBe(200);
-    expect(mit.body).toEqual({ id: 'nutzer-1' });
+    expect(mit.body).toEqual({ id: 'nutzer-1', istAdmin: true });
 
     const ohne = await request(app.getHttpServer()).get('/api/v1/auth/me');
     expect(ohne.status).toBe(401);

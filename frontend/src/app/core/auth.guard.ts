@@ -9,6 +9,10 @@ export const authGuard: CanActivateFn = () => {
   return authService.istEingeloggt() ? true : router.createUrlTree(['/login']);
 };
 
+export const adminGuard: CanActivateFn = () => {
+  return inject(AuthService).istAdmin() ? true : inject(Router).createUrlTree(['/']);
+};
+
 // Deckt sich mit $breakpoint-desktop in shell.scss – Mobil/Desktop ist seit
 // der Rollen-Entfernung eine reine Bildschirmbreiten-Frage, keine Rollenfrage
 // mehr (jeder Nutzer sieht auf Desktop-Breite dieselbe Ansicht).

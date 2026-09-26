@@ -78,6 +78,38 @@ describe('loadEnv', () => {
     expect(env.auth.jwtAudience).toBe('custom-audience');
   });
 
+  describe('mail', () => {
+    it('ist ohne SMTP_HOST nicht konfiguriert (Mails werden nur geloggt)', () => {
+      expect(loadEnv().mail).toBeUndefined();
+    });
+
+    it('liest die SMTP-Konfiguration, Port-Default 587, Absender-Default SMTP_USER', () => {
+      Object.assign(process.env, {
+        SMTP_HOST: 'smtp.web.de',
+        SMTP_USER: 'absender@web.de',
+        SMTP_PASSWORT: 'geheim',
+        // docker-compose reicht nicht gesetzte Variablen als "" durch
+        MAIL_FROM: '',
+        APP_URL: 'https://research.example.de/',
+      });
+
+      expect(loadEnv().mail).toEqual({
+        host: 'smtp.web.de',
+        port: 587,
+        user: 'absender@web.de',
+        passwort: 'geheim',
+        absender: 'absender@web.de',
+        appUrl: 'https://research.example.de',
+      });
+    });
+
+    it('verlangt APP_URL, sobald SMTP_HOST gesetzt ist', () => {
+      Object.assign(process.env, { SMTP_HOST: 'smtp.web.de', SMTP_USER: 'a@web.de', SMTP_PASSWORT: 'x' });
+
+      expect(() => loadEnv()).toThrow('APP_URL');
+    });
+  });
+
   it('throws when a required variable is missing', () => {
     delete process.env['DATABASE_URL'];
     expect(() => loadEnv()).toThrow('Missing required environment variable: DATABASE_URL');

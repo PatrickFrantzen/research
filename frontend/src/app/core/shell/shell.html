@@ -7,7 +7,9 @@
     <nav class="desktop-nav" aria-label="Hauptnavigation">
       <a matButton routerLink="/wareneintraege" routerLinkActive="aktiv" ariaCurrentWhenActive="page">Wareneinträge</a>
       <a matButton routerLink="/wareneintrag-erfassen" routerLinkActive="aktiv" ariaCurrentWhenActive="page">Wareneintrag erfassen</a>
-      <a matButton routerLink="/nutzer-anlegen" routerLinkActive="aktiv" ariaCurrentWhenActive="page">Nutzer anlegen</a>
+      @if (authService.istAdmin()) {
+        <a matButton routerLink="/nutzerverwaltung" routerLinkActive="aktiv" ariaCurrentWhenActive="page">Nutzerverwaltung</a>
+      }
       <a matButton routerLink="/einstellungen" routerLinkActive="aktiv" ariaCurrentWhenActive="page">Einstellungen</a>
     </nav>
     <button

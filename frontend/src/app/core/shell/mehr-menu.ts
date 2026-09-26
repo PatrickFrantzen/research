@@ -11,10 +11,12 @@ import { ThemeService } from '../theme.service.js';
   imports: [MatIconModule, MatListModule, RouterLink],
   template: `
     <mat-nav-list>
-      <a mat-list-item routerLink="/nutzer-anlegen" (click)="schliessen()">
-        <mat-icon matListItemIcon>person_add</mat-icon>
-        <span matListItemTitle>Nutzer anlegen</span>
-      </a>
+      @if (authService.istAdmin()) {
+        <a mat-list-item routerLink="/nutzerverwaltung" (click)="schliessen()">
+          <mat-icon matListItemIcon>group</mat-icon>
+          <span matListItemTitle>Nutzerverwaltung</span>
+        </a>
+      }
       <a mat-list-item routerLink="/einstellungen" (click)="schliessen()">
         <mat-icon matListItemIcon>settings</mat-icon>
         <span matListItemTitle>Einstellungen</span>
@@ -34,7 +36,7 @@ import { ThemeService } from '../theme.service.js';
 })
 export class MehrMenu {
   private readonly bottomSheetRef = inject(MatBottomSheetRef<MehrMenu>);
-  private readonly authService = inject(AuthService);
+  protected readonly authService = inject(AuthService);
   protected readonly themeService = inject(ThemeService);
   private readonly router = inject(Router);
 

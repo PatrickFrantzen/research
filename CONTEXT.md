@@ -35,11 +35,18 @@ rückwirkend, wenn der Nutzer später versetzt wird (siehe
 _Avoid_: Ort, Filiale, Niederlassung
 
 **Nutzer**:
-Ein Firmenaccount ohne feste Rolle – jeder Nutzer kann Wareneinträge
-anlegen, alle Wareneinträge ansehen, nur seine eigenen bearbeiten/löschen
-und neue Nutzer-Accounts anlegen. Angelegt ausschließlich durch einen
-bereits eingeloggten Nutzer – kein Self-Signup.
+Ein Firmenaccount – jeder Nutzer kann Wareneinträge anlegen, alle
+Wareneinträge ansehen und nur seine eigenen bearbeiten/löschen. Angelegt
+ausschließlich durch einen Admin, der Nutzer bekommt per Mail eine
+Einladung zum Passwort-Setzen – kein Self-Signup.
 _Avoid_: User, Benutzer, Account, Mitarbeiter, Vorgesetzter
+
+**Admin**:
+Ein Nutzer mit Zugriff auf die Nutzerverwaltung: alle Nutzer sehen, Nutzer
+anlegen, Passwort-Mails auslösen. Initial der Bootstrap-Nutzer (siehe
+[ADR-0006](docs/adr/0006-admin-flag-und-mailversand.md)). Für Wareneinträge
+ohne Sonderrechte.
+_Avoid_: Administrator, Superuser, Vorgesetzter
 
 **Mobil-/Desktop-Ansicht**:
 Zwei Ansichten derselben App, unterschieden nur nach Bildschirmbreite, nicht

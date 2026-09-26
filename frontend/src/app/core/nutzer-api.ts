@@ -11,6 +11,18 @@ export interface EigeneDaten {
 export interface NeuerNutzer {
   email: string;
   passwortSetzenLink: string;
+  mailVersendet: boolean;
+}
+
+export interface NutzerUebersicht {
+  id: string;
+  vorname: string;
+  nachname: string;
+  email: string;
+  standort: string;
+  istAdmin: boolean;
+  einladungOffen: boolean;
+  erstelltAm: string;
 }
 
 export interface NutzerAnlegenDaten {
@@ -40,5 +52,13 @@ export class NutzerApi {
 
   legeNutzerAn(daten: NutzerAnlegenDaten) {
     return this.http.post<NeuerNutzer>('/api/v1/nutzer', daten);
+  }
+
+  liste() {
+    return this.http.get<NutzerUebersicht[]>('/api/v1/nutzer');
+  }
+
+  sendePasswortLink(id: string) {
+    return this.http.post<void>(`/api/v1/nutzer/${id}/passwort-link`, {});
   }
 }
