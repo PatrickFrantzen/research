@@ -18,6 +18,17 @@ describe('Einstellungen', () => {
 
   afterEach(() => httpMock.verify());
 
+  it('zeigt die laufende App-Version', () => {
+    const fixture = TestBed.createComponent(Einstellungen);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/v1/standorte').flush([]);
+    httpMock.expectOne('/api/v1/nutzer/me').flush({ id: 'n', vorname: 'a', nachname: 'b', email: 'c@d.de', standortId: 's' });
+    fixture.detectChanges();
+
+    // In Tests ist keine Build-Version gesetzt.
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Version dev');
+  });
+
   it('loads the own Stammdaten and prefills the form', async () => {
     const fixture = TestBed.createComponent(Einstellungen);
     fixture.detectChanges();

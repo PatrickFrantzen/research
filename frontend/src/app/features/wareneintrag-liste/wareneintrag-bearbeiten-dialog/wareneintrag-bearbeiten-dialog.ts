@@ -7,6 +7,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatMenuModule } from '@angular/material/menu';
 import { debounceTime, distinctUntilChanged, firstValueFrom, Subject } from 'rxjs';
 import { AvvCodeApi } from '../../../core/avv-code-api.js';
 import { AppFehlerMelder } from '../../../core/app-fehler-melder.js';
@@ -50,6 +51,7 @@ const AVV_SUCHE_DEBOUNCE_MS = 300;
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
+    MatMenuModule,
   ],
   templateUrl: './wareneintrag-bearbeiten-dialog.html',
   styles: `

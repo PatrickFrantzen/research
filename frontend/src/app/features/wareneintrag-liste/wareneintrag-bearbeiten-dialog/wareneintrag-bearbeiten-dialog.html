@@ -30,6 +30,15 @@
   <div class="fotos-ersetzen">
     @for (kachel of fotoKacheln; track kachel.ansicht) {
       <input
+        #kameraInput
+        type="file"
+        hidden
+        capture="environment"
+        [attr.data-testid]="'bearbeiten-kamera-' + kachel.ansicht"
+        accept="image/jpeg,image/png,image/webp"
+        (change)="fotoErsetzen(kachel.ansicht, $event)"
+      />
+      <input
         #fotoInput
         type="file"
         hidden
@@ -37,7 +46,11 @@
         accept="image/jpeg,image/png,image/webp"
         (change)="fotoErsetzen(kachel.ansicht, $event)"
       />
-      <button matButton="outlined" type="button" (click)="fotoInput.click()">
+      <mat-menu #quelle="matMenu">
+        <button mat-menu-item type="button" (click)="kameraInput.click()"><mat-icon>photo_camera</mat-icon>Kamera</button>
+        <button mat-menu-item type="button" (click)="fotoInput.click()"><mat-icon>photo_library</mat-icon>Galerie</button>
+      </mat-menu>
+      <button matButton="outlined" type="button" [matMenuTriggerFor]="quelle">
         <mat-icon>{{ dateiname(kachel.ansicht) ? 'check' : 'photo_camera' }}</mat-icon>
         {{ kachel.label }} ersetzen
       </button>

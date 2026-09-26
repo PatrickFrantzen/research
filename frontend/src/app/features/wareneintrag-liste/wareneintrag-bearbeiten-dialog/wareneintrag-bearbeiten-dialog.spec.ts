@@ -92,6 +92,25 @@ describe('WareneintragBearbeitenDialog', () => {
     expect(melde).toHaveBeenCalledOnceWith(jasmine.stringContaining('Nahansicht: Datei ist größer als 10 MB.'));
   });
 
+  it('lässt beim Ersetzen eines Fotos zwischen Kamera und Galerie wählen', async () => {
+    const fixture = createComponent();
+    const element = fixture.nativeElement as HTMLElement;
+    const kamera = element.querySelector('[data-testid="bearbeiten-kamera-fotoNah"]') as HTMLInputElement;
+    const kameraKlick = spyOn(kamera, 'click');
+    expect(kamera.getAttribute('capture')).toBe('environment');
+    expect(element.querySelector('[data-testid="bearbeiten-foto-fotoNah"]')?.hasAttribute('capture')).toBe(false);
+
+    const ersetzen = Array.from(element.querySelectorAll('button')).find((b) => b.textContent?.includes('Nahansicht ersetzen'))!;
+    ersetzen.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    (Array.from(document.querySelectorAll('.mat-mdc-menu-item')) as HTMLButtonElement[])
+      .find((e) => e.textContent?.includes('Kamera'))!
+      .click();
+
+    expect(kameraKlick).toHaveBeenCalled();
+  });
+
   it('prefills the freitext field from the given Wareneintrag', () => {
     const fixture = createComponent();
     expect(fixture.componentInstance.freitext).toBe('alter Text');

@@ -10,7 +10,10 @@ WORKDIR /workspace/frontend
 COPY frontend/package*.json ./
 RUN npm install --legacy-peer-deps
 COPY frontend/ ./
-RUN npm run build
+# Sichtbare Version in den Einstellungen (Commit · Build-Datum), das
+# Deploy-Skript setzt APP_VERSION auf den Commit.
+ARG APP_VERSION=dev
+RUN npm run build -- --define "APP_VERSION=\"${APP_VERSION} · $(TZ=Europe/Berlin date +%d.%m.%Y)\""
 
 FROM node:22.23-bookworm-slim AS backend-build
 WORKDIR /workspace/backend
