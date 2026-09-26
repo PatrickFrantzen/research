@@ -46,16 +46,35 @@ describe('WareneintragErfassen', () => {
   }
 
   describe('Fotoauswahl (Issue #59)', () => {
-    // Ohne capture-Attribut bietet das Handy selbst die Wahl Kamera oder Galerie.
-    it('offers only the image types the server accepts and lets the phone offer camera or gallery', () => {
+    // Android bietet bei eingeschränkten Bildtypen keine Kamera an, daher je
+    // Kachel ein Feld für die Kamera (capture) und eins für die Galerie.
+    it('offers only the image types the server accepts, with a camera and a gallery field per tile', () => {
       const fixture = createComponent();
-      const inputs = fixture.nativeElement.querySelectorAll('input[type="file"]') as NodeListOf<HTMLInputElement>;
+      const inputs = Array.from(fixture.nativeElement.querySelectorAll('input[type="file"]') as NodeListOf<HTMLInputElement>);
 
-      expect(inputs.length).toBe(3);
-      inputs.forEach((input) => {
-        expect(input.accept).toBe('image/jpeg,image/png,image/webp');
-        expect(input.hasAttribute('capture')).toBe(false);
-      });
+      expect(inputs.length).toBe(6);
+      inputs.forEach((input) => expect(input.accept).toBe('image/jpeg,image/png,image/webp'));
+      expect(inputs.filter((input) => input.getAttribute('capture') === 'environment').length).toBe(3);
+      expect(inputs.filter((input) => !input.hasAttribute('capture')).length).toBe(3);
+    });
+
+    it('lässt beim Tippen auf eine Kachel zwischen Kamera und Galerie wählen', async () => {
+      const fixture = createComponent();
+      const element = fixture.nativeElement as HTMLElement;
+      const kamera = element.querySelector('[data-testid="kamera-fotoFern"]') as HTMLInputElement;
+      const galerie = element.querySelector('[data-testid="galerie-fotoFern"]') as HTMLInputElement;
+      const kameraKlick = spyOn(kamera, 'click');
+      const galerieKlick = spyOn(galerie, 'click');
+
+      (element.querySelector('[aria-label="Fernansicht hinzufügen"]') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const eintraege = Array.from(document.querySelectorAll('.mat-mdc-menu-item')) as HTMLButtonElement[];
+      expect(eintraege.map((e) => e.textContent?.trim())).toEqual(['photo_cameraKamera', 'photo_libraryGalerie']);
+
+      eintraege[1].click();
+      expect(galerieKlick).toHaveBeenCalled();
+      expect(kameraKlick).not.toHaveBeenCalled();
     });
 
     it('rejects an unsupported file type before any request: message, no preview, not submitted', async () => {

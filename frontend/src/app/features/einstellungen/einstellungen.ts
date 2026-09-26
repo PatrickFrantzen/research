@@ -9,6 +9,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
+import { appVersion } from '../../core/app-version.js';
 import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
 import { LadeZustand } from '../../core/lade-zustand/lade-zustand.js';
 import { NutzerApi } from '../../core/nutzer-api.js';
@@ -58,6 +59,7 @@ export class Einstellungen {
 
   protected readonly fehler = signal<string | null>(null);
   protected readonly wirdGeladen = signal(false);
+  protected readonly version = appVersion;
 
   constructor() {
     effect(() => {

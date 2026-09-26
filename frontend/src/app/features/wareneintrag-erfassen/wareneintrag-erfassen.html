@@ -10,10 +10,22 @@
         <div class="foto-kacheln">
           @for (kachel of fotoKacheln; track kachel.ansicht) {
             <div class="foto-kachel">
+              <!-- Zwei Felder: Android bietet bei eingeschränkten Bildtypen keine
+                   Kamera an, deshalb wählt der Nutzer die Quelle selbst. -->
               <input
-                #fotoInput
+                #kameraInput
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
+                capture="environment"
+                [attr.data-testid]="'kamera-' + kachel.ansicht"
+                (change)="onFotoAusgewaehlt(kachel.ansicht, $event)"
+                hidden
+              />
+              <input
+                #galerieInput
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                [attr.data-testid]="'galerie-' + kachel.ansicht"
                 (change)="onFotoAusgewaehlt(kachel.ansicht, $event)"
                 hidden
               />
@@ -22,7 +34,7 @@
                 class="foto-kachel-inhalt"
                 [class.hat-foto]="fotoVorschau(kachel.ansicht)"
                 [attr.aria-label]="kachel.label + ' hinzufügen'"
-                (click)="fotoInput.click()"
+                [matMenuTriggerFor]="quelle"
               >
                 @if (fotoVorschau(kachel.ansicht); as url) {
                   <img [src]="url" [alt]="kachel.label" />
@@ -31,6 +43,14 @@
                 }
               </button>
               <span class="foto-kachel-label">{{ kachel.label }}</span>
+              <mat-menu #quelle="matMenu">
+                <button mat-menu-item type="button" (click)="kameraInput.click()">
+                  <mat-icon>photo_camera</mat-icon>Kamera
+                </button>
+                <button mat-menu-item type="button" (click)="galerieInput.click()">
+                  <mat-icon>photo_library</mat-icon>Galerie
+                </button>
+              </mat-menu>
             </div>
           }
         </div>

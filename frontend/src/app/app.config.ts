@@ -12,6 +12,7 @@ import { provideRouter } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
 
 import { routes } from './app.routes';
+import { AppAktualisierung } from './core/app-aktualisierung';
 import { MeldenderErrorHandler } from './core/app-fehler-melder';
 import { AuthService } from './core/auth.service';
 import { csrfInterceptor } from './core/csrf.interceptor';
@@ -33,6 +34,8 @@ export const appConfig: ApplicationConfig = {
     provideAppInitializer(() => inject(AuthService).init()),
     // Fokus nach Seitenwechsel auf die neue Hauptüberschrift (Issue #54).
     provideAppInitializer(() => fokussiereUeberschriftNachNavigation()),
+    // Neue Versionen ohne manuelles Schließen der App laden.
+    provideAppInitializer(() => inject(AppAktualisierung).init()),
     // Gespeicherten Farbmodus vor dem ersten Rendern anwenden (kein Aufblitzen).
     provideAppInitializer(() => void inject(ThemeService)),
     // Cached App-Shell-Build für wiederholte Aufrufe, siehe Issue #7. Bewusst

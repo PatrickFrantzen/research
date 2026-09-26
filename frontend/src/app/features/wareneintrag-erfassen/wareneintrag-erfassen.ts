@@ -7,6 +7,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterLink } from '@angular/router';
 import { debounceTime, distinctUntilChanged, firstValueFrom, Subject } from 'rxjs';
@@ -48,6 +49,7 @@ const SUCHE_DEBOUNCE_MS = 300;
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
+    MatMenuModule,
     RouterLink,
   ],
   templateUrl: './wareneintrag-erfassen.html',
@@ -112,7 +114,8 @@ export class WareneintragErfassen {
   protected readonly fehler = signal<string | null>(null);
   protected readonly fotoFehler = signal<string | null>(null);
   private readonly fehlerMelder = inject(AppFehlerMelder);
-  private readonly fotoInputs = viewChildren<ElementRef<HTMLInputElement>>('fotoInput');
+  private readonly kameraInputs = viewChildren<ElementRef<HTMLInputElement>>('kameraInput');
+  private readonly galerieInputs = viewChildren<ElementRef<HTMLInputElement>>('galerieInput');
   protected readonly wirdGeladen = signal(false);
 
   fotoVorschau(ansicht: FotoAnsicht): string | null {
@@ -191,7 +194,7 @@ export class WareneintragErfassen {
 
   weitererEintrag(): void {
     // Sonst löst die erneute Auswahl derselben Datei kein change aus (Issue #59).
-    for (const input of this.fotoInputs()) input.nativeElement.value = '';
+    for (const input of [...this.kameraInputs(), ...this.galerieInputs()]) input.nativeElement.value = '';
     this.fotoFehler.set(null);
     this.fotos.fotoFern = null;
     this.fotos.fotoNah = null;
