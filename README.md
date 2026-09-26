@@ -107,7 +107,7 @@ docker run -d --name e2e-postgres -p 5432:5432 -e POSTGRES_USER=research \
   -e POSTGRES_PASSWORD=research -e POSTGRES_DB=research_e2e postgres:16-alpine
 docker run -d --name e2e-redis -p 6379:6379 redis:8.8.2-alpine
 docker run -d --name e2e-minio -p 9000:9000 -e MINIO_ROOT_USER=research \
-  -e MINIO_ROOT_PASSWORD=research-secret quay.io/minio/minio server /data
+  -e MINIO_ROOT_PASSWORD=research-secret cgr.dev/chainguard/minio server /data
 npx playwright install chromium   # im Verzeichnis frontend
 
 cd backend && npm run build && cd ../frontend && npm run build && npm run e2e

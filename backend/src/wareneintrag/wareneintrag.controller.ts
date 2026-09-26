@@ -33,9 +33,20 @@ const MAX_PRO_SEITE = 100;
 // Magic-Number-Prüfung statt client-kontrolliertem MIME-Type (Issue #32).
 const ERLAUBTE_FOTO_TYPEN = /^(image\/jpeg|image\/png|image\/webp)$/;
 
-// Multer bricht den Stream ab, sobald das Limit überschritten wird, statt
-// die komplette (potenziell riesige) Datei erst in den RAM zu puffern.
-const FOTO_UPLOAD_OPTIONS = { storage: memoryStorage(), limits: { fileSize: FOTO_MAX_GROESSE_BYTES } };
+// Multer bricht den Stream ab, sobald ein Limit überschritten wird, statt
+// die komplette (potenziell riesige) Anfrage erst in den RAM zu puffern.
+// Neben der Dateigröße sind auch Anzahl und Größe der Textfelder begrenzt,
+// sonst puffert multer beliebig viele Felder à 1 MiB (Security-Audit run-1).
+const FOTO_UPLOAD_OPTIONS = {
+  storage: memoryStorage(),
+  limits: {
+    fileSize: FOTO_MAX_GROESSE_BYTES,
+    files: 3,
+    fields: 5,
+    fieldSize: 16 * 1024, // Freitext max. 2000 Zeichen à max. 4 Byte UTF-8
+    parts: 8,
+  },
+};
 
 // Alle drei Ansichten sind optional – der Nutzer entscheidet selbst, wie
 // viele Fotos er aufnimmt (0 bis 3), siehe CONTEXT.md.

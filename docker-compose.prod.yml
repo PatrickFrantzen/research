@@ -96,7 +96,13 @@ services:
         condition: service_healthy
 
   minio:
-    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z.hotfix.7aa24e772
+    # MinIO veröffentlicht keine Community-Images mehr, quay.io verlangt seit
+    # 24.09.2026 Anmeldung (Issue #83). Chainguard baut MinIO aus dem Quellcode,
+    # kostenlos nur als `latest`, daher per Digest gepinnt.
+    image: cgr.dev/chainguard/minio:latest@sha256:bd014394a80898e68c149f2311fdf8d5a2c2f3bb2c33b9327ae6d02b4b065ae1
+    # Chainguard läuft standardmäßig als UID 65532; bestehende Volumes wurden
+    # vom alten Image als root beschrieben, daher weiterhin root.
+    user: "0:0"
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
@@ -111,12 +117,12 @@ services:
       retries: 10
 
   minio-init:
-    image: quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z-cpuv1
+    image: cgr.dev/chainguard/minio-client:latest@sha256:b8b144ab34694ecea25aa352c4be9de4c26ee2a02701521dce02ee5593c57338
     depends_on:
       minio:
         condition: service_healthy
     entrypoint: >
-      sh -c "
+      bash -c "
         mc alias set local http://minio:9000 research ${MINIO_ROOT_PASSWORD} &&
         mc mb --ignore-existing local/research-fotos &&
         (mc admin user add local research-app ${MINIO_APP_SECRET} || true) &&

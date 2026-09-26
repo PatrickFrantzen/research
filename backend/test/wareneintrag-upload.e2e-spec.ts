@@ -107,4 +107,28 @@ describe('Wareneintrag-Foto-Upload: Härtung', () => {
 
     expect([413, 422]).toContain(response.status);
   });
+  it('rejects multipart requests with more text fields than the form has', async () => {
+    let anfrage = request(app.getHttpServer())
+      .post('/wareneintraege')
+      .field('avvCodeId', 'f8a3632d-6b2c-4843-b223-85a711b4a9a7')
+      .field('freitext', 'Testeintrag');
+    for (let i = 0; i < 20; i++) {
+      anfrage = anfrage.field(`zusatz${i}`, 'x');
+    }
+
+    const response = await anfrage;
+
+    expect([400, 413]).toContain(response.status);
+    expect(response.body.message).toEqual(expect.stringMatching(/field/i));
+  });
+
+  it('rejects a text field larger than the per-field limit while parsing', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/wareneintraege')
+      .field('avvCodeId', 'f8a3632d-6b2c-4843-b223-85a711b4a9a7')
+      .field('freitext', 'a'.repeat(100 * 1024));
+
+    expect([400, 413]).toContain(response.status);
+    expect(response.body.message).toEqual(expect.stringMatching(/field/i));
+  });
 });

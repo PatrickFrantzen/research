@@ -2,6 +2,9 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import type { AvvCode } from './avv-code-api.js';
 
+// Muss zur Backend-Grenze in CreateWareneintragDto passen (Security-Audit run-1).
+export const FREITEXT_MAX_LAENGE = 2000;
+
 export interface Wareneintrag {
   id: string;
   fotoFernUrl: string | null;

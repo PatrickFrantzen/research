@@ -36,6 +36,12 @@ export class AuthService {
     if (!nutzer) {
       return;
     }
+    // Ein noch gültiger Initial-Zugang-Link darf nicht anonym ersetzt werden:
+    // der neue Link wird (noch) nicht zugestellt, der Einladungslink wäre
+    // damit tot und das Konto ließe sich nicht mehr aktivieren (Security-Audit run-1).
+    if (nutzer.mussPasswortSetzen && nutzer.passwortSetzenTokenAblauf && nutzer.passwortSetzenTokenAblauf > new Date()) {
+      return;
+    }
 
     const { rawToken, hashedToken } = erzeugePasswortSetzenToken();
     await this.prisma.nutzer.update({

@@ -129,6 +129,18 @@ describe('WareneintragBearbeitenDialog', () => {
     expect(component.kannSpeichern).toBe(true);
   }));
 
+  it('cannot be saved with a freitext longer than the backend limit of 2000 characters', () => {
+    const fixture = createComponent();
+    const component = asTestable(fixture.componentInstance);
+
+    const daten = (fixture.componentInstance as unknown as {
+      bearbeitungDaten: { update: (fn: (d: { freitext: string }) => { freitext: string }) => void };
+    }).bearbeitungDaten;
+    daten.update((d) => ({ ...d, freitext: 'a'.repeat(2001) }));
+
+    expect(component.kannSpeichern).toBe(false);
+  });
+
   it('submits avvCodeId, freitext and only the replaced fotos as FormData and closes with true on success', fakeAsync(() => {
     const fixture = createComponent();
     const component = asTestable(fixture.componentInstance);
