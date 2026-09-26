@@ -1,6 +1,7 @@
 import { provideHttpClient, withInterceptors, withXhr } from '@angular/common/http';
 import {
   ApplicationConfig,
+  ErrorHandler,
   inject,
   isDevMode,
   provideAppInitializer,
@@ -11,6 +12,7 @@ import { provideRouter } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
 
 import { routes } from './app.routes';
+import { MeldenderErrorHandler } from './core/app-fehler-melder';
 import { AuthService } from './core/auth.service';
 import { csrfInterceptor } from './core/csrf.interceptor';
 import { fokussiereUeberschriftNachNavigation } from './core/fokus-nach-navigation';
@@ -20,6 +22,8 @@ import { unauthorizedInterceptor } from './core/unauthorized.interceptor';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    // Unerwartete Fehler zusätzlich ans Fehler-Log des Servers (ADR-0007).
+    { provide: ErrorHandler, useClass: MeldenderErrorHandler },
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideHttpClient(withXhr(), withInterceptors([csrfInterceptor, unauthorizedInterceptor])),

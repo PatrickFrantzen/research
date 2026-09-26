@@ -9,7 +9,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { debounceTime, distinctUntilChanged, firstValueFrom, Subject } from 'rxjs';
 import { AvvCodeApi } from '../../../core/avv-code-api.js';
-import { pruefeFoto } from '../../../core/foto-validierung.js';
+import { AppFehlerMelder } from '../../../core/app-fehler-melder.js';
+import { beschreibeFoto, pruefeFoto } from '../../../core/foto-validierung.js';
 import { extrahiereFehlermeldung } from '../../../core/http-fehler.js';
 import { FREITEXT_MAX_LAENGE, Wareneintrag, WareneintragApi } from '../../../core/wareneintrag-api.js';
 import { FokusBeiAnzeige } from '../../../core/fokus-bei-anzeige.js';
@@ -105,6 +106,7 @@ export class WareneintragBearbeitenDialog {
   protected speichernLaeuft = false;
   protected readonly fehler = signal<string | null>(null);
   protected readonly fotoFehler = signal<string | null>(null);
+  private readonly fehlerMelder = inject(AppFehlerMelder);
 
   get freitext(): string {
     return this.bearbeitungDaten().freitext;
@@ -140,6 +142,7 @@ export class WareneintragBearbeitenDialog {
     const meldung = auswahl ? pruefeFoto(auswahl) : null;
     const label = this.fotoKacheln.find((kachel) => kachel.ansicht === ansicht)?.label;
     this.fotoFehler.set(meldung ? `${label}: ${meldung}` : null);
+    if (meldung && auswahl) this.fehlerMelder.melde(`Foto abgelehnt: ${label}: ${meldung} ${beschreibeFoto(auswahl)}`);
     const datei = meldung ? null : auswahl;
     this.fotos.update((fotos) => ({ ...fotos, [ansicht]: datei }));
   }

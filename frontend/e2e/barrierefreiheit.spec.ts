@@ -16,6 +16,7 @@ const GESCHUETZTE_SEITEN = [
   { pfad: '/wareneintraege', ueberschrift: 'Wareneinträge' },
   { pfad: '/wareneintrag-erfassen', ueberschrift: 'Wareneintrag erfassen' },
   { pfad: '/nutzerverwaltung', ueberschrift: 'Nutzerverwaltung' },
+  { pfad: '/protokolle', ueberschrift: 'Logs' },
   { pfad: '/nutzer-anlegen', ueberschrift: 'Nutzer anlegen' },
   { pfad: '/einstellungen', ueberschrift: 'Einstellungen' },
 ];

@@ -11,6 +11,7 @@ import { loadEnv } from './config/env.js';
 import { HealthModule } from './health/health.module.js';
 import { NutzerModule } from './nutzer/nutzer.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
+import { ProtokollModule } from './protokoll/protokoll.module.js';
 import { StandortModule } from './standort/standort.module.js';
 import { WareneintragModule } from './wareneintrag/wareneintrag.module.js';
 
@@ -37,6 +38,7 @@ const frontendDistPath = path.resolve(
       exclude: ['/api/{*splat}'],
     }),
     PrismaModule,
+    ProtokollModule,
     HealthModule,
     AuthModule,
     NutzerModule,

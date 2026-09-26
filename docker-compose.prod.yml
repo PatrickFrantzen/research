@@ -49,6 +49,9 @@ services:
       MAIL_FROM: ${MAIL_FROM:-}
       APP_URL: https://${DOMAIN}
       REDIS_URL: redis://redis:6379
+    # Tages-Logs (Aktivität/Fehler) überleben so Rebuilds, siehe ADR-0007.
+    volumes:
+      - app-logs:/app/backend/logs
     depends_on:
       postgres:
         condition: service_healthy
@@ -132,6 +135,7 @@ services:
       "
 
 volumes:
+  app-logs:
   postgres-data:
   minio-data:
   caddy-data:
