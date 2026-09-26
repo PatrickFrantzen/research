@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { erzeugePasswortSetzenToken } from '../auth/passwort-setzen-token.js';
 import { Mailer } from '../mailer/mailer.js';
@@ -68,6 +68,7 @@ export class NutzerService {
   }
 
   async createNutzer(erstelltVonId: string, dto: CreateNutzerDto): Promise<NeuerNutzer> {
+    const standortId = await this.standortIdAus(dto);
     // Platzhalter-Passwort: unbrauchbar, bis der neue Nutzer über den
     // Initial-Zugang sein eigenes Passwort setzt.
     const platzhalterPasswortHash = await bcrypt.hash(randomUUID(), 12);
@@ -78,7 +79,7 @@ export class NutzerService {
         vorname: dto.vorname,
         nachname: dto.nachname,
         email: normalisiereEmail(dto.email),
-        standortId: dto.standortId,
+        standortId,
         passwortHash: platzhalterPasswortHash,
         mussPasswortSetzen: true,
         passwortSetzenToken: hashedToken,
@@ -123,9 +124,10 @@ export class NutzerService {
   async updateEigeneDaten(id: string, dto: UpdateEigeneDatenDto) {
     // Standort wird nur am Nutzer aktualisiert; bereits erfasste Wareneinträge
     // behalten ihre eigene Standort-Kopie, siehe ADR-0004.
+    const standortId = await this.standortIdAus(dto);
     const nutzer = await this.prisma.nutzer.update({
       where: { id },
-      data: { vorname: dto.vorname, nachname: dto.nachname, standortId: dto.standortId },
+      data: { vorname: dto.vorname, nachname: dto.nachname, standortId },
     });
     return {
       id: nutzer.id,
@@ -134,5 +136,20 @@ export class NutzerService {
       email: nutzer.email,
       standortId: nutzer.standortId,
     };
+  }
+
+  // Standort aus der Liste oder als Freitext. Freitext wird ohne Rücksicht auf
+  // Groß-/Kleinschreibung einem vorhandenen Standort zugeordnet, sonst angelegt.
+  // Bewusst ohne Schutz vor Missbrauch: nur Firmenpersonal nutzt die App.
+  private async standortIdAus(dto: { standortId?: string; neuerStandort?: string }): Promise<string> {
+    const name = dto.neuerStandort?.trim();
+    if (!!dto.standortId === !!name) {
+      throw new BadRequestException('Bitte einen Standort aus der Liste wählen oder einen neuen eintragen.');
+    }
+    if (dto.standortId) return dto.standortId;
+    const vorhanden = await this.prisma.standort.findFirst({
+      where: { name: { equals: name!, mode: 'insensitive' } },
+    });
+    return (vorhanden ?? (await this.prisma.standort.create({ data: { name: name! } }))).id;
   }
 }

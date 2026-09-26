@@ -57,6 +57,10 @@ describe('Admin-Bereich', () => {
     process.env['REDIS_URL'] ??= 'redis://localhost:6379';
 
     const prisma = {
+      standort: {
+        findFirst: async () => null,
+        create: async ({ data }: { data: { name: string } }) => ({ id: 'standort-neu', ...data }),
+      },
       nutzer: {
         findUnique: async ({ where }: { where: { id: string } }) => nutzer.find((n) => n.id === where.id) ?? null,
         findMany: async () => nutzer,
@@ -185,5 +189,23 @@ describe('Admin-Bereich', () => {
     expect(anlegen.status).toBe(201);
     expect(mail.status).toBe(204);
     expect(unbekannt.status).toBe(404);
+  });
+
+  it('Admin legt einen Nutzer mit neuem Standort als Freitext an, genau eins von beidem ist Pflicht', async () => {
+    const cookies = await cookiesFuer('admin-1');
+    const anlegen = (daten: Record<string, string>) =>
+      request(app.getHttpServer())
+        .post('/api/v1/nutzer')
+        .set('Cookie', cookies)
+        .set('x-csrf-token', csrf)
+        .send({ vorname: 'Neu', nachname: 'Nutzer', email: 'neu@research.local', ...daten });
+
+    const mitFreitext = await anlegen({ neuerStandort: 'Winsen' });
+    const ohne = await anlegen({});
+    const beides = await anlegen({ standortId: neuerNutzer.standortId, neuerStandort: 'Winsen' });
+
+    expect(mitFreitext.status).toBe(201);
+    expect(mitFreitext.body.standortId).toBe('standort-neu');
+    expect([ohne.status, beides.status]).toEqual([400, 400]);
   });
 });

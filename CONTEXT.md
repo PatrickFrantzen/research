@@ -27,8 +27,11 @@ Wareneintrags klassifiziert und ein Gefährlich-Flag trägt.
 _Avoid_: AVV-Nummer, Abfallschlüssel
 
 **Standort**:
-Eine Firmen-Niederlassung aus einer festen, zentral gepflegten Liste, der
-ein Nutzer fest zugeordnet ist. Der Standort eines Wareneintrags ist eine
+Eine Firmen-Niederlassung, der ein Nutzer zugeordnet ist. Steht sie nicht
+in der Liste, kann sie beim Anlegen eines Nutzers oder in den eigenen
+Einstellungen als Freitext eingetragen werden und wird dann angelegt
+(gleicher Name ohne Rücksicht auf Groß-/Kleinschreibung = derselbe
+Standort). Der Standort eines Wareneintrags ist eine
 Kopie des Nutzer-Standorts zum Erfassungszeitpunkt – ändert sich nicht
 rückwirkend, wenn der Nutzer später versetzt wird (siehe
 [ADR-0004](docs/adr/0004-standort-am-wareneintrag-als-snapshot.md)).

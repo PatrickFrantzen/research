@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
 import { hashPasswortSetzenToken } from '../auth/passwort-setzen-token.js';
 import { NutzerService } from './nutzer.service.js';
@@ -162,6 +163,64 @@ describe('NutzerService', () => {
         email: 'erika@research.local',
         standortId: 'standort-2',
       });
+    });
+  });
+
+  describe('Standort als Freitext', () => {
+    function prismaMitStandorten(vorhandene: Array<{ id: string; name: string }>) {
+      return {
+        standort: {
+          // Nachbau von "equals + mode: insensitive"
+          findFirst: vi.fn(async ({ where }) =>
+            vorhandene.find((s) => s.name.toLowerCase() === where.name.equals.toLowerCase()) ?? null,
+          ),
+          create: vi.fn(async ({ data }) => ({ id: 'standort-neu', ...data })),
+        },
+        nutzer: {
+          create: vi.fn(async ({ data }) => ({ id: 'nutzer-2', ...data })),
+          update: vi.fn(async ({ data }) => ({ id: 'nutzer-1', vorname: 'E', nachname: 'M', email: 'e@x.de', ...data })),
+        },
+      };
+    }
+    const neu = { vorname: 'Neu', nachname: 'N', email: 'neu@research.local' };
+
+    it('nimmt einen vorhandenen Standort unabhängig von Groß-/Kleinschreibung statt eine Dublette anzulegen', async () => {
+      const prisma = prismaMitStandorten([{ id: 'standort-lg', name: 'Lüneburg' }]);
+      const service = new NutzerService(prisma as never, mailerFake() as never);
+
+      await service.createNutzer('admin-1', { ...neu, neuerStandort: '  lüneburg ' });
+
+      expect(prisma.standort.create).not.toHaveBeenCalled();
+      expect(prisma.nutzer.create.mock.calls[0][0].data.standortId).toBe('standort-lg');
+    });
+
+    it('legt einen unbekannten Standort neu an und ordnet den Nutzer zu', async () => {
+      const prisma = prismaMitStandorten([]);
+      const service = new NutzerService(prisma as never, mailerFake() as never);
+
+      await service.createNutzer('admin-1', { ...neu, neuerStandort: ' Winsen ' });
+
+      expect(prisma.standort.create).toHaveBeenCalledWith({ data: { name: 'Winsen' } });
+      expect(prisma.nutzer.create.mock.calls[0][0].data.standortId).toBe('standort-neu');
+    });
+
+    it('lässt auch in den eigenen Einstellungen einen neuen Standort zu', async () => {
+      const prisma = prismaMitStandorten([]);
+      const service = new NutzerService(prisma as never, mailerFake() as never);
+
+      const result = await service.updateEigeneDaten('nutzer-1', { vorname: 'E', nachname: 'M', neuerStandort: 'Außenstelle Nord' });
+
+      expect(prisma.standort.create).toHaveBeenCalledWith({ data: { name: 'Außenstelle Nord' } });
+      expect(result.standortId).toBe('standort-neu');
+    });
+
+    it('verlangt genau eins von beidem: Standort aus der Liste oder Freitext', async () => {
+      const service = new NutzerService(prismaMitStandorten([]) as never, mailerFake() as never);
+
+      await expect(service.createNutzer('admin-1', { ...neu })).rejects.toBeInstanceOf(BadRequestException);
+      await expect(
+        service.createNutzer('admin-1', { ...neu, standortId: 'standort-1', neuerStandort: 'Winsen' }),
+      ).rejects.toBeInstanceOf(BadRequestException);
     });
   });
 });

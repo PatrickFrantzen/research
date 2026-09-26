@@ -1,7 +1,7 @@
 import { ClipboardModule } from '@angular/cdk/clipboard';
 import { Component, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { FormField, disabled, email as emailValidator, form, required } from '@angular/forms/signals';
+import { FormField, disabled, email as emailValidator, form, required, maxLength } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -14,7 +14,7 @@ import { firstValueFrom } from 'rxjs';
 import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
 import { LadeZustand } from '../../core/lade-zustand/lade-zustand.js';
 import { NeuerNutzer, NutzerApi } from '../../core/nutzer-api.js';
-import { StandortApi } from '../../core/standort-api.js';
+import { ANDERER_STANDORT, StandortApi, standortAuswahl } from '../../core/standort-api.js';
 import { FokusBeiAnzeige } from '../../core/fokus-bei-anzeige.js';
 
 @Component({
@@ -46,13 +46,16 @@ export class NutzerAnlegen {
   // Ohne geladene Standorte ist kein gültiger Account möglich (Issue #60).
   protected readonly standortListe = computed(() => (this.standorte.hasValue() ? this.standorte.value() : []));
 
-  protected readonly nutzerDaten = signal({ vorname: '', nachname: '', email: '', standortId: '' });
+  protected readonly ANDERER_STANDORT = ANDERER_STANDORT;
+  protected readonly nutzerDaten = signal({ vorname: '', nachname: '', email: '', standortId: '', neuerStandort: '' });
   protected readonly nutzerForm = form(this.nutzerDaten, (pfad) => {
     required(pfad.vorname);
     required(pfad.nachname);
     required(pfad.email);
     emailValidator(pfad.email);
     required(pfad.standortId);
+    required(pfad.neuerStandort, { when: () => this.nutzerDaten().standortId === ANDERER_STANDORT });
+    maxLength(pfad.neuerStandort, 100);
     disabled(pfad.standortId, { when: () => !this.standorte.hasValue() });
   });
 
@@ -92,6 +95,14 @@ export class NutzerAnlegen {
     this.nutzerDaten.update((daten) => ({ ...daten, standortId }));
   }
 
+  get neuerStandort(): string {
+    return this.nutzerDaten().neuerStandort;
+  }
+
+  set neuerStandort(neuerStandort: string) {
+    this.nutzerDaten.update((daten) => ({ ...daten, neuerStandort }));
+  }
+
   async submit(): Promise<void> {
     if (!this.standorte.hasValue() || !this.nutzerForm().valid()) return;
     this.fehler.set(null);
@@ -102,11 +113,13 @@ export class NutzerAnlegen {
           vorname: this.vorname,
           nachname: this.nachname,
           email: this.email,
-          standortId: this.standortId,
+          ...standortAuswahl(this.standortId, this.neuerStandort),
         }),
       );
+      // Neu angelegter Standort soll beim nächsten Nutzer in der Liste stehen.
+      if (this.standortId === ANDERER_STANDORT) this.standorte.reload();
       this.angelegt.set(result);
-      this.nutzerDaten.set({ vorname: '', nachname: '', email: '', standortId: '' });
+      this.nutzerDaten.set({ vorname: '', nachname: '', email: '', standortId: '', neuerStandort: '' });
     } catch (error) {
       this.fehler.set(extrahiereFehlermeldung(error, 'Account konnte nicht angelegt werden.'));
     } finally {

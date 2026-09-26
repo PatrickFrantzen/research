@@ -1,4 +1,4 @@
-import { IsString, IsUUID, MinLength } from 'class-validator';
+import { IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
 
 export class UpdateEigeneDatenDto {
   @IsString()
@@ -9,6 +9,14 @@ export class UpdateEigeneDatenDto {
   @MinLength(1)
   nachname!: string;
 
+  // Genau eins von beidem, siehe NutzerService.standortIdAus.
+  @IsOptional()
   @IsUUID()
-  standortId!: string;
+  standortId?: string;
+
+  // Freitext, wenn der Standort nicht in der Liste steht (wird angelegt).
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  neuerStandort?: string;
 }

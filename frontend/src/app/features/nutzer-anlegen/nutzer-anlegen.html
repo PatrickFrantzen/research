@@ -60,11 +60,20 @@
               @for (standort of standortListe(); track standort.id) {
                 <mat-option [value]="standort.id">{{ standort.name }}</mat-option>
               }
+              <mat-option [value]="ANDERER_STANDORT">Anderer Standort …</mat-option>
             </mat-select>
             @if (standorte.hasValue() && standortListe().length === 0) {
               <mat-hint>Es sind noch keine Standorte hinterlegt.</mat-hint>
             }
           </mat-form-field>
+
+          @if (standortId === ANDERER_STANDORT) {
+            <mat-form-field appearance="outline">
+              <mat-label>Neuer Standort</mat-label>
+              <input matInput [formField]="nutzerForm.neuerStandort" />
+              <mat-hint>Wird angelegt, falls es ihn noch nicht gibt.</mat-hint>
+            </mat-form-field>
+          }
 
           @if (fehler()) {
             <p class="fehler" role="alert" appFokusBeiAnzeige>{{ fehler() }}</p>
