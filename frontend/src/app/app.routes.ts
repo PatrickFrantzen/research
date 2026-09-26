@@ -44,6 +44,12 @@ export const routes: Routes = [
           import('./features/nutzerverwaltung/nutzerverwaltung.js').then((m) => m.Nutzerverwaltung),
       },
       {
+        path: 'protokolle',
+        canActivate: [adminGuard],
+        title: 'Logs – RE-SEARCH',
+        loadComponent: () => import('./features/protokolle/protokolle.js').then((m) => m.Protokolle),
+      },
+      {
         path: 'nutzer-anlegen',
         canActivate: [adminGuard],
         title: 'Nutzer anlegen – RE-SEARCH',

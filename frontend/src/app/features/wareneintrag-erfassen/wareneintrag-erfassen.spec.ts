@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { provideRouter } from '@angular/router';
+import { AppFehlerMelder } from '../../core/app-fehler-melder.js';
 import { WareneintragErfassen } from './wareneintrag-erfassen.js';
 
 interface TestableWareneintragErfassen {
@@ -74,6 +75,19 @@ describe('WareneintragErfassen', () => {
       expect((request.request.body as FormData).get('fotoFern')).toBeNull();
       request.flush({ id: 'wareneintrag-1' });
       await submitPromise;
+    });
+
+    it('meldet ein abgelehntes Foto mit Typ und Größe ans Fehler-Log', () => {
+      const melde = spyOn(TestBed.inject(AppFehlerMelder), 'melde');
+      const fixture = createComponent();
+
+      asTestable(fixture.componentInstance).onFotoAusgewaehlt(
+        'fotoFern',
+        fotoAuswahlEvent(new File(['heic'], 'IMG_1.heic', { type: 'image/heic' })),
+      );
+
+      expect(melde).toHaveBeenCalledOnceWith(jasmine.stringContaining('Fernansicht: Nur JPEG, PNG oder WebP erlaubt.'));
+      expect(melde.calls.mostRecent().args[0]).toContain('image/heic');
     });
 
     it('rejects a file larger than 10 MB with a clear message and no preview', () => {

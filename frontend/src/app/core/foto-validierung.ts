@@ -10,3 +10,8 @@ export function pruefeFoto(datei: File): string | null {
   if (datei.size > FOTO_MAX_GROESSE_BYTES) return 'Datei ist größer als 10 MB.';
   return null;
 }
+
+// Für das Fehler-Log: woran genau ist das Foto gescheitert?
+export function beschreibeFoto(datei: File): string {
+  return `(Typ ${datei.type || 'unbekannt'}, ${(datei.size / 1024 / 1024).toFixed(1)} MB)`;
+}

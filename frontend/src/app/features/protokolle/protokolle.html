@@ -1,0 +1,67 @@
+<div class="seite">
+  <mat-card class="karte breit">
+    <mat-card-header>
+      <h1 mat-card-title>Logs</h1>
+    </mat-card-header>
+
+    <mat-card-content>
+      <app-lade-zustand [ressource]="tage" meldung="Logs konnten nicht geladen werden." />
+
+      @if (tage.hasValue() && tagListe().length === 0) {
+        <p>Noch keine Einträge vorhanden.</p>
+      } @else {
+        <div class="steuerung">
+          <mat-form-field appearance="outline">
+            <mat-label>Tag</mat-label>
+            <mat-select [value]="tag()" (valueChange)="tag.set($event)">
+              @for (t of tagListe(); track t) {
+                <mat-option [value]="t">{{ t }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <div class="arten" role="group" aria-label="Log-Art">
+            <button
+              type="button"
+              data-testid="art-aktivitaet"
+              [matButton]="art() === 'aktivitaet' ? 'filled' : 'outlined'"
+              [attr.aria-pressed]="art() === 'aktivitaet'"
+              (click)="art.set('aktivitaet')"
+            >
+              Aktivität
+            </button>
+            <button
+              type="button"
+              data-testid="art-fehler"
+              [matButton]="art() === 'fehler' ? 'filled' : 'outlined'"
+              [attr.aria-pressed]="art() === 'fehler'"
+              (click)="art.set('fehler')"
+            >
+              Fehler
+            </button>
+          </div>
+
+          @if (url(); as u) {
+            <a matButton [href]="u" [attr.download]="art() + '-' + tag() + '.log'">
+              <mat-icon>download</mat-icon>
+              Herunterladen
+            </a>
+          }
+        </div>
+
+        <app-lade-zustand [ressource]="inhalt" meldung="Logdatei konnte nicht geladen werden." />
+        @if (inhalt.hasValue()) {
+          @if (zeilen().length === 0) {
+            <p>Keine Einträge an diesem Tag.</p>
+          } @else {
+            <pre class="log" tabindex="0" aria-label="Logeinträge, neueste zuerst">{{ zeilen().join('\n') }}</pre>
+          }
+        }
+      }
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      <a matButton routerLink="/nutzerverwaltung">Zur Nutzerverwaltung</a>
+    </mat-card-actions>
+  </mat-card>
+</div>

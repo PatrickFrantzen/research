@@ -42,7 +42,9 @@ COPY --from=frontend-build /workspace/frontend/dist /app/frontend/dist
 COPY data/avv /app/data/avv
 # Least-Privilege statt root im Container (Issue #36). Das node-Basisimage
 # bringt bereits einen unprivilegierten "node"-User mit.
-RUN chown -R node:node /app
+# Logverzeichnis vorab anlegen: ein frisches Docker-Volume übernimmt beim
+# ersten Mount Inhalt und Besitzer (node) aus dem Image (ADR-0007).
+RUN mkdir -p /app/backend/logs && chown -R node:node /app
 USER node
 ENV NODE_ENV=production
 EXPOSE 3000

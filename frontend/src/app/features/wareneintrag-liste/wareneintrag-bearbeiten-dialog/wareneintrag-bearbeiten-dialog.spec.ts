@@ -4,6 +4,7 @@ import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { provideRouter } from '@angular/router';
 import { Wareneintrag } from '../../../core/wareneintrag-api.js';
+import { AppFehlerMelder } from '../../../core/app-fehler-melder.js';
 import { WareneintragBearbeitenDialog } from './wareneintrag-bearbeiten-dialog.js';
 
 const WARENEINTRAG: Wareneintrag = {
@@ -77,6 +78,18 @@ describe('WareneintragBearbeitenDialog', () => {
     const request = httpMock.expectOne('/api/v1/wareneintraege/wareneintrag-1');
     expect((request.request.body as FormData).get('fotoNah')).toBeNull();
     request.flush({});
+  });
+
+  it('meldet ein abgelehntes Ersatzfoto ans Fehler-Log', () => {
+    const melde = spyOn(TestBed.inject(AppFehlerMelder), 'melde');
+    const fixture = createComponent();
+
+    asTestable(fixture.componentInstance).fotoErsetzen(
+      'fotoNah',
+      fotoAuswahlEvent(new File([new Uint8Array(10 * 1024 * 1024 + 1)], 'gross.jpg', { type: 'image/jpeg' })),
+    );
+
+    expect(melde).toHaveBeenCalledOnceWith(jasmine.stringContaining('Nahansicht: Datei ist größer als 10 MB.'));
   });
 
   it('prefills the freitext field from the given Wareneintrag', () => {

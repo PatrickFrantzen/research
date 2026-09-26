@@ -73,9 +73,11 @@ describe('Nutzerverwaltung', () => {
     expect(element.querySelector('[role="status"]')?.textContent).toContain('thomas@example.com');
   });
 
-  it('verlinkt auf Nutzer anlegen', async () => {
+  it('verlinkt auf Nutzer anlegen und die Logs', async () => {
     const fixture = await geladen();
+    const element = fixture.nativeElement as HTMLElement;
 
-    expect((fixture.nativeElement as HTMLElement).querySelector('a[href="/nutzer-anlegen"]')).not.toBeNull();
+    expect(element.querySelector('a[href="/nutzer-anlegen"]')).not.toBeNull();
+    expect(element.querySelector('a[href="/protokolle"]')).not.toBeNull();
   });
 });

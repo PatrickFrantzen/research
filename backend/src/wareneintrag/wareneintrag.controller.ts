@@ -19,6 +19,7 @@ import {
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
+import { Aktivitaet } from '../protokoll/aktivitaet.decorator.js';
 import type { AuthenticatedRequest } from '../auth/jwt.strategy.js';
 import { CreateWareneintragDto } from './dto/create-wareneintrag.dto.js';
 import { UpdateWareneintragDto } from './dto/update-wareneintrag.dto.js';
@@ -123,6 +124,7 @@ export class WareneintragController {
   }
 
   @Post()
+  @Aktivitaet('Wareneintrag erstellt')
   @UseInterceptors(FileFieldsInterceptor(FOTO_FELDER, FOTO_UPLOAD_OPTIONS))
   async create(
     @Req() request: AuthenticatedRequest,
@@ -134,6 +136,7 @@ export class WareneintragController {
   }
 
   @Patch(':id')
+  @Aktivitaet('Wareneintrag geändert')
   @UseInterceptors(FileFieldsInterceptor(FOTO_FELDER, FOTO_UPLOAD_OPTIONS))
   async update(
     @Req() request: AuthenticatedRequest,
@@ -146,6 +149,7 @@ export class WareneintragController {
   }
 
   @Delete(':id')
+  @Aktivitaet('Wareneintrag gelöscht')
   async remove(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
     return this.wareneintragService.remove(id, request.user.id);
   }
