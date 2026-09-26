@@ -14,7 +14,6 @@
                 #fotoInput
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
-                capture="environment"
                 (change)="onFotoAusgewaehlt(kachel.ansicht, $event)"
                 hidden
               />
@@ -22,7 +21,7 @@
                 type="button"
                 class="foto-kachel-inhalt"
                 [class.hat-foto]="fotoVorschau(kachel.ansicht)"
-                [attr.aria-label]="kachel.label + ' aufnehmen'"
+                [attr.aria-label]="kachel.label + ' hinzufügen'"
                 (click)="fotoInput.click()"
               >
                 @if (fotoVorschau(kachel.ansicht); as url) {

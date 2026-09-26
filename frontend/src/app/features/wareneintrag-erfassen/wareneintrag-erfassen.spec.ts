@@ -45,14 +45,15 @@ describe('WareneintragErfassen', () => {
   }
 
   describe('Fotoauswahl (Issue #59)', () => {
-    it('offers only the image types the server accepts and prefers the rear camera', () => {
+    // Ohne capture-Attribut bietet das Handy selbst die Wahl Kamera oder Galerie.
+    it('offers only the image types the server accepts and lets the phone offer camera or gallery', () => {
       const fixture = createComponent();
       const inputs = fixture.nativeElement.querySelectorAll('input[type="file"]') as NodeListOf<HTMLInputElement>;
 
       expect(inputs.length).toBe(3);
       inputs.forEach((input) => {
         expect(input.accept).toBe('image/jpeg,image/png,image/webp');
-        expect(input.getAttribute('capture')).toBe('environment');
+        expect(input.hasAttribute('capture')).toBe(false);
       });
     });
 
