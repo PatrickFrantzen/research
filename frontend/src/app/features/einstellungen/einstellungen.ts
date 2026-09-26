@@ -1,6 +1,6 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { FormField, disabled, form, required } from '@angular/forms/signals';
+import { FormField, disabled, form, required, maxLength } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -13,7 +13,7 @@ import { appVersion } from '../../core/app-version.js';
 import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
 import { LadeZustand } from '../../core/lade-zustand/lade-zustand.js';
 import { NutzerApi } from '../../core/nutzer-api.js';
-import { StandortApi } from '../../core/standort-api.js';
+import { ANDERER_STANDORT, StandortApi, standortAuswahl } from '../../core/standort-api.js';
 import { FokusBeiAnzeige } from '../../core/fokus-bei-anzeige.js';
 
 @Component({
@@ -49,12 +49,15 @@ export class Einstellungen {
   protected readonly geladen = computed(() => this.eigeneDaten.hasValue() && this.standorte.hasValue());
   protected readonly standortListe = computed(() => (this.standorte.hasValue() ? this.standorte.value() : []));
 
-  protected readonly einstellungenDaten = signal({ vorname: '', nachname: '', standortId: '' });
+  protected readonly ANDERER_STANDORT = ANDERER_STANDORT;
+  protected readonly einstellungenDaten = signal({ vorname: '', nachname: '', standortId: '', neuerStandort: '' });
   protected readonly einstellungenForm = form(this.einstellungenDaten, (pfad) => {
     disabled(pfad, { when: () => !this.geladen() });
     required(pfad.vorname);
     required(pfad.nachname);
     required(pfad.standortId);
+    required(pfad.neuerStandort, { when: () => this.einstellungenDaten().standortId === ANDERER_STANDORT });
+    maxLength(pfad.neuerStandort, 100);
   });
 
   protected readonly fehler = signal<string | null>(null);
@@ -69,6 +72,7 @@ export class Einstellungen {
           vorname: daten.vorname,
           nachname: daten.nachname,
           standortId: daten.standortId,
+          neuerStandort: '',
         });
       }
     });
@@ -98,18 +102,31 @@ export class Einstellungen {
     this.einstellungenDaten.update((daten) => ({ ...daten, standortId }));
   }
 
+  get neuerStandort(): string {
+    return this.einstellungenDaten().neuerStandort;
+  }
+
+  set neuerStandort(neuerStandort: string) {
+    this.einstellungenDaten.update((daten) => ({ ...daten, neuerStandort }));
+  }
+
   async submit(): Promise<void> {
     if (!this.geladen() || !this.einstellungenForm().valid()) return;
     this.fehler.set(null);
     this.wirdGeladen.set(true);
     try {
-      await firstValueFrom(
+      const gespeichert = await firstValueFrom(
         this.nutzerApi.aktualisiereEigeneDaten({
           vorname: this.vorname,
           nachname: this.nachname,
-          standortId: this.standortId,
+          ...standortAuswahl(this.standortId, this.neuerStandort),
         }),
       );
+      // Neu angelegten Standort in die Liste holen und auswählen.
+      if (this.standortId === ANDERER_STANDORT) {
+        this.einstellungenDaten.update((daten) => ({ ...daten, standortId: gespeichert.standortId, neuerStandort: '' }));
+        this.standorte.reload();
+      }
       this.snackBar.open('Änderungen gespeichert.', undefined, { duration: 3000 });
     } catch (error) {
       this.fehler.set(extrahiereFehlermeldung(error, 'Änderungen konnten nicht gespeichert werden.'));

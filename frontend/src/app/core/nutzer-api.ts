@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
+import type { StandortAuswahl } from './standort-api.js';
 
 export interface EigeneDaten {
   vorname: string;
@@ -25,18 +26,9 @@ export interface NutzerUebersicht {
   erstelltAm: string;
 }
 
-export interface NutzerAnlegenDaten {
-  vorname: string;
-  nachname: string;
-  email: string;
-  standortId: string;
-}
+export type NutzerAnlegenDaten = { vorname: string; nachname: string; email: string } & StandortAuswahl;
 
-export interface EigeneDatenUpdate {
-  vorname: string;
-  nachname: string;
-  standortId: string;
-}
+export type EigeneDatenUpdate = { vorname: string; nachname: string } & StandortAuswahl;
 
 @Injectable({ providedIn: 'root' })
 export class NutzerApi {

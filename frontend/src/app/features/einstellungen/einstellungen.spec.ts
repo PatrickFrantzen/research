@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { provideRouter } from '@angular/router';
+import { ANDERER_STANDORT } from '../../core/standort-api.js';
 import { Einstellungen } from './einstellungen.js';
 
 describe('Einstellungen', () => {
@@ -75,6 +76,36 @@ describe('Einstellungen', () => {
     await submitPromise;
 
     expect(openSpy).toHaveBeenCalledWith('Änderungen gespeichert.', undefined, jasmine.anything());
+  });
+
+  it('wechselt auf einen neuen Standort als Freitext und übernimmt ihn danach in die Liste', async () => {
+    const fixture = TestBed.createComponent(Einstellungen);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/v1/standorte').flush([{ id: 'standort-1', name: 'Hauptsitz' }]);
+    httpMock
+      .expectOne('/api/v1/nutzer/me')
+      .flush({ vorname: 'Erika', nachname: 'M', email: 'erika@research.local', standortId: 'standort-1' });
+    await fixture.whenStable();
+    fixture.detectChanges(); // Vorbefüllen aus den eigenen Daten abschließen
+    const component = fixture.componentInstance;
+
+    component.standortId = ANDERER_STANDORT;
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Neuer Standort');
+    component.neuerStandort = 'Außenstelle Nord';
+
+    const submitPromise = component.submit();
+    const request = httpMock.expectOne('/api/v1/nutzer/me');
+    expect(request.request.body).toEqual({ vorname: 'Erika', nachname: 'M', neuerStandort: 'Außenstelle Nord' });
+    request.flush({ vorname: 'Erika', nachname: 'M', email: 'erika@research.local', standortId: 'standort-neu' });
+    await submitPromise;
+    fixture.detectChanges();
+    httpMock.expectOne('/api/v1/standorte').flush([
+      { id: 'standort-neu', name: 'Außenstelle Nord' },
+      { id: 'standort-1', name: 'Hauptsitz' },
+    ]);
+
+    expect(component.standortId).toBe('standort-neu');
   });
 
   it('links to the Impressum, since mobile has no footer', () => {

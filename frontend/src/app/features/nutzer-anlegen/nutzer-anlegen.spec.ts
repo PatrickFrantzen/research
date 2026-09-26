@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { provideRouter } from '@angular/router';
+import { ANDERER_STANDORT } from '../../core/standort-api.js';
 import { NutzerAnlegen } from './nutzer-anlegen.js';
 
 describe('NutzerAnlegen', () => {
@@ -25,6 +26,31 @@ describe('NutzerAnlegen', () => {
     const request = httpMock.expectOne('/api/v1/standorte');
     expect(request.request.method).toBe('GET');
     request.flush([{ id: 'standort-1', name: 'Hauptsitz' }]);
+  });
+
+  it('legt den Nutzer mit einem Standort an, der nicht in der Liste steht', async () => {
+    const fixture = TestBed.createComponent(NutzerAnlegen);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/v1/standorte').flush([{ id: 'standort-1', name: 'Hauptsitz' }]);
+    await fixture.whenStable();
+    const component = fixture.componentInstance;
+    component.vorname = 'Clara';
+    component.nachname = 'B';
+    component.email = 'clara@example.com';
+
+    component.standortId = ANDERER_STANDORT;
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Neuer Standort');
+    component.neuerStandort = 'Winsen';
+
+    const submitPromise = component.submit();
+    const request = httpMock.expectOne('/api/v1/nutzer');
+    expect(request.request.body).toEqual({ vorname: 'Clara', nachname: 'B', email: 'clara@example.com', neuerStandort: 'Winsen' });
+    request.flush({ email: 'clara@example.com', passwortSetzenLink: '/x', mailVersendet: true });
+    await submitPromise;
+    fixture.detectChanges();
+    // Neuer Standort soll beim nächsten Nutzer in der Liste stehen.
+    httpMock.expectOne('/api/v1/standorte').flush([]);
   });
 
   it('creates the Nutzer with the entered fields and resets the form on success', async () => {
