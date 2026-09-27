@@ -11,7 +11,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { debounceTime, distinctUntilChanged, firstValueFrom, Subject } from 'rxjs';
 import { AvvCodeApi } from '../../../core/avv-code-api.js';
 import { AppFehlerMelder } from '../../../core/app-fehler-melder.js';
-import { beschreibeFoto, uebernehmeFoto } from '../../../core/foto-validierung.js';
+import { beschreibeFoto, pruefeDokument, uebernehmeFoto } from '../../../core/foto-validierung.js';
 import { extrahiereFehlermeldung } from '../../../core/http-fehler.js';
 import { FREITEXT_MAX_LAENGE, Wareneintrag, WareneintragApi } from '../../../core/wareneintrag-api.js';
 import { FokusBeiAnzeige } from '../../../core/fokus-bei-anzeige.js';
@@ -80,6 +80,8 @@ export class WareneintragBearbeitenDialog {
   private readonly avvCodeId = signal<string | null>(this.daten.wareneintrag.avvCode.id);
   protected readonly fotoKacheln = FOTO_KACHELN;
   private readonly fotos = signal<Record<FotoAnsicht, File | null>>({ fotoFern: null, fotoNah: null, fotoDetail: null });
+  // Neues PDF (Issue #103), ersetzt ein vorhandenes oder kommt neu hinzu.
+  protected readonly dokument = signal<File | null>(null);
 
   protected readonly bearbeitungDaten = signal({
     avvSucheAnzeige: `${this.daten.wareneintrag.avvCode.code} – ${this.daten.wareneintrag.avvCode.bezeichnung}`,
@@ -148,6 +150,13 @@ export class WareneintragBearbeitenDialog {
     this.fotos.update((fotos) => ({ ...fotos, [ansicht]: datei }));
   }
 
+  dokumentErsetzen(event: Event): void {
+    const auswahl = (event.target as HTMLInputElement).files?.item(0) ?? null;
+    const meldung = auswahl ? pruefeDokument(auswahl) : null;
+    this.fotoFehler.set(meldung ? `Dokument (PDF): ${meldung}` : null);
+    this.dokument.set(meldung ? null : auswahl);
+  }
+
   protected dateiname(ansicht: FotoAnsicht): string | null {
     return this.fotos()[ansicht]?.name ?? null;
   }
@@ -164,6 +173,8 @@ export class WareneintragBearbeitenDialog {
       const datei = this.fotos()[ansicht];
       if (datei) formData.set(ansicht, datei);
     }
+    const dokument = this.dokument();
+    if (dokument) formData.set('dokument', dokument);
 
     try {
       await firstValueFrom(this.wareneintragApi.aktualisieren(this.daten.wareneintrag.id, formData));

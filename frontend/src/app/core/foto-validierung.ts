@@ -4,6 +4,11 @@
 // Meldung die App anzeigt, Issue #102).
 export const ERLAUBTE_FOTO_TYPEN = ['image/jpeg', 'image/png', 'image/webp'];
 
+// Optionales PDF am Wareneintrag (Issue #103), das Backend prüft die Magic Bytes.
+export function pruefeDokument(datei: File): string | null {
+  return datei.type === 'application/pdf' ? null : 'Nur PDF erlaubt.';
+}
+
 // Für das Fehler-Log: woran genau ist das Foto gescheitert?
 export function beschreibeFoto(datei: File): string {
   return `(Typ ${datei.type || 'unbekannt'}, ${(datei.size / 1024 / 1024).toFixed(1)} MB)`;

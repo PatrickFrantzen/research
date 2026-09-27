@@ -41,6 +41,16 @@
       <dd>{{ wareneintrag.standort.name }}</dd>
       <dt>Erfasst von</dt>
       <dd>{{ wareneintrag.erfasstVon.vorname }} {{ wareneintrag.erfasstVon.nachname }}</dd>
+      @if (wareneintrag.dokumentUrl; as pdf) {
+        <dt>Dokument</dt>
+        <dd>
+          <!-- Neuer Tab statt iframe: PDF bleibt auf der Files-Domain, keine CSP-Lockerung nötig. -->
+          <a matButton="outlined" data-testid="dokument-oeffnen" [href]="pdf" target="_blank" rel="noopener noreferrer">
+            <mat-icon>picture_as_pdf</mat-icon>
+            PDF öffnen
+          </a>
+        </dd>
+      }
     </dl>
 
     <section class="ki-analyse" aria-labelledby="ki-analyse-titel">

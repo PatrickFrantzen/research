@@ -6,10 +6,11 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateWareneintragDto } from './dto/create-wareneintrag.dto.js';
 import { UpdateWareneintragDto } from './dto/update-wareneintrag.dto.js';
 
-export interface WareneintragFotos {
+export interface WareneintragDateien {
   fotoFern?: Express.Multer.File;
   fotoNah?: Express.Multer.File;
   fotoDetail?: Express.Multer.File;
+  dokument?: Express.Multer.File;
 }
 
 // Nie den client-deklarierten MIME-Type an den Objektspeicher durchreichen:
@@ -51,6 +52,7 @@ export class WareneintragService {
         fotoDetailUrl: wareneintrag.fotoDetailUrl
           ? await this.objectStorage.getSignedUrl(wareneintrag.fotoDetailUrl)
           : null,
+        dokumentUrl: wareneintrag.dokumentUrl ? await this.objectStorage.getSignedUrl(wareneintrag.dokumentUrl) : null,
       })),
     );
     return { daten, gesamt };
@@ -94,11 +96,19 @@ export class WareneintragService {
       : Prisma.empty;
     const praefixSuche = (filter.suche.match(/[\p{L}\p{N}]+/gu) ?? []).map((wort) => `${wort}:*`).join(' & ');
     const treffer = await this.prisma.$queryRaw<
-      { id: string; fotoFernUrl: string | null; fotoNahUrl: string | null; fotoDetailUrl: string | null; gesamt: bigint }[]
+      {
+        id: string;
+        fotoFernUrl: string | null;
+        fotoNahUrl: string | null;
+        fotoDetailUrl: string | null;
+        dokumentUrl: string | null;
+        gesamt: bigint;
+      }[]
     >`
       SELECT
         wareneintraege.id, wareneintraege.foto_fern_url AS "fotoFernUrl", wareneintraege.foto_nah_url AS "fotoNahUrl",
-        wareneintraege.foto_detail_url AS "fotoDetailUrl", wareneintraege.avv_code_id AS "avvCodeId",
+        wareneintraege.foto_detail_url AS "fotoDetailUrl", wareneintraege.dokument_url AS "dokumentUrl",
+        wareneintraege.avv_code_id AS "avvCodeId",
         wareneintraege.freitext, wareneintraege.erfasst_von_id AS "erfasstVonId",
         wareneintraege.standort_id AS "standortId", wareneintraege.erstellt_am AS "erstelltAm",
         json_build_object('id', avv_codes.id, 'code', avv_codes.code, 'bezeichnung', avv_codes.bezeichnung) AS "avvCode",
@@ -124,14 +134,15 @@ export class WareneintragService {
     };
   }
 
-  async create(erfasstVonId: string, dto: CreateWareneintragDto, fotos: WareneintragFotos) {
+  async create(erfasstVonId: string, dto: CreateWareneintragDto, fotos: WareneintragDateien) {
     // Standort wird als Kopie des aktuellen Nutzer-Standorts geschrieben, nicht
     // nur über erfasstVonId live abgeleitet, siehe ADR-0004.
     const nutzer = await this.prisma.nutzer.findUniqueOrThrow({ where: { id: erfasstVonId } });
-    const [fotoFernUrl, fotoNahUrl, fotoDetailUrl] = await Promise.all([
+    const [fotoFernUrl, fotoNahUrl, fotoDetailUrl, dokumentUrl] = await Promise.all([
       ladeFotoHoch(this.objectStorage, fotos.fotoFern),
       ladeFotoHoch(this.objectStorage, fotos.fotoNah),
       ladeFotoHoch(this.objectStorage, fotos.fotoDetail),
+      ladeFotoHoch(this.objectStorage, fotos.dokument),
     ]);
 
     return this.prisma.wareneintrag.create({
@@ -139,6 +150,7 @@ export class WareneintragService {
         fotoFernUrl,
         fotoNahUrl,
         fotoDetailUrl,
+        dokumentUrl,
         avvCodeId: dto.avvCodeId,
         freitext: dto.freitext,
         erfasstVonId,
@@ -147,28 +159,30 @@ export class WareneintragService {
     });
   }
 
-  async update(id: string, nutzerId: string, dto: UpdateWareneintragDto, fotos: WareneintragFotos) {
+  async update(id: string, nutzerId: string, dto: UpdateWareneintragDto, fotos: WareneintragDateien) {
     const bestehend = await this.pruefeBesitz(id, nutzerId);
 
     // Altes Foto ersetzen: erst neues hochladen, dann altes im Objektspeicher
     // entfernen, um verwaiste Referenzen bei einem Fehlschlag zu vermeiden.
-    const [fotoFernUrl, fotoNahUrl, fotoDetailUrl] = await Promise.all([
+    const [fotoFernUrl, fotoNahUrl, fotoDetailUrl, dokumentUrl] = await Promise.all([
       this.ersetzeFoto(bestehend.fotoFernUrl, fotos.fotoFern),
       this.ersetzeFoto(bestehend.fotoNahUrl, fotos.fotoNah),
       this.ersetzeFoto(bestehend.fotoDetailUrl, fotos.fotoDetail),
+      this.ersetzeFoto(bestehend.dokumentUrl, fotos.dokument),
     ]);
 
     // Andere Fotos, andere Grundlage: die gespeicherte KI-Analyse passt nicht
     // mehr und wird gelöscht, ein falsches Ergebnis ist schlimmer als keins
     // (Issue #96). Vor dem Update, damit ein späterer Fehler sie nicht stehen
-    // lässt. Freitext und AVV-Code allein lassen sie unberührt.
+    // lässt. Freitext, AVV-Code und PDF (wird nicht analysiert, Issue #103)
+    // lassen sie unberührt.
     const fotosGeaendert =
       fotoFernUrl !== bestehend.fotoFernUrl || fotoNahUrl !== bestehend.fotoNahUrl || fotoDetailUrl !== bestehend.fotoDetailUrl;
     if (fotosGeaendert) await this.prisma.wareneintragAnalyse.deleteMany({ where: { wareneintragId: id } });
 
     return this.prisma.wareneintrag.update({
       where: { id },
-      data: { avvCodeId: dto.avvCodeId, freitext: dto.freitext, fotoFernUrl, fotoNahUrl, fotoDetailUrl },
+      data: { avvCodeId: dto.avvCodeId, freitext: dto.freitext, fotoFernUrl, fotoNahUrl, fotoDetailUrl, dokumentUrl },
     });
   }
 
@@ -182,7 +196,7 @@ export class WareneintragService {
   async remove(id: string, nutzerId: string) {
     const wareneintrag = await this.pruefeBesitz(id, nutzerId);
     await Promise.all(
-      [wareneintrag.fotoFernUrl, wareneintrag.fotoNahUrl, wareneintrag.fotoDetailUrl]
+      [wareneintrag.fotoFernUrl, wareneintrag.fotoNahUrl, wareneintrag.fotoDetailUrl, wareneintrag.dokumentUrl]
         .filter((key): key is string => key !== null)
         .map((key) => this.objectStorage.deleteFoto(key)),
     );

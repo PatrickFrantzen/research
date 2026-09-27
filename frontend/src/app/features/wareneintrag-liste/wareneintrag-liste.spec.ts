@@ -216,6 +216,7 @@ describe('WareneintragListe', () => {
           fotoFernUrl: '/fern.jpg',
           fotoNahUrl: null,
           fotoDetailUrl: '/detail.jpg',
+          dokumentUrl: null,
           freitext: 'test',
           erstelltAm: '2026-09-19T20:08:00',
           avvCode: { code: '17 01 01' },
@@ -405,6 +406,7 @@ describe('WareneintragListe', () => {
           fotoFernUrl: '/foto.jpg',
           fotoNahUrl: null,
           fotoDetailUrl: null,
+          dokumentUrl: null,
           freitext: 'test',
           erstelltAm: '2026-09-19T18:08:00.000Z',
           avvCode: { code: '17 01 01' },
@@ -421,6 +423,33 @@ describe('WareneintragListe', () => {
     expect(karte.textContent).toContain('Erfasst von: Erika Musterfrau');
   }));
 
+  it('marks only Wareneintraege with a PDF with a PDF icon (Issue #103)', fakeAsync(() => {
+    const fixture = TestBed.createComponent(WareneintragListe);
+    fixture.detectChanges();
+    httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([]);
+    const eintrag = (id: string, dokumentUrl: string | null) => ({
+      id,
+      fotoFernUrl: null,
+      fotoNahUrl: null,
+      fotoDetailUrl: null,
+      dokumentUrl,
+      freitext: 'test',
+      erstelltAm: '2026-09-19T18:08:00.000Z',
+      avvCode: { code: '17 01 01' },
+      standort: { id: 'standort-1', name: 'Hauptsitz' },
+      erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
+    });
+    httpMock
+      .expectOne((req) => req.url === '/api/v1/wareneintraege')
+      .flush({ daten: [eintrag('mit-pdf', 'https://files/pdf'), eintrag('ohne-pdf', null)], gesamt: 2 });
+    tick();
+    fixture.detectChanges();
+
+    const karten = fixture.nativeElement.querySelectorAll('.karte') as NodeListOf<HTMLElement>;
+    expect(karten[0].querySelector('[aria-label="Mit PDF-Dokument"]')).not.toBeNull();
+    expect(karten[1].querySelector('[aria-label="Mit PDF-Dokument"]')).toBeNull();
+  }));
+
   it('shows Bearbeiten/Löschen only for Wareneintraege the current Nutzer created themselves', fakeAsync(() => {
     const fixture = TestBed.createComponent(WareneintragListe);
     fixture.detectChanges();
@@ -432,6 +461,7 @@ describe('WareneintragListe', () => {
           fotoFernUrl: null,
           fotoNahUrl: null,
           fotoDetailUrl: null,
+          dokumentUrl: null,
           freitext: 'eigener',
           erstelltAm: '2026-09-19T18:08:00.000Z',
           avvCode: { code: '17 01 01' },
@@ -443,6 +473,7 @@ describe('WareneintragListe', () => {
           fotoFernUrl: null,
           fotoNahUrl: null,
           fotoDetailUrl: null,
+          dokumentUrl: null,
           freitext: 'fremder',
           erstelltAm: '2026-09-19T18:08:00.000Z',
           avvCode: { code: '17 01 01' },
@@ -474,6 +505,7 @@ describe('WareneintragListe', () => {
           fotoFernUrl: '/foto.jpg',
           fotoNahUrl: null,
           fotoDetailUrl: null,
+          dokumentUrl: null,
           freitext: 'test',
           erstelltAm: '2026-09-19T20:08:00',
           avvCode: { code: '17 01 01' },
@@ -500,6 +532,7 @@ describe('WareneintragListe', () => {
             id: 'wareneintrag-1',
             ...fotos,
             fotoDetailUrl: null,
+            dokumentUrl: null,
             freitext: 'Text',
             erstelltAm: '2026-09-19T20:08:00',
             avvCode: { code: '17 01 01' },
@@ -554,6 +587,7 @@ describe('WareneintragListe', () => {
       fotoFernUrl: '/foto.jpg',
       fotoNahUrl: null,
       fotoDetailUrl: null,
+      dokumentUrl: null,
       freitext: 'alter Text',
       erstelltAm: '2026-09-19T20:08:00',
       avvCode: { code: '17 01 01' },
@@ -588,6 +622,7 @@ describe('WareneintragListe', () => {
       fotoFernUrl: '/foto.jpg',
       fotoNahUrl: null,
       fotoDetailUrl: null,
+      dokumentUrl: null,
       freitext: 'test',
       erstelltAm: '2026-09-19T20:08:00',
       avvCode: { code: '17 01 01' },
@@ -611,6 +646,7 @@ describe('WareneintragListe', () => {
       fotoFernUrl: '/foto.jpg',
       fotoNahUrl: null,
       fotoDetailUrl: null,
+      dokumentUrl: null,
       freitext: 'test',
       erstelltAm: '2026-09-19T20:08:00',
       avvCode: { code: '17 01 01' },
@@ -672,6 +708,7 @@ describe('WareneintragListe', () => {
       fotoFernUrl: '/foto.jpg',
       fotoNahUrl: null,
       fotoDetailUrl: null,
+      dokumentUrl: null,
       freitext: 'test',
       erstelltAm: '2026-09-19T20:08:00',
       avvCode: { code: '17 01 01' },

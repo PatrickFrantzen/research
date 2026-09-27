@@ -38,6 +38,7 @@ describe('WareneintragService', () => {
             fotoFernUrl: 'https://minio.local/foto-21',
             fotoNahUrl: null,
             fotoDetailUrl: null,
+            dokumentUrl: null,
           },
         ],
         gesamt: 41,
@@ -83,6 +84,7 @@ describe('WareneintragService', () => {
         fotoFernUrl: null,
         fotoNahUrl: null,
         fotoDetailUrl: null,
+        dokumentUrl: null,
       });
     });
 
@@ -139,11 +141,29 @@ describe('WareneintragService', () => {
             fotoFernUrl: 'https://minio.local/signed-foto-1',
             fotoNahUrl: null,
             fotoDetailUrl: null,
+            dokumentUrl: null,
             freitext: 'x',
           },
         ],
         gesamt: 1,
       });
+    });
+
+    it('replaces the stored PDF key with a time-limited URL, like the photos (Issue #103)', async () => {
+      const prisma = {
+        wareneintrag: {
+          findMany: vi.fn().mockResolvedValue([
+            { id: 'w-1', fotoFernUrl: null, fotoNahUrl: null, fotoDetailUrl: null, dokumentUrl: 'wareneintraege/pdf-1' },
+          ]),
+          count: vi.fn().mockResolvedValue(1),
+        },
+      };
+      const objectStorage = { getSignedUrl: vi.fn(async (key: string) => `https://minio.local/${key}`) };
+      const service = new WareneintragService(prisma as never, objectStorage as never);
+
+      const { daten } = await service.findAll({});
+
+      expect(daten[0]!.dokumentUrl).toBe('https://minio.local/wareneintraege/pdf-1');
     });
 
     it('filters by avvCodeId when given', async () => {
@@ -193,6 +213,7 @@ describe('WareneintragService', () => {
       expect(values).toContain('Bauschutt');
       expect(sql).not.toContain('SELECT *');
       expect(sql).toContain('"fotoFernUrl"');
+      expect(sql).toContain('"dokumentUrl"');
       expect(sql).toContain('"avvCodeId"');
       expect(sql).toContain('"erstelltAm"');
       expect(sql).toContain('"standort"');
@@ -230,6 +251,7 @@ describe('WareneintragService', () => {
             fotoFernUrl: 'https://minio.local/foto-1',
             fotoNahUrl: null,
             fotoDetailUrl: null,
+            dokumentUrl: null,
             freitext: 'test',
           },
         ],
@@ -269,6 +291,8 @@ describe('WareneintragService', () => {
     });
   });
 
+  // Kleinstes PDF, das `file-type` als application/pdf erkennt.
+  const PDF_BYTES = Buffer.from(['%PDF-1.4', '1 0 obj<<>>endobj', 'trailer<<>>', '%%EOF', ''].join(String.fromCharCode(10)));
   // Minimaler gültiger PNG-Header, den `file-type` als image/png erkennt.
   const PNG_BYTES = Buffer.from([
     0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00,
@@ -350,6 +374,23 @@ describe('WareneintragService', () => {
       await service.create('nutzer-1', { avvCodeId: 'avv-1', freitext: 'Bauschutt am Eingang' }, { fotoFern });
 
       expect(objectStorage.uploadFoto).toHaveBeenCalledWith(fotoFern.buffer, 'image/png');
+    });
+  });
+
+  describe('create with dokument', () => {
+    it('stores the PDF as application/pdf, whatever the client declared', async () => {
+      const prisma = {
+        nutzer: { findUniqueOrThrow: vi.fn().mockResolvedValue({ id: 'nutzer-1', standortId: 'standort-1' }) },
+        wareneintrag: { create: vi.fn().mockResolvedValue({ id: 'wareneintrag-1' }) },
+      };
+      const objectStorage = { uploadFoto: vi.fn().mockResolvedValue('wareneintraege/pdf-1') };
+      const service = new WareneintragService(prisma as never, objectStorage as never);
+      const dokument = { buffer: PDF_BYTES, mimetype: 'text/html' } as Express.Multer.File;
+
+      await service.create('nutzer-1', { avvCodeId: 'avv-1', freitext: 'Mit Lieferschein' }, { dokument });
+
+      expect(objectStorage.uploadFoto).toHaveBeenCalledWith(PDF_BYTES, 'application/pdf');
+      expect(prisma.wareneintrag.create.mock.calls[0]![0].data.dokumentUrl).toBe('wareneintraege/pdf-1');
     });
   });
 
@@ -438,6 +479,38 @@ describe('WareneintragService', () => {
       });
     });
 
+    it('replaces the PDF, deleting the old one, and keeps the saved KI-Analyse (PDF is not analysed)', async () => {
+      const prisma = {
+        wareneintrag: {
+          findUniqueOrThrow: vi.fn().mockResolvedValue({
+            id: 'wareneintrag-1',
+            erfasstVonId: 'nutzer-1',
+            fotoFernUrl: 'wareneintraege/fern',
+            fotoNahUrl: null,
+            fotoDetailUrl: null,
+            dokumentUrl: 'wareneintraege/pdf-alt',
+          }),
+          update: vi.fn().mockResolvedValue({ id: 'wareneintrag-1' }),
+        },
+        wareneintragAnalyse: { deleteMany: vi.fn() },
+      };
+      const objectStorage = {
+        uploadFoto: vi.fn().mockResolvedValue('wareneintraege/pdf-neu'),
+        deleteFoto: vi.fn().mockResolvedValue(undefined),
+      };
+      const service = new WareneintragService(prisma as never, objectStorage as never);
+      const dokument = { buffer: PDF_BYTES, mimetype: 'application/pdf' } as Express.Multer.File;
+
+      await service.update('wareneintrag-1', 'nutzer-1', { avvCodeId: 'avv-1', freitext: 'x' }, { dokument });
+
+      expect(objectStorage.deleteFoto).toHaveBeenCalledExactlyOnceWith('wareneintraege/pdf-alt');
+      expect(prisma.wareneintragAnalyse.deleteMany).not.toHaveBeenCalled();
+      expect(prisma.wareneintrag.update.mock.calls[0]![0].data).toMatchObject({
+        fotoFernUrl: 'wareneintraege/fern',
+        dokumentUrl: 'wareneintraege/pdf-neu',
+      });
+    });
+
     it('rejects when the acting user did not create the Wareneintrag', async () => {
       const prisma = {
         wareneintrag: {
@@ -453,7 +526,7 @@ describe('WareneintragService', () => {
   });
 
   describe('remove', () => {
-    it('deletes the Wareneintrag and all of its uploaded photos from the object storage', async () => {
+    it('deletes the Wareneintrag and all of its uploaded photos and its PDF from the object storage', async () => {
       const prisma = {
         wareneintrag: {
           findUniqueOrThrow: vi.fn().mockResolvedValue({
@@ -462,6 +535,7 @@ describe('WareneintragService', () => {
             fotoFernUrl: 'wareneintraege/fern',
             fotoNahUrl: 'wareneintraege/nah',
             fotoDetailUrl: null,
+            dokumentUrl: 'wareneintraege/pdf',
           }),
           delete: vi.fn().mockResolvedValue({ id: 'wareneintrag-1' }),
         },
@@ -473,7 +547,8 @@ describe('WareneintragService', () => {
 
       expect(objectStorage.deleteFoto).toHaveBeenCalledWith('wareneintraege/fern');
       expect(objectStorage.deleteFoto).toHaveBeenCalledWith('wareneintraege/nah');
-      expect(objectStorage.deleteFoto).toHaveBeenCalledTimes(2);
+      expect(objectStorage.deleteFoto).toHaveBeenCalledWith('wareneintraege/pdf');
+      expect(objectStorage.deleteFoto).toHaveBeenCalledTimes(3);
       expect(prisma.wareneintrag.delete).toHaveBeenCalledWith({ where: { id: 'wareneintrag-1' } });
     });
 

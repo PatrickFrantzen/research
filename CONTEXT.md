@@ -14,11 +14,17 @@ einer Desktop-Ansicht zum Sichten/Filtern aller Einträge.
 **Wareneintrag**:
 Eine von einem Nutzer erfasste Meldung einer vor Ort vorgefundenen
 Abfallmenge: bis zu drei optionale Fotos (Fernansicht, Nahansicht,
-Detailansicht), ein AVV-Code, ein Freitext sowie der Standort des
+Detailansicht), ein optionales Dokument, ein AVV-Code, ein Freitext sowie der Standort des
 erfassenden Nutzers als Kopie zum Erfassungszeitpunkt. Bearbeiten/Löschen
 ist auf den erfassenden Nutzer beschränkt – andere Nutzer können den
 Eintrag nur ansehen.
 _Avoid_: Ware, Eintrag, Meldung, Wareneingang
+
+**Dokument**:
+Ein optionales PDF an einem Wareneintrag, z. B. Lieferschein oder
+Begleitschein. Höchstens eins pro Wareneintrag, fließt nicht in die
+KI-Analyse ein.
+_Avoid_: Anhang, Datei, Beleg
 
 **AVV-Code**:
 Amtliche sechsstellige Abfallkennnummer aus dem Europäischen

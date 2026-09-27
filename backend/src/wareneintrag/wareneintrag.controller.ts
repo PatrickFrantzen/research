@@ -29,7 +29,7 @@ import { Aktivitaet } from '../protokoll/aktivitaet.decorator.js';
 import type { AuthenticatedRequest } from '../auth/jwt.strategy.js';
 import { CreateWareneintragDto } from './dto/create-wareneintrag.dto.js';
 import { UpdateWareneintragDto } from './dto/update-wareneintrag.dto.js';
-import { WareneintragFotos, WareneintragService } from './wareneintrag.service.js';
+import { WareneintragDateien, WareneintragService } from './wareneintrag.service.js';
 
 const UPLOAD_MAX_MB = uploadMaxMb();
 const STANDARD_PRO_SEITE = 20;
@@ -39,6 +39,7 @@ const MAX_PRO_SEITE = 100;
 // image/svg+xml (kann Script enthalten) und erzwingt echte
 // Magic-Number-Prüfung statt client-kontrolliertem MIME-Type (Issue #32).
 const ERLAUBTE_FOTO_TYPEN = /^(image\/jpeg|image\/png|image\/webp)$/;
+const ERLAUBTER_DOKUMENT_TYP = /^application\/pdf$/;
 
 // Multer bricht den Stream ab, sobald ein Limit überschritten wird, statt
 // die komplette (potenziell riesige) Anfrage erst in den RAM zu puffern.
@@ -48,10 +49,10 @@ const FOTO_UPLOAD_OPTIONS = {
   storage: memoryStorage(),
   limits: {
     fileSize: UPLOAD_MAX_MB * 1024 * 1024,
-    files: 3,
+    files: 4,
     fields: 5,
     fieldSize: 16 * 1024, // Freitext max. 2000 Zeichen à max. 4 Byte UTF-8
-    parts: 8,
+    parts: 9,
   },
 };
 
@@ -61,6 +62,8 @@ const FOTO_FELDER = [
   { name: 'fotoFern', maxCount: 1 },
   { name: 'fotoNah', maxCount: 1 },
   { name: 'fotoDetail', maxCount: 1 },
+  // Optionales PDF, z. B. Lieferschein (Issue #103).
+  { name: 'dokument', maxCount: 1 },
 ];
 
 // Multer meldet eine zu große Datei nur als "File too large". Die App zeigt
@@ -81,19 +84,20 @@ class VerstaendlicheGroessenMeldung implements NestInterceptor {
   }
 }
 
-interface HochgeladeneFotos {
+interface HochgeladeneDateien {
   fotoFern?: Express.Multer.File[];
   fotoNah?: Express.Multer.File[];
   fotoDetail?: Express.Multer.File[];
+  dokument?: Express.Multer.File[];
 }
 
-function fotoValidators() {
+function typValidator(fileType: RegExp) {
   return new ParseFilePipe({
     fileIsRequired: false,
     validators: [
       // fallbackToMimetype: false – bei nicht erkennbarem Dateisignatur wird
       // abgelehnt statt dem client-kontrollierten MIME-Type zu vertrauen.
-      new FileTypeValidator({ fileType: ERLAUBTE_FOTO_TYPEN, fallbackToMimetype: false }),
+      new FileTypeValidator({ fileType, fallbackToMimetype: false }),
     ],
   });
 }
@@ -102,15 +106,17 @@ function fotoValidators() {
 // nicht die benannte Feldstruktur, die FileFieldsInterceptor liefert
 // (`{fotoFern: [File], ...}`) – deshalb hier manuell auf die tatsächlich
 // hochgeladenen Dateien anwenden, statt es der Pipe direkt zu übergeben.
-async function extrahiereUndValidiereFotos(dateien: HochgeladeneFotos): Promise<WareneintragFotos> {
+async function extrahiereUndValidiereDateien(dateien: HochgeladeneDateien): Promise<WareneintragDateien> {
   const fotoFern = dateien.fotoFern?.[0];
   const fotoNah = dateien.fotoNah?.[0];
   const fotoDetail = dateien.fotoDetail?.[0];
+  const dokument = dateien.dokument?.[0];
   const vorhandeneFotos = [fotoFern, fotoNah, fotoDetail].filter(
     (foto): foto is Express.Multer.File => foto !== undefined,
   );
-  await fotoValidators().transform(vorhandeneFotos);
-  return { fotoFern, fotoNah, fotoDetail };
+  await typValidator(ERLAUBTE_FOTO_TYPEN).transform(vorhandeneFotos);
+  if (dokument) await typValidator(ERLAUBTER_DOKUMENT_TYP).transform(dokument);
+  return { fotoFern, fotoNah, fotoDetail, dokument };
 }
 
 @Controller('wareneintraege')
@@ -151,11 +157,10 @@ export class WareneintragController {
   @UseInterceptors(VerstaendlicheGroessenMeldung, FileFieldsInterceptor(FOTO_FELDER, FOTO_UPLOAD_OPTIONS))
   async create(
     @Req() request: AuthenticatedRequest,
-    @UploadedFiles() dateien: HochgeladeneFotos,
+    @UploadedFiles() dateien: HochgeladeneDateien,
     @Body() dto: CreateWareneintragDto,
   ) {
-    const fotos = await extrahiereUndValidiereFotos(dateien);
-    return this.wareneintragService.create(request.user.id, dto, fotos);
+    return this.wareneintragService.create(request.user.id, dto, await extrahiereUndValidiereDateien(dateien));
   }
 
   @Patch(':id')
@@ -165,10 +170,9 @@ export class WareneintragController {
     @Req() request: AuthenticatedRequest,
     @Param('id') id: string,
     @Body() dto: UpdateWareneintragDto,
-    @UploadedFiles() dateien: HochgeladeneFotos,
+    @UploadedFiles() dateien: HochgeladeneDateien,
   ) {
-    const fotos = await extrahiereUndValidiereFotos(dateien);
-    return this.wareneintragService.update(id, request.user.id, dto, fotos);
+    return this.wareneintragService.update(id, request.user.id, dto, await extrahiereUndValidiereDateien(dateien));
   }
 
   @Delete(':id')

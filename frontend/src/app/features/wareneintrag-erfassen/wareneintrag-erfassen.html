@@ -53,6 +53,29 @@
               </mat-menu>
             </div>
           }
+          <div class="foto-kachel">
+            <input
+              #dokumentInput
+              type="file"
+              accept="application/pdf"
+              data-testid="dokument"
+              (change)="onDokumentAusgewaehlt($event)"
+              hidden
+            />
+            <button
+              type="button"
+              class="foto-kachel-inhalt dokument"
+              [class.hat-foto]="dokument()"
+              aria-label="Dokument (PDF) hinzufügen"
+              (click)="dokumentInput.click()"
+            >
+              <mat-icon>{{ dokument() ? 'picture_as_pdf' : 'note_add' }}</mat-icon>
+              @if (dokument(); as pdf) {
+                <span class="dokument-name">{{ pdf.name }}</span>
+              }
+            </button>
+            <span class="foto-kachel-label">Dokument (PDF)</span>
+          </div>
         </div>
         @if (fotoFehler(); as meldung) {
           <p class="fehler" role="alert">{{ meldung }}</p>

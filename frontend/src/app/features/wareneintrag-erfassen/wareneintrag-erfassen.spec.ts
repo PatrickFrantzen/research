@@ -11,6 +11,7 @@ interface TestableWareneintragErfassen {
   kannAbsenden: boolean;
   fehler: () => string | null;
   onFotoAusgewaehlt: (ansicht: 'fotoFern' | 'fotoNah' | 'fotoDetail', event: Event) => Promise<void>;
+  onDokumentAusgewaehlt: (event: Event) => void;
   fotoVorschau: (ansicht: 'fotoFern' | 'fotoNah' | 'fotoDetail') => string | null;
 }
 
@@ -45,12 +46,59 @@ describe('WareneintragErfassen', () => {
     return fixture;
   }
 
+  describe('PDF-Dokument (Issue #103)', () => {
+    it('offers a fourth tile that only accepts PDF', () => {
+      const fixture = createComponent();
+      const element = fixture.nativeElement as HTMLElement;
+
+      expect((element.querySelector('[data-testid="dokument"]') as HTMLInputElement).accept).toBe('application/pdf');
+      expect(element.querySelector('[aria-label="Dokument (PDF) hinzufügen"]')).not.toBeNull();
+    });
+
+    it('shows the chosen PDF by file name and submits it as dokument', async () => {
+      const fixture = createComponent();
+      const component = asTestable(fixture.componentInstance);
+      const pdf = new File(['%PDF-1.4'], 'lieferschein.pdf', { type: 'application/pdf' });
+
+      component.onDokumentAusgewaehlt(fotoAuswahlEvent(pdf));
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).toContain('lieferschein.pdf');
+      component.ausgewaehlterAvvCode = { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' };
+      fixture.componentInstance.freitext = 'Bauschutt mit Lieferschein';
+      const submitPromise = fixture.componentInstance.submit();
+      const request = httpMock.expectOne('/api/v1/wareneintraege');
+      expect(((request.request.body as FormData).get('dokument') as File).name).toBe('lieferschein.pdf');
+      request.flush({ id: 'wareneintrag-1' });
+      await submitPromise;
+    });
+
+    it('rejects a file that is not a PDF with a clear message and does not submit it', async () => {
+      const fixture = createComponent();
+      const component = asTestable(fixture.componentInstance);
+
+      component.onDokumentAusgewaehlt(fotoAuswahlEvent(new File(['x'], 'foto.jpg', { type: 'image/jpeg' })));
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).toContain('Dokument (PDF): Nur PDF erlaubt.');
+      component.ausgewaehlterAvvCode = { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' };
+      fixture.componentInstance.freitext = 'Bauschutt';
+      const submitPromise = fixture.componentInstance.submit();
+      const request = httpMock.expectOne('/api/v1/wareneintraege');
+      expect((request.request.body as FormData).has('dokument')).toBeFalse();
+      request.flush({ id: 'wareneintrag-1' });
+      await submitPromise;
+    });
+  });
+
   describe('Fotoauswahl (Issue #59)', () => {
     // Android bietet bei eingeschränkten Bildtypen keine Kamera an, daher je
     // Kachel ein Feld für die Kamera (capture) und eins für die Galerie.
     it('offers only the image types the server accepts, with a camera and a gallery field per tile', () => {
       const fixture = createComponent();
-      const inputs = Array.from(fixture.nativeElement.querySelectorAll('input[type="file"]') as NodeListOf<HTMLInputElement>);
+      const inputs = Array.from(
+        fixture.nativeElement.querySelectorAll('[data-testid^="kamera-"], [data-testid^="galerie-"]') as NodeListOf<HTMLInputElement>,
+      );
 
       expect(inputs.length).toBe(6);
       inputs.forEach((input) => expect(input.accept).toBe('image/jpeg,image/png,image/webp'));
