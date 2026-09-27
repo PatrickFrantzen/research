@@ -158,6 +158,13 @@ test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen 
     await page.getByTestId('wareneintrag-details').click();
     await expect(dialog).toBeVisible();
   };
+  // Jede Analyse erst nach bestätigtem Hinweis auf Google Gemini.
+  const hinweis = page.getByRole('dialog', { name: 'Fotos an Google senden?' });
+  const analysieren = async (button: 'Analysieren' | 'Wiederholen') => {
+    await dialog.getByRole('button', { name: button }).click();
+    await hinweis.getByRole('button', { name: 'Senden und analysieren' }).click();
+    await expect(hinweis).toBeHidden();
+  };
   // Erst schließen lassen, sonst ist der alte Dialog beim Wiederöffnen noch
   // in der Ausblend-Animation und es gibt kurz zwei.
   const schliessen = async () => {
@@ -168,7 +175,16 @@ test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen 
   // Vorschau, dann ohne Speichern schließen: nichts bleibt.
   await oeffnen();
   await expect(dialog.getByTestId('analysiert-von')).toHaveCount(0);
+  // Abbrechen im Hinweis schickt nichts an Google.
   await dialog.getByRole('button', { name: 'Analysieren' }).click();
+  await expect(hinweis).toContainText('Google Gemini API');
+  await expect(hinweis).toContainText('Google darf diese Eingaben');
+  await pruefeBarrierefreiheit(page, 'Hinweis vor der KI-Analyse');
+  await hinweis.getByRole('button', { name: 'Abbrechen' }).click();
+  await expect(hinweis).toBeHidden();
+  await expect(dialog.getByTestId('nicht-analysiert')).toBeVisible();
+
+  await analysieren('Analysieren');
   await expect(dialog.getByRole('listitem')).toHaveText([/Mineralischer Bauschutt\s*70 %/, /Holz\s*30 %/, /Gesamt\s*100 %/]);
   await expect(dialog.getByTestId('einschaetzung')).toHaveText('Überwiegend Bauschutt mit etwas Holz.');
   await expect(dialog).toContainText('KI-Schätzung aus den Fotos, keine Messung.');
@@ -182,8 +198,8 @@ test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen 
   await expect(dialog.getByTestId('einschaetzung')).toHaveCount(0);
 
   // Wiederholen, speichern, erneut öffnen: gespeicherte Analyse mit Urheber.
-  await dialog.getByRole('button', { name: 'Analysieren' }).click();
-  await dialog.getByRole('button', { name: 'Wiederholen' }).click();
+  await analysieren('Analysieren');
+  await analysieren('Wiederholen');
   await dialog.getByRole('button', { name: 'Speichern' }).click();
   const analysiertVon = dialog.getByTestId('analysiert-von');
   await expect(analysiertVon).toHaveText(/Analysiert von .+ am \d{2}\.\d{2}\.\d{4}, \d{2}:\d{2}/);

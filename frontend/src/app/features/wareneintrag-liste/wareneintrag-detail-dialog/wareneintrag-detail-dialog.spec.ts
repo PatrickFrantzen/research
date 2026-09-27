@@ -1,7 +1,8 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { of } from 'rxjs';
 import { Wareneintrag } from '../../../core/wareneintrag-api.js';
 import { WareneintragDetailDialog } from './wareneintrag-detail-dialog.js';
 
@@ -21,7 +22,17 @@ const WARENEINTRAG: Wareneintrag = {
   erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
 };
 
+// Die Analyse startet erst nach dem (hier sofort bestätigten) Hinweis-Dialog.
+const nachBestaetigung = () => new Promise((resolve) => setTimeout(resolve));
+
 describe('WareneintragDetailDialog', () => {
+  // Hinweis vor der KI-Analyse: standardmäßig bestätigt, einzelne Tests brechen ab.
+  let zustimmung: true | undefined;
+  let bestaetigung: jasmine.Spy;
+  beforeEach(() => {
+    zustimmung = true;
+  });
+
   function erstelle(wareneintrag: Wareneintrag, startFoto: number) {
     TestBed.configureTestingModule({
       imports: [WareneintragDetailDialog],
@@ -32,6 +43,11 @@ describe('WareneintragDetailDialog', () => {
         { provide: MatDialogRef, useValue: { close: jasmine.createSpy('close') } },
       ],
     });
+    // Prototyp statt Instanz: MatDialogModule im Component-Import stellt
+    // eine eigene MatDialog-Instanz bereit.
+    bestaetigung = spyOn(MatDialog.prototype, 'open').and.callFake(
+      () => ({ afterClosed: () => of(zustimmung) }) as MatDialogRef<unknown>,
+    );
     const fixture = TestBed.createComponent(WareneintragDetailDialog);
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
@@ -104,6 +120,7 @@ describe('WareneintragDetailDialog', () => {
       const httpMock = TestBed.inject(HttpTestingController);
 
       analysierenButton(element).click();
+      await nachBestaetigung();
       fixture.detectChanges();
       expect(element.querySelector('mat-progress-bar')).not.toBeNull();
       expect(analysierenButton(element).disabled).toBeTrue();
@@ -116,7 +133,7 @@ describe('WareneintragDetailDialog', () => {
         einschaetzung: 'Überwiegend Beton.',
         avvPruefung: AVV_PASST,
       });
-      await fixture.whenStable();
+      await nachBestaetigung();
       fixture.detectChanges();
 
       const zeilen = [...element.querySelectorAll('.fraktionen li')].map((li) =>
@@ -133,8 +150,9 @@ describe('WareneintragDetailDialog', () => {
     it('says so when no waste is visible', async () => {
       const { fixture, element } = erstelle(WARENEINTRAG, 0);
       analysierenButton(element).click();
+      await nachBestaetigung();
       TestBed.inject(HttpTestingController).expectOne({ method: 'POST', url: URL }).flush({ fraktionen: [], einschaetzung: 'Nur Boden.', avvPruefung: AVV_PASST });
-      await fixture.whenStable();
+      await nachBestaetigung();
       fixture.detectChanges();
 
       expect(element.querySelector('[data-testid="kein-abfall"]')?.textContent).toContain('kein Abfall erkennbar');
@@ -144,13 +162,14 @@ describe('WareneintragDetailDialog', () => {
     it('shows the server message on failure, e.g. the exhausted daily quota', async () => {
       const { fixture, element } = erstelle(WARENEINTRAG, 0);
       analysierenButton(element).click();
+      await nachBestaetigung();
       TestBed.inject(HttpTestingController)
         .expectOne({ method: 'POST', url: URL })
         .flush(
           { message: 'Tageskontingent der KI-Analyse erschöpft, bitte morgen erneut versuchen.' },
           { status: 429, statusText: 'Too Many Requests' },
         );
-      await fixture.whenStable();
+      await nachBestaetigung();
       fixture.detectChanges();
 
       expect(element.querySelector('[role="alert"]')?.textContent).toContain('Tageskontingent der KI-Analyse erschöpft');
@@ -174,8 +193,8 @@ describe('WareneintragDetailDialog', () => {
     const button = (element: HTMLElement, testId: string) =>
       element.querySelector(`[data-testid="${testId}"]`) as HTMLButtonElement | null;
 
-    async function nach(fixture: { whenStable: () => Promise<unknown>; detectChanges: () => void }) {
-      await fixture.whenStable();
+    async function nach(fixture: { detectChanges: () => void }) {
+      await nachBestaetigung();
       fixture.detectChanges();
     }
 
@@ -206,6 +225,7 @@ describe('WareneintragDetailDialog', () => {
       await nach(fixture);
 
       button(element, 'analysieren')!.click();
+      await nachBestaetigung();
       httpMock.expectOne({ method: 'POST', url: URL }).flush(ERGEBNIS);
       await nach(fixture);
       expect(element.textContent).toContain('Vorschau, noch nicht gespeichert.');
@@ -230,9 +250,11 @@ describe('WareneintragDetailDialog', () => {
       await nach(fixture);
 
       button(element, 'analysieren')!.click();
+      await nachBestaetigung();
       httpMock.expectOne({ method: 'POST', url: URL }).flush({ ...ERGEBNIS, einschaetzung: 'Erster Versuch.' });
       await nach(fixture);
       button(element, 'analyse-wiederholen')!.click();
+      await nachBestaetigung();
       httpMock.expectOne({ method: 'POST', url: URL }).flush({ ...ERGEBNIS, einschaetzung: 'Zweiter Versuch.' });
       await nach(fixture);
 
@@ -245,6 +267,7 @@ describe('WareneintragDetailDialog', () => {
       const httpMock = TestBed.inject(HttpTestingController);
       httpMock.expectOne({ method: 'GET', url: URL }).flush(null);
       button(element, 'analysieren')!.click();
+      await nachBestaetigung();
       httpMock.expectOne({ method: 'POST', url: URL }).flush(ERGEBNIS);
       await nach(fixture);
 
@@ -265,10 +288,11 @@ describe('WareneintragDetailDialog', () => {
       const { fixture, element } = erstelle(WARENEINTRAG, 0);
       const httpMock = TestBed.inject(HttpTestingController);
       (element.querySelector('[data-testid="analysieren"]') as HTMLButtonElement).click();
+      await nachBestaetigung();
       httpMock
         .expectOne({ method: 'POST', url: URL })
         .flush({ fraktionen: [{ name: 'Beton', anteilProzent: 100 }], einschaetzung: 'Beton.', avvPruefung });
-      await fixture.whenStable();
+      await nachBestaetigung();
       fixture.detectChanges();
       return element.querySelector('[data-testid="avv-pruefung"]') as HTMLElement;
     }
@@ -295,6 +319,31 @@ describe('WareneintragDetailDialog', () => {
       expect(pruefung.querySelector('.urteil')?.textContent).toContain('AVV-Code passt');
       expect(pruefung.querySelector('mat-icon')?.textContent?.trim()).toBe('check_circle');
       expect(pruefung.querySelector('[data-testid="avv-vorschlag"]')).toBeNull();
+    });
+  });
+
+  describe('Hinweis auf Google Gemini vor der Analyse', () => {
+    const URL = '/api/v1/wareneintraege/wareneintrag-1/ki-analyse';
+
+    it('asks for confirmation that the fotos go to Google, who may use the inputs', async () => {
+      const { element } = erstelle(WARENEINTRAG, 0);
+      (element.querySelector('[data-testid="analysieren"]') as HTMLButtonElement).click();
+      await nachBestaetigung();
+
+      const { data } = bestaetigung.calls.mostRecent().args[1];
+      expect(data.nachricht).toContain('Google Gemini API');
+      expect(data.nachricht).toContain('Google darf diese Eingaben');
+      TestBed.inject(HttpTestingController).expectOne({ method: 'POST', url: URL });
+    });
+
+    it('does not analyse when the Nutzer cancels', async () => {
+      zustimmung = undefined;
+      const { element } = erstelle(WARENEINTRAG, 0);
+      (element.querySelector('[data-testid="analysieren"]') as HTMLButtonElement).click();
+      await nachBestaetigung();
+
+      TestBed.inject(HttpTestingController).expectNone({ method: 'POST', url: URL });
+      expect(bestaetigung).toHaveBeenCalledTimes(1);
     });
   });
 });

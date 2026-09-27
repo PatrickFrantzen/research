@@ -1,11 +1,12 @@
 import { DatePipe } from '@angular/common';
 import { Component, ElementRef, afterNextRender, inject, signal, viewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { firstValueFrom } from 'rxjs';
+import { ConfirmDialog } from '../../../core/confirm-dialog/confirm-dialog.js';
 import { extrahiereFehlermeldung } from '../../../core/http-fehler.js';
 import { GespeicherteKiAnalyse, KiAnalyseErgebnis, Wareneintrag, WareneintragApi } from '../../../core/wareneintrag-api.js';
 import { KiAnalyseErgebnisAnzeige } from '../ki-analyse-ergebnis/ki-analyse-ergebnis.js';
@@ -50,6 +51,7 @@ export class WareneintragDetailDialog {
   protected readonly position = signal(this.daten.startFoto);
   private readonly spur = viewChild<ElementRef<HTMLElement>>('spur');
   private readonly wareneintragApi = inject(WareneintragApi);
+  private readonly dialog = inject(MatDialog);
 
   // Vorschau, noch nicht gespeichert. Schließen verwirft sie ohne Rückfrage,
   // in Redis läuft sie nach einer Stunde ab (Issue #94).
@@ -75,7 +77,24 @@ export class WareneintragDetailDialog {
     }, 'Die KI-Analyse konnte nicht gespeichert werden.');
   }
 
+  // Vor jeder Analyse (auch Wiederholen) bestätigen: die Fotos gehen an
+  // Google, im Free Tier darf Google sie verwenden (ADR-0008).
   protected async analysieren(): Promise<void> {
+    const bestaetigt = await firstValueFrom(
+      this.dialog
+        .open(ConfirmDialog, {
+          data: {
+            titel: 'Fotos an Google senden?',
+            nachricht:
+              'Die KI-Analyse schickt die Fotos, den AVV-Code und den Freitext dieses Eintrags an die Google Gemini API. ' +
+              'Google darf diese Eingaben zur Verbesserung seiner Dienste verwenden, auch Menschen bei Google können sie sehen. ' +
+              'Keine Fotos mit Personen, Kennzeichen oder vertraulichen Informationen analysieren.',
+            bestaetigenLabel: 'Senden und analysieren',
+          },
+        })
+        .afterClosed(),
+    );
+    if (!bestaetigt) return;
     await this.fuehreAus(async () => {
       this.analyse.set(await firstValueFrom(this.wareneintragApi.analysieren(this.wareneintrag.id)));
     }, 'Die KI-Analyse ist fehlgeschlagen. Bitte später erneut versuchen.');
