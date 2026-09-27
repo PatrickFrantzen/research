@@ -56,6 +56,9 @@ test('Wareneintrag mit Foto erfassen und in der Liste wiederfinden', async ({ pa
   const galerie = (await dialog.locator('.galerie').boundingBox())!;
   const daten = (await dialog.locator('.daten').boundingBox())!;
   expect(daten.y).toBeGreaterThanOrEqual(galerie.y + galerie.height);
+  // Inhalt nutzt die volle Höhe, "Schließen" sitzt am unteren Rand.
+  const schliessen = (await dialog.getByRole('button', { name: 'Schließen' }).boundingBox())!;
+  expect(schliessen.y + schliessen.height).toBeGreaterThan(viewport.height - 80);
   await pruefeBarrierefreiheit(page, 'Detail-Dialog mobil');
 });
 
