@@ -1,13 +1,12 @@
 import { NgOptimizedImage } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormField, form, maxLength, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth.service.js';
 import { FokusBeiAnzeige } from '../../core/fokus-bei-anzeige.js';
 
@@ -17,11 +16,9 @@ import { FokusBeiAnzeige } from '../../core/fokus-bei-anzeige.js';
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
-export class Login implements OnInit {
+export class Login {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
-  private readonly route = inject(ActivatedRoute);
-  private readonly snackBar = inject(MatSnackBar);
 
   protected readonly loginDaten = signal({ email: '', passwort: '' });
   protected readonly loginForm = form(this.loginDaten, (pfad) => {
@@ -32,14 +29,6 @@ export class Login implements OnInit {
   protected readonly fehler = signal<string | null>(null);
   protected readonly wirdGeladen = signal(false);
   protected readonly passwortSichtbar = signal(false);
-
-  ngOnInit(): void {
-    // Bestätigung nach erfolgreichem Passwort-Setzen (Weiterleitung aus
-    // PasswortSetzen, Issue #55).
-    if (this.route.snapshot.queryParamMap.has('passwortGesetzt')) {
-      this.snackBar.open('Passwort wurde gesetzt. Du kannst dich jetzt anmelden.', 'OK', { duration: 5000 });
-    }
-  }
 
   protected passwortSichtbarkeitUmschalten(): void {
     this.passwortSichtbar.update((sichtbar) => !sichtbar);

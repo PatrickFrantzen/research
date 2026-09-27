@@ -32,8 +32,10 @@ test.describe('mit Session von Erika', () => {
     await clara.getByLabel('Neues Passwort').fill('e2e-Passwort-Clara-1');
     await setzen.click();
 
-    await expect(clara).toHaveURL(/\/login\?passwortGesetzt=1$/);
-    await expect(clara.getByText('Passwort wurde gesetzt. Du kannst dich jetzt anmelden.')).toBeVisible();
+    // Direkt angemeldet, ohne zweiten Login-Schritt (Issue #80).
+    await expect(clara.getByText('Passwort gesetzt, du bist angemeldet.')).toBeVisible();
+    await expect(clara).not.toHaveURL(/\/(login|passwort-setzen)/);
+    await expect(clara.getByRole('heading', { level: 1, name: 'Wareneinträge' })).toBeVisible();
     await neuerKontext.close();
   });
 });

@@ -24,7 +24,7 @@ export class SmtpMailer extends Mailer {
     await this.senden(
       empfaenger,
       'RESEARCH: Einladung',
-      `Hallo,\n\nfür dich wurde ein Zugang zu RESEARCH angelegt. Über diesen Link setzt du dein Passwort:\n\n${this.appUrl}${link}\n\nDer Link ist 7 Tage gültig.\n`,
+      `Hallo,\n\nfür dich wurde ein Zugang zu RESEARCH angelegt. Über diesen Link setzt du dein Passwort und bist danach direkt angemeldet:\n\n${this.appUrl}${link}\n\nDer Link ist 7 Tage gültig.\n`,
     );
   }
 
