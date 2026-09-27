@@ -27,7 +27,9 @@ Projekt ist ein Prototyp ohne Budget für KI-Dienste.
 - Das Ergebnis ist zuerst eine Vorschau in Redis (pro Eintrag und Nutzer,
   1 h). Speichern übernimmt ausschließlich diese Vorschau, nie Werte aus dem
   Request, in die Tabelle `wareneintrag_analysen` (eine pro Eintrag,
-  überschreibbar, Löschen des Eintrags löscht sie mit).
+  überschreibbar, Löschen des Eintrags löscht sie mit). Ändern sich die
+  Fotos eines Eintrags, wird sie gelöscht; Freitext oder AVV-Code allein
+  lassen sie stehen.
 - Limit 5 Analysen pro Minute pro Nutzer, per Redis-Zähler. Der globale
   ThrottlerGuard läuft vor der Anmeldung und kennt nur die IP.
 - Die KI prüft auch, ob der erfasste AVV-Code passt (Urteil, Begründung,

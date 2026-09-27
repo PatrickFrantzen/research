@@ -366,6 +366,7 @@ describe('WareneintragService', () => {
           }),
           update: vi.fn().mockResolvedValue({ id: 'wareneintrag-1' }),
         },
+        wareneintragAnalyse: { deleteMany: vi.fn() },
       };
       const objectStorage = { uploadFoto: vi.fn(), deleteFoto: vi.fn() };
       const service = new WareneintragService(prisma as never, objectStorage as never);
@@ -374,6 +375,8 @@ describe('WareneintragService', () => {
 
       expect(objectStorage.uploadFoto).not.toHaveBeenCalled();
       expect(objectStorage.deleteFoto).not.toHaveBeenCalled();
+      // Nur Freitext/AVV-Code geändert: KI-Analyse bleibt (Issue #96).
+      expect(prisma.wareneintragAnalyse.deleteMany).not.toHaveBeenCalled();
       expect(prisma.wareneintrag.update).toHaveBeenCalledWith({
         where: { id: 'wareneintrag-1' },
         data: {
@@ -398,6 +401,7 @@ describe('WareneintragService', () => {
           }),
           update: vi.fn().mockResolvedValue({ id: 'wareneintrag-1' }),
         },
+        wareneintragAnalyse: { deleteMany: vi.fn().mockResolvedValue({ count: 1 }) },
       };
       const objectStorage = {
         uploadFoto: vi.fn().mockResolvedValue('wareneintraege/neu'),
@@ -414,6 +418,11 @@ describe('WareneintragService', () => {
       );
 
       expect(objectStorage.deleteFoto).toHaveBeenCalledOnce();
+      // Foto ersetzt: gespeicherte KI-Analyse wird gelöscht, vor dem Update (Issue #96).
+      expect(prisma.wareneintragAnalyse.deleteMany).toHaveBeenCalledWith({ where: { wareneintragId: 'wareneintrag-1' } });
+      expect(prisma.wareneintragAnalyse.deleteMany.mock.invocationCallOrder[0]).toBeLessThan(
+        prisma.wareneintrag.update.mock.invocationCallOrder[0],
+      );
       expect(objectStorage.deleteFoto).toHaveBeenCalledWith('wareneintraege/alt');
       expect(objectStorage.uploadFoto).toHaveBeenCalledOnce();
       expect(objectStorage.uploadFoto).toHaveBeenCalledWith(fotoFern.buffer, 'image/png');

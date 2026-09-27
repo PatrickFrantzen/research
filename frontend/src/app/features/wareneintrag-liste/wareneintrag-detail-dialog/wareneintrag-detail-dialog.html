@@ -54,6 +54,8 @@
           Analysiert von {{ analyse.analysiertVon.vorname }} {{ analyse.analysiertVon.nachname }} am
           {{ analyse.analysiertAm | date: 'dd.MM.yyyy, HH:mm' }}
         </p>
+      } @else if (!analyseLaeuft()) {
+        <p class="status" data-testid="nicht-analysiert">Noch nicht analysiert.</p>
       }
       @if (analyseLaeuft()) {
         <mat-progress-bar mode="indeterminate" aria-label="KI-Analyse läuft" />

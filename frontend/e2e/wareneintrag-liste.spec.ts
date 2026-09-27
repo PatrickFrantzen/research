@@ -146,7 +146,7 @@ test('Detail-Dialog mit Bildergalerie öffnen (Issue #92)', async ({ page }) => 
   await expect(page.getByRole('dialog', { name: 'Wareneintrag bearbeiten' })).toBeVisible();
 });
 
-test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen (Issues #93 bis #95)', async ({ page }) => {
+test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen (Issues #93 bis #96)', async ({ page }) => {
   // Gemini ist im E2E-Stack der lokale Stub (e2e/gemini-stub.mjs), der
   // Weg durch das Backend inklusive Redis-Vorschau ist echt.
   await legeEintragAn(page.request, 'E2E Analyse', ['fotoFern']);
@@ -193,6 +193,26 @@ test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen 
   await expect(dialog.getByTestId('einschaetzung')).toHaveText('Überwiegend Bauschutt mit etwas Holz.');
   await expect(dialog.getByTestId('analysiert-von')).toBeVisible();
   await expect(dialog.getByTestId('avv-vorschlag')).toContainText(AVV_B.code);
+  await schliessen();
+
+  // Issue #96: nur Freitext ändern lässt die Analyse stehen ...
+  const bearbeiten = page.getByRole('dialog', { name: 'Wareneintrag bearbeiten' });
+  await page.getByTestId('wareneintrag-bearbeiten').click();
+  await bearbeiten.getByTestId('bearbeiten-freitext').fill('E2E Analyse geändert');
+  await bearbeiten.getByTestId('bearbeiten-speichern').click();
+  await expect(bearbeiten).toBeHidden();
+  await oeffnen();
+  await expect(dialog.getByTestId('analysiert-von')).toBeVisible();
+  await schliessen();
+
+  // ... ein ersetztes Foto löscht sie.
+  await page.getByTestId('wareneintrag-bearbeiten').click();
+  await bearbeiten.getByTestId('bearbeiten-foto-fotoFern').setInputFiles({ name: 'neu.png', mimeType: 'image/png', buffer: TEST_PNG });
+  await bearbeiten.getByTestId('bearbeiten-speichern').click();
+  await expect(bearbeiten).toBeHidden();
+  await oeffnen();
+  await expect(dialog.getByTestId('nicht-analysiert')).toHaveText('Noch nicht analysiert.');
+  await expect(dialog.getByTestId('analysiert-von')).toHaveCount(0);
   await schliessen();
 
   // Löschen des Eintrags nimmt die Analyse mit (ON DELETE CASCADE).

@@ -189,6 +189,14 @@ describe('WareneintragDetailDialog', () => {
         'Analysiert von Max Mustermann am 20.09.2026, 14:05',
       );
       expect(button(element, 'analysieren')).not.toBeNull();
+      expect(element.querySelector('[data-testid="nicht-analysiert"]')).toBeNull();
+    });
+
+    it('says "Noch nicht analysiert" without a saved analysis (e.g. after a foto change, Issue #96)', async () => {
+      const { fixture, element } = erstelle(WARENEINTRAG, 0);
+      TestBed.inject(HttpTestingController).expectOne({ method: 'GET', url: URL }).flush(null);
+      await nach(fixture);
+      expect(element.querySelector('[data-testid="nicht-analysiert"]')?.textContent).toContain('Noch nicht analysiert.');
     });
 
     it('offers Speichern and Wiederholen for a preview and shows the saved result after saving', async () => {
