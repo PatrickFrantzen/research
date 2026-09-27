@@ -1,6 +1,6 @@
 .foto-kacheln {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
   margin-bottom: 16px;
 }
@@ -40,4 +40,18 @@
 .foto-kachel-label {
   font: var(--mat-sys-label-small);
   text-align: center;
+}
+
+.dokument {
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dokument-name {
+  font: var(--mat-sys-label-small);
+  max-width: 100%;
+  padding: 0 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

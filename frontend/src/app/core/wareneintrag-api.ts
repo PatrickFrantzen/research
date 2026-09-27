@@ -10,6 +10,8 @@ export interface Wareneintrag {
   fotoFernUrl: string | null;
   fotoNahUrl: string | null;
   fotoDetailUrl: string | null;
+  // Optionales PDF (Issue #103), wie die Fotos eine zeitlich begrenzte URL.
+  dokumentUrl: string | null;
   freitext: string;
   erstelltAm: string;
   avvCode: Pick<AvvCode, 'id' | 'code' | 'bezeichnung'>;

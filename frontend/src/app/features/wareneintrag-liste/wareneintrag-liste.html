@@ -85,7 +85,12 @@
                 AVV-Code: {{ wareneintrag.avvCode.code }}
               </button>
             </mat-card-title>
-            <mat-card-subtitle class="datum">{{ wareneintrag.erstelltAm | date: 'dd.MM.yyyy, HH:mm' }}</mat-card-subtitle>
+            <mat-card-subtitle class="datum">
+              {{ wareneintrag.erstelltAm | date: 'dd.MM.yyyy, HH:mm' }}
+              @if (wareneintrag.dokumentUrl) {
+                <mat-icon class="pdf-hinweis" role="img" aria-hidden="false" aria-label="Mit PDF-Dokument" title="Mit PDF-Dokument">picture_as_pdf</mat-icon>
+              }
+            </mat-card-subtitle>
           </mat-card-header>
           <mat-card-content>
             <div class="fotos">

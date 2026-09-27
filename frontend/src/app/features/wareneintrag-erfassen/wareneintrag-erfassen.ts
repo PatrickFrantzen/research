@@ -13,7 +13,7 @@ import { RouterLink } from '@angular/router';
 import { debounceTime, distinctUntilChanged, firstValueFrom, Subject } from 'rxjs';
 import { AvvCode, AvvCodeApi } from '../../core/avv-code-api.js';
 import { AppFehlerMelder } from '../../core/app-fehler-melder.js';
-import { beschreibeFoto, uebernehmeFoto } from '../../core/foto-validierung.js';
+import { beschreibeFoto, pruefeDokument, uebernehmeFoto } from '../../core/foto-validierung.js';
 import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
 import { FREITEXT_MAX_LAENGE, WareneintragApi } from '../../core/wareneintrag-api.js';
 import { FokusBeiAnzeige } from '../../core/fokus-bei-anzeige.js';
@@ -116,6 +116,9 @@ export class WareneintragErfassen {
   private readonly fehlerMelder = inject(AppFehlerMelder);
   private readonly kameraInputs = viewChildren<ElementRef<HTMLInputElement>>('kameraInput');
   private readonly galerieInputs = viewChildren<ElementRef<HTMLInputElement>>('galerieInput');
+  private readonly dokumentInputs = viewChildren<ElementRef<HTMLInputElement>>('dokumentInput');
+  // Optionales PDF, z. B. Lieferschein (Issue #103).
+  protected readonly dokument = signal<File | null>(null);
   protected readonly wirdGeladen = signal(false);
 
   fotoVorschau(ansicht: FotoAnsicht): string | null {
@@ -131,6 +134,13 @@ export class WareneintragErfassen {
     if (meldung && auswahl) this.fehlerMelder.melde(`Foto abgelehnt: ${label}: ${meldung} ${beschreibeFoto(auswahl)}`);
     this.fotos[ansicht] = datei;
     this.setzeFotoVorschau(ansicht, datei);
+  }
+
+  onDokumentAusgewaehlt(event: Event): void {
+    const auswahl = (event.target as HTMLInputElement).files?.[0] ?? null;
+    const meldung = auswahl ? pruefeDokument(auswahl) : null;
+    this.fotoFehler.set(meldung ? `Dokument (PDF): ${meldung}` : null);
+    this.dokument.set(meldung ? null : auswahl);
   }
 
   // Object-URLs halten die Datei im Speicher, bis sie freigegeben werden –
@@ -177,6 +187,8 @@ export class WareneintragErfassen {
         const datei = this.fotos[ansicht];
         if (datei) formData.append(ansicht, datei);
       }
+      const dokument = this.dokument();
+      if (dokument) formData.append('dokument', dokument);
       formData.append('avvCodeId', this.ausgewaehlterAvvCode.id);
       formData.append('freitext', this.freitext);
 
@@ -193,11 +205,12 @@ export class WareneintragErfassen {
 
   weitererEintrag(): void {
     // Sonst löst die erneute Auswahl derselben Datei kein change aus (Issue #59).
-    for (const input of [...this.kameraInputs(), ...this.galerieInputs()]) input.nativeElement.value = '';
+    for (const input of [...this.kameraInputs(), ...this.galerieInputs(), ...this.dokumentInputs()]) input.nativeElement.value = '';
     this.fotoFehler.set(null);
     this.fotos.fotoFern = null;
     this.fotos.fotoNah = null;
     this.fotos.fotoDetail = null;
+    this.dokument.set(null);
     this.fotoVorschauenFreigeben();
     this.ausgewaehlterAvvCode = null;
     this.wareneintragDaten.set({ avvSucheAnzeige: '', freitext: '' });

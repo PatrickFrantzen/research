@@ -15,6 +15,7 @@ const WARENEINTRAG: Wareneintrag = {
   fotoFernUrl: PIXEL,
   fotoNahUrl: PIXEL,
   fotoDetailUrl: PIXEL,
+  dokumentUrl: null,
   freitext: 'Bauschutt am Eingang',
   erstelltAm: '2026-09-19T20:08:00',
   avvCode: { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' },
@@ -96,6 +97,19 @@ describe('WareneintragDetailDialog', () => {
     expect(text).toContain('Hauptsitz');
     expect(text).toContain('Erika Musterfrau');
     expect(element.querySelectorAll('.spur img').length).toBe(3);
+  });
+
+  it('offers the PDF as a link that opens in a new tab (Issue #103)', () => {
+    const { element } = erstelle({ ...WARENEINTRAG, dokumentUrl: 'https://files.example/lieferschein' }, 0);
+    const link = element.querySelector('a[data-testid="dokument-oeffnen"]') as HTMLAnchorElement;
+    expect(link.href).toBe('https://files.example/lieferschein');
+    expect(link.target).toBe('_blank');
+    expect(link.rel).toContain('noopener');
+  });
+
+  it('shows no PDF link without a PDF', () => {
+    const { element } = erstelle(WARENEINTRAG, 0);
+    expect(element.querySelector('[data-testid="dokument-oeffnen"]')).toBeNull();
   });
 
   it('shows no gallery for a Wareneintrag without fotos', () => {

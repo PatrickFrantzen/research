@@ -31,6 +31,9 @@ const PNG_BYTES = Buffer.from([
   0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06, 0x00, 0x00, 0x00, 0x1f, 0x15, 0xc4, 0x89,
 ]);
 
+// Kleinstes PDF, das die Magic-Number-Erkennung als application/pdf einstuft.
+const PDF_BYTES = Buffer.from(['%PDF-1.4', '1 0 obj<<>>endobj', 'trailer<<>>', '%%EOF', ''].join(String.fromCharCode(10)));
+
 describe('Wareneintrag-Foto-Upload: Härtung', () => {
   let app: INestApplication;
 
@@ -125,6 +128,37 @@ describe('Wareneintrag-Foto-Upload: Härtung', () => {
 
     expect(response.status).toBe(413);
     expect(response.body.message).toBe('Datei ist größer als 1 MB.');
+  });
+
+  it('accepts a real PDF as dokument and stores it with the Wareneintrag', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/wareneintraege')
+      .field('avvCodeId', 'f8a3632d-6b2c-4843-b223-85a711b4a9a7')
+      .field('freitext', 'Testeintrag mit Lieferschein')
+      .attach('dokument', PDF_BYTES, { filename: 'lieferschein.pdf', contentType: 'application/pdf' });
+
+    expect(response.status).toBe(201);
+    expect(response.body.data.dokumentUrl).toBe('wareneintraege/foto-1');
+  });
+
+  it('rejects an image renamed to .pdf as dokument, even with a spoofed application/pdf Content-Type', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/wareneintraege')
+      .field('avvCodeId', 'f8a3632d-6b2c-4843-b223-85a711b4a9a7')
+      .field('freitext', 'Testeintrag')
+      .attach('dokument', PNG_BYTES, { filename: 'bild.pdf', contentType: 'application/pdf' });
+
+    expect(response.status).toBe(400);
+  });
+
+  it('rejects a PDF uploaded as a foto', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/wareneintraege')
+      .field('avvCodeId', 'f8a3632d-6b2c-4843-b223-85a711b4a9a7')
+      .field('freitext', 'Testeintrag')
+      .attach('fotoFern', PDF_BYTES, { filename: 'foto.pdf', contentType: 'image/png' });
+
+    expect(response.status).toBe(400);
   });
 
   it('rejects multipart requests with more text fields than the form has', async () => {

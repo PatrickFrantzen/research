@@ -12,6 +12,7 @@ const WARENEINTRAG: Wareneintrag = {
   fotoFernUrl: '/foto.jpg',
   fotoNahUrl: null,
   fotoDetailUrl: null,
+  dokumentUrl: null,
   freitext: 'alter Text',
   erstelltAm: '2026-09-19T20:08:00',
   avvCode: { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' },
@@ -24,6 +25,7 @@ interface TestableDialog {
   kannSpeichern: boolean;
   fehler: () => string | null;
   fotoErsetzen: (ansicht: 'fotoFern' | 'fotoNah' | 'fotoDetail', event: Event) => Promise<void>;
+  dokumentErsetzen: (event: Event) => void;
 }
 
 function asTestable(component: WareneintragBearbeitenDialog): TestableDialog {
@@ -65,6 +67,36 @@ describe('WareneintragBearbeitenDialog', () => {
     httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([]);
     return fixture;
   }
+
+  it('replaces the PDF: shows the chosen file name and sends it as dokument (Issue #103)', async () => {
+    const fixture = createComponent();
+    const element = fixture.nativeElement as HTMLElement;
+    expect((element.querySelector('[data-testid="bearbeiten-dokument"]') as HTMLInputElement).accept).toBe('application/pdf');
+
+    asTestable(fixture.componentInstance).dokumentErsetzen(
+      fotoAuswahlEvent(new File(['%PDF-1.4'], 'neuer-lieferschein.pdf', { type: 'application/pdf' })),
+    );
+    fixture.detectChanges();
+
+    expect(element.textContent).toContain('neuer-lieferschein.pdf');
+    void fixture.componentInstance.speichern();
+    const request = httpMock.expectOne('/api/v1/wareneintraege/wareneintrag-1');
+    expect(((request.request.body as FormData).get('dokument') as File).name).toBe('neuer-lieferschein.pdf');
+    request.flush({});
+  });
+
+  it('rejects a replacement dokument that is not a PDF and does not send it (Issue #103)', async () => {
+    const fixture = createComponent();
+
+    asTestable(fixture.componentInstance).dokumentErsetzen(fotoAuswahlEvent(new File(['x'], 'foto.jpg', { type: 'image/jpeg' })));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Dokument (PDF): Nur PDF erlaubt.');
+    void fixture.componentInstance.speichern();
+    const request = httpMock.expectOne('/api/v1/wareneintraege/wareneintrag-1');
+    expect((request.request.body as FormData).get('dokument')).toBeNull();
+    request.flush({});
+  });
 
   it('rejects an invalid replacement photo with a message and does not save it (Issue #59)', async () => {
     const fixture = createComponent();

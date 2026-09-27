@@ -58,6 +58,21 @@
         <span class="dateiname">{{ name }}</span>
       }
     }
+    <input
+      #dokumentInput
+      type="file"
+      hidden
+      data-testid="bearbeiten-dokument"
+      accept="application/pdf"
+      (change)="dokumentErsetzen($event)"
+    />
+    <button matButton="outlined" type="button" (click)="dokumentInput.click()">
+      <mat-icon>{{ dokument() ? 'check' : 'picture_as_pdf' }}</mat-icon>
+      Dokument (PDF) {{ daten.wareneintrag.dokumentUrl ? 'ersetzen' : 'hinzufügen' }}
+    </button>
+    @if (dokument(); as pdf) {
+      <span class="dateiname">{{ pdf.name }}</span>
+    }
   </div>
 
   @if (fotoFehler(); as meldung) {

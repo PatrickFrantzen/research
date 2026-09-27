@@ -109,6 +109,35 @@ test('eigenen Wareneintrag nach Bestätigung löschen', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1, name: 'Wareneinträge' })).toBeFocused();
 });
 
+test('PDF-Dokument anlegen, in Liste und Details sehen, im Bearbeiten-Dialog ersetzen (Issue #103)', async ({ page }) => {
+  const pdf = (name: string) => ({ name, mimeType: 'application/pdf', buffer: Buffer.from(['%PDF-1.4', '1 0 obj<<>>endobj', 'trailer<<>>', '%%EOF', ''].join(String.fromCharCode(10))) });
+  const [avvCode] = (await (await page.request.get('/api/v1/avv-codes', { params: { suche: AVV_A.suche } })).json()) as { id: string }[];
+  const antwort = await page.request.post('/api/v1/wareneintraege', {
+    headers: await csrfHeader(page.request),
+    multipart: { avvCodeId: avvCode.id, freitext: 'E2E Lieferschein', dokument: pdf('lieferschein.pdf') },
+  });
+  expect(antwort.status()).toBe(201);
+
+  await page.goto('/wareneintraege');
+  await sucheFreitext(page, 'E2E Lieferschein');
+  await expect(page.getByTestId('trefferanzahl')).toHaveText('1 Wareneintrag');
+  await expect(page.getByRole('img', { name: 'Mit PDF-Dokument' })).toBeVisible();
+
+  await page.getByTestId('wareneintrag-details').click();
+  const details = page.getByRole('dialog', { name: `AVV-Code ${AVV_A.code}` });
+  await expect(details.getByTestId('dokument-oeffnen')).toHaveAttribute('target', '_blank');
+  await pruefeBarrierefreiheit(page, 'Detail-Dialog mit PDF');
+  await page.keyboard.press('Escape');
+
+  await page.getByTestId('wareneintrag-bearbeiten').click();
+  const bearbeiten = page.getByRole('dialog', { name: 'Wareneintrag bearbeiten' });
+  await bearbeiten.getByTestId('bearbeiten-dokument').setInputFiles(pdf('neu.pdf'));
+  await expect(bearbeiten).toContainText('neu.pdf');
+  await bearbeiten.getByTestId('bearbeiten-speichern').click();
+  await expect(bearbeiten).toBeHidden();
+  await expect(page.getByRole('img', { name: 'Mit PDF-Dokument' })).toBeVisible();
+});
+
 test('Detail-Dialog mit Bildergalerie öffnen (Issue #92)', async ({ page }) => {
   await legeEintragAn(page.request, 'E2E Details', ['fotoFern', 'fotoNah']);
   await page.goto('/wareneintraege');

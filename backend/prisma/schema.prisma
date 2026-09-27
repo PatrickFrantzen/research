@@ -73,6 +73,10 @@ model Wareneintrag {
   fotoNahUrl    String? @map("foto_nah_url")
   fotoDetailUrl String? @map("foto_detail_url")
 
+  // Optionales PDF, z. B. Lieferschein (Issue #103). Wie die Fotos nur ein
+  // Object-Storage-Key, fließt nicht in die KI-Analyse ein.
+  dokumentUrl String? @map("dokument_url")
+
   avvCodeId String  @map("avv_code_id")
   avvCode   AvvCode @relation(fields: [avvCodeId], references: [id])
 
