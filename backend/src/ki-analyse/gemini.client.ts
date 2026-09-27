@@ -2,7 +2,6 @@ import { Logger } from '@nestjs/common';
 import type { EnvConfig } from '../config/env.js';
 import { ANTWORT_SCHEMA, SYSTEM_PROMPT } from './ki-analyse.js';
 
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 const TIMEOUT_MS = 60_000;
 
 export interface AnalyseFoto {
@@ -28,7 +27,7 @@ export class GeminiClient {
     if (!this.config) throw new GeminiNichtEingerichtet();
     let antwort: Response;
     try {
-      antwort = await fetch(`${GEMINI_URL}/${this.config.model}:generateContent`, {
+      antwort = await fetch(`${this.config.apiUrl}/models/${this.config.model}:generateContent`, {
         method: 'POST',
         headers: { 'content-type': 'application/json', 'x-goog-api-key': this.config.apiKey },
         body: JSON.stringify({

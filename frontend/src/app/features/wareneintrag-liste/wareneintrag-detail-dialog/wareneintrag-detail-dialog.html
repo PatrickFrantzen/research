@@ -45,8 +45,15 @@
 
     <section class="ki-analyse" aria-labelledby="ki-analyse-titel">
       <h3 id="ki-analyse-titel">KI-Analyse</h3>
-      @if (analyse(); as ergebnis) {
-        <app-ki-analyse-ergebnis [ergebnis]="ergebnis" />
+      @if (analyse(); as vorschau) {
+        <app-ki-analyse-ergebnis [ergebnis]="vorschau" />
+        <p class="status" data-testid="vorschau-hinweis">Vorschau, noch nicht gespeichert.</p>
+      } @else if (gespeichert(); as analyse) {
+        <app-ki-analyse-ergebnis [ergebnis]="analyse.ergebnis" />
+        <p class="status" data-testid="analysiert-von">
+          Analysiert von {{ analyse.analysiertVon.vorname }} {{ analyse.analysiertVon.nachname }} am
+          {{ analyse.analysiertAm | date: 'dd.MM.yyyy, HH:mm' }}
+        </p>
       }
       @if (analyseLaeuft()) {
         <mat-progress-bar mode="indeterminate" aria-label="KI-Analyse läuft" />
@@ -54,19 +61,30 @@
       @if (analyseFehler(); as meldung) {
         <p class="fehler" role="alert">{{ meldung }}</p>
       }
-      <!-- Deaktivierte Buttons zeigen keinen Tooltip, daher am Wrapper. -->
-      <span [matTooltip]="fotos.length ? '' : 'Zum Analysieren braucht der Eintrag mindestens ein Foto.'">
-        <button
-          matButton="tonal"
-          type="button"
-          data-testid="analysieren"
-          [disabled]="!fotos.length || analyseLaeuft()"
-          (click)="analysieren()"
-        >
-          <mat-icon>auto_awesome</mat-icon>
-          Analysieren
-        </button>
-      </span>
+      <div class="ki-aktionen">
+        @if (analyse()) {
+          <button matButton="filled" type="button" data-testid="analyse-speichern" [disabled]="analyseLaeuft()" (click)="speichern()">
+            Speichern
+          </button>
+          <button matButton="outlined" type="button" data-testid="analyse-wiederholen" [disabled]="analyseLaeuft()" (click)="analysieren()">
+            Wiederholen
+          </button>
+        } @else {
+          <!-- Deaktivierte Buttons zeigen keinen Tooltip, daher am Wrapper. -->
+          <span [matTooltip]="fotos.length ? '' : 'Zum Analysieren braucht der Eintrag mindestens ein Foto.'">
+            <button
+              matButton="tonal"
+              type="button"
+              data-testid="analysieren"
+              [disabled]="!fotos.length || analyseLaeuft()"
+              (click)="analysieren()"
+            >
+              <mat-icon>auto_awesome</mat-icon>
+              Analysieren
+            </button>
+          </span>
+        }
+      </div>
     </section>
   </div>
 </mat-dialog-content>

@@ -146,30 +146,46 @@ test('Detail-Dialog mit Bildergalerie öffnen (Issue #92)', async ({ page }) => 
   await expect(page.getByRole('dialog', { name: 'Wareneintrag bearbeiten' })).toBeVisible();
 });
 
-test('KI-Analyse als Vorschau im Detail-Dialog (Issue #93)', async ({ page }) => {
-  // Gemini wird nie echt aufgerufen: die Antwort des Backends ist gemockt.
-  await page.route('**/api/v1/wareneintraege/*/ki-analyse', (route) =>
-    route.fulfill({
-      json: {
-        fraktionen: [
-          { name: 'Mineralischer Bauschutt', anteilProzent: 70 },
-          { name: 'Holz', anteilProzent: 30 },
-        ],
-        einschaetzung: 'Überwiegend Bauschutt mit etwas Holz.',
-      },
-    }),
-  );
+test('KI-Analyse: Vorschau, verwerfen, speichern, wieder anzeigen (Issues #93, #94)', async ({ page }) => {
+  // Gemini ist im E2E-Stack der lokale Stub (e2e/gemini-stub.mjs), der
+  // Weg durch das Backend inklusive Redis-Vorschau ist echt.
   await legeEintragAn(page.request, 'E2E Analyse', ['fotoFern']);
   await page.goto('/wareneintraege');
   await sucheFreitext(page, 'E2E Analyse');
   await expect(page.getByTestId('trefferanzahl')).toHaveText('1 Wareneintrag');
-
-  await page.getByTestId('wareneintrag-details').click();
   const dialog = page.getByRole('dialog', { name: `AVV-Code ${AVV_A.code}` });
-  await dialog.getByRole('button', { name: 'Analysieren' }).click();
+  const oeffnen = async () => {
+    await page.getByTestId('wareneintrag-details').click();
+    await expect(dialog).toBeVisible();
+  };
 
+  // Vorschau, dann ohne Speichern schließen: nichts bleibt.
+  await oeffnen();
+  await expect(dialog.getByTestId('analysiert-von')).toHaveCount(0);
+  await dialog.getByRole('button', { name: 'Analysieren' }).click();
   await expect(dialog.getByRole('listitem')).toHaveText([/Mineralischer Bauschutt\s*70 %/, /Holz\s*30 %/, /Gesamt\s*100 %/]);
   await expect(dialog.getByTestId('einschaetzung')).toHaveText('Überwiegend Bauschutt mit etwas Holz.');
   await expect(dialog).toContainText('KI-Schätzung aus den Fotos, keine Messung.');
-  await pruefeBarrierefreiheit(page, 'Detail-Dialog mit KI-Analyse');
+  await pruefeBarrierefreiheit(page, 'Detail-Dialog mit KI-Vorschau');
+  await page.keyboard.press('Escape');
+  await oeffnen();
+  await expect(dialog.getByTestId('einschaetzung')).toHaveCount(0);
+
+  // Wiederholen, speichern, erneut öffnen: gespeicherte Analyse mit Urheber.
+  await dialog.getByRole('button', { name: 'Analysieren' }).click();
+  await dialog.getByRole('button', { name: 'Wiederholen' }).click();
+  await dialog.getByRole('button', { name: 'Speichern' }).click();
+  const analysiertVon = dialog.getByTestId('analysiert-von');
+  await expect(analysiertVon).toHaveText(/^Analysiert von .+ am \d{2}\.\d{2}\.\d{4}, \d{2}:\d{2}$/);
+  await expect(analysiertVon).toContainText(ERIKA.vorname);
+  await page.keyboard.press('Escape');
+  await oeffnen();
+  await expect(dialog.getByTestId('einschaetzung')).toHaveText('Überwiegend Bauschutt mit etwas Holz.');
+  await expect(dialog.getByTestId('analysiert-von')).toBeVisible();
+  await page.keyboard.press('Escape');
+
+  // Löschen des Eintrags nimmt die Analyse mit (ON DELETE CASCADE).
+  await page.getByTestId('wareneintrag-loeschen').click();
+  await page.getByRole('dialog', { name: 'Wareneintrag löschen' }).getByTestId('confirm-dialog-bestaetigen').click();
+  await expect(page.getByText('Wareneintrag wurde gelöscht.')).toBeVisible();
 });

@@ -130,7 +130,7 @@ describe('WareneintragDetailDialog', () => {
     it('says so when no waste is visible', async () => {
       const { fixture, element } = erstelle(WARENEINTRAG, 0);
       analysierenButton(element).click();
-      TestBed.inject(HttpTestingController).expectOne(URL).flush({ fraktionen: [], einschaetzung: 'Nur Boden.' });
+      TestBed.inject(HttpTestingController).expectOne({ method: 'POST', url: URL }).flush({ fraktionen: [], einschaetzung: 'Nur Boden.' });
       await fixture.whenStable();
       fixture.detectChanges();
 
@@ -142,7 +142,7 @@ describe('WareneintragDetailDialog', () => {
       const { fixture, element } = erstelle(WARENEINTRAG, 0);
       analysierenButton(element).click();
       TestBed.inject(HttpTestingController)
-        .expectOne(URL)
+        .expectOne({ method: 'POST', url: URL })
         .flush(
           { message: 'Tageskontingent der KI-Analyse erschöpft, bitte morgen erneut versuchen.' },
           { status: 429, statusText: 'Too Many Requests' },
@@ -157,6 +157,93 @@ describe('WareneintragDetailDialog', () => {
     it('disables the button for a Wareneintrag without fotos', () => {
       const { element } = erstelle({ ...WARENEINTRAG, fotoFernUrl: null, fotoNahUrl: null, fotoDetailUrl: null }, 0);
       expect(analysierenButton(element).disabled).toBeTrue();
+    });
+  });
+
+  describe('gespeicherte KI-Analyse (Issue #94)', () => {
+    const URL = '/api/v1/wareneintraege/wareneintrag-1/ki-analyse';
+    const ERGEBNIS = { fraktionen: [{ name: 'Beton', anteilProzent: 100 }], einschaetzung: 'Nur Beton.' };
+    const GESPEICHERT = {
+      ergebnis: ERGEBNIS,
+      analysiertVon: { vorname: 'Max', nachname: 'Mustermann' },
+      analysiertAm: '2026-09-20T14:05:00',
+    };
+    const button = (element: HTMLElement, testId: string) =>
+      element.querySelector(`[data-testid="${testId}"]`) as HTMLButtonElement | null;
+
+    async function nach(fixture: { whenStable: () => Promise<unknown>; detectChanges: () => void }) {
+      await fixture.whenStable();
+      fixture.detectChanges();
+    }
+
+    it('shows the saved analysis with author and time right after opening', async () => {
+      const { fixture, element } = erstelle(WARENEINTRAG, 0);
+      TestBed.inject(HttpTestingController).expectOne({ method: 'GET', url: URL }).flush(GESPEICHERT);
+      await nach(fixture);
+
+      expect(element.querySelector('[data-testid="einschaetzung"]')?.textContent).toContain('Nur Beton.');
+      expect(element.querySelector('[data-testid="analysiert-von"]')?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+        'Analysiert von Max Mustermann am 20.09.2026, 14:05',
+      );
+      expect(button(element, 'analysieren')).not.toBeNull();
+    });
+
+    it('offers Speichern and Wiederholen for a preview and shows the saved result after saving', async () => {
+      const { fixture, element } = erstelle(WARENEINTRAG, 0);
+      const httpMock = TestBed.inject(HttpTestingController);
+      httpMock.expectOne({ method: 'GET', url: URL }).flush(null);
+      await nach(fixture);
+
+      button(element, 'analysieren')!.click();
+      httpMock.expectOne({ method: 'POST', url: URL }).flush(ERGEBNIS);
+      await nach(fixture);
+      expect(element.textContent).toContain('Vorschau, noch nicht gespeichert.');
+      expect(button(element, 'analysieren')).toBeNull();
+
+      button(element, 'analyse-speichern')!.click();
+      const speichern = httpMock.expectOne({ method: 'PUT', url: URL });
+      expect(speichern.request.body).toBeNull();
+      speichern.flush({ ...GESPEICHERT, analysiertVon: { vorname: 'Erika', nachname: 'Musterfrau' } });
+      await nach(fixture);
+
+      expect(element.querySelector('[data-testid="analysiert-von"]')?.textContent).toContain('Erika Musterfrau');
+      expect(element.textContent).not.toContain('Vorschau, noch nicht gespeichert.');
+      expect(button(element, 'analyse-speichern')).toBeNull();
+      expect(button(element, 'analysieren')).not.toBeNull();
+    });
+
+    it('starts a new preview on Wiederholen while the saved analysis stays until saving', async () => {
+      const { fixture, element } = erstelle(WARENEINTRAG, 0);
+      const httpMock = TestBed.inject(HttpTestingController);
+      httpMock.expectOne({ method: 'GET', url: URL }).flush(GESPEICHERT);
+      await nach(fixture);
+
+      button(element, 'analysieren')!.click();
+      httpMock.expectOne({ method: 'POST', url: URL }).flush({ ...ERGEBNIS, einschaetzung: 'Erster Versuch.' });
+      await nach(fixture);
+      button(element, 'analyse-wiederholen')!.click();
+      httpMock.expectOne({ method: 'POST', url: URL }).flush({ ...ERGEBNIS, einschaetzung: 'Zweiter Versuch.' });
+      await nach(fixture);
+
+      expect(element.querySelector('[data-testid="einschaetzung"]')?.textContent).toContain('Zweiter Versuch.');
+      httpMock.expectNone({ method: 'PUT', url: URL });
+    });
+
+    it('shows the server message when saving fails, e.g. an expired preview', async () => {
+      const { fixture, element } = erstelle(WARENEINTRAG, 0);
+      const httpMock = TestBed.inject(HttpTestingController);
+      httpMock.expectOne({ method: 'GET', url: URL }).flush(null);
+      button(element, 'analysieren')!.click();
+      httpMock.expectOne({ method: 'POST', url: URL }).flush(ERGEBNIS);
+      await nach(fixture);
+
+      button(element, 'analyse-speichern')!.click();
+      httpMock
+        .expectOne({ method: 'PUT', url: URL })
+        .flush({ message: 'Keine aktuelle Analyse zum Speichern vorhanden. Bitte erneut analysieren.' }, { status: 400, statusText: 'Bad Request' });
+      await nach(fixture);
+
+      expect(element.querySelector('[role="alert"]')?.textContent).toContain('Keine aktuelle Analyse zum Speichern vorhanden.');
     });
   });
 });

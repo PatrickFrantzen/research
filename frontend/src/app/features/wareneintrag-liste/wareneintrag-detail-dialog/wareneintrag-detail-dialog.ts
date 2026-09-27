@@ -7,7 +7,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { firstValueFrom } from 'rxjs';
 import { extrahiereFehlermeldung } from '../../../core/http-fehler.js';
-import { KiAnalyseErgebnis, Wareneintrag, WareneintragApi } from '../../../core/wareneintrag-api.js';
+import { GespeicherteKiAnalyse, KiAnalyseErgebnis, Wareneintrag, WareneintragApi } from '../../../core/wareneintrag-api.js';
 import { KiAnalyseErgebnisAnzeige } from '../ki-analyse-ergebnis/ki-analyse-ergebnis.js';
 
 export interface WareneintragDetailDialogDaten {
@@ -51,22 +51,43 @@ export class WareneintragDetailDialog {
   private readonly spur = viewChild<ElementRef<HTMLElement>>('spur');
   private readonly wareneintragApi = inject(WareneintragApi);
 
-  // Vorschau, noch nicht gespeichert (Speichern folgt mit Issue #94).
+  // Vorschau, noch nicht gespeichert. Schließen verwirft sie ohne Rückfrage,
+  // in Redis läuft sie nach einer Stunde ab (Issue #94).
   protected readonly analyse = signal<KiAnalyseErgebnis | null>(null);
+  protected readonly gespeichert = signal<GespeicherteKiAnalyse | null>(null);
   protected readonly analyseLaeuft = signal(false);
   protected readonly analyseFehler = signal<string | null>(null);
 
   constructor() {
     afterNextRender(() => this.scrolleZu(this.position(), 'instant'));
+    // Ohne gespeicherte Analyse (oder wenn das Laden scheitert) bleibt nur
+    // "Analysieren" sichtbar; das ist kein Fehler für den Nutzer.
+    this.wareneintragApi.gespeicherteAnalyse(this.wareneintrag.id).subscribe({
+      next: (analyse) => this.gespeichert.set(analyse),
+      error: () => undefined,
+    });
+  }
+
+  protected async speichern(): Promise<void> {
+    await this.fuehreAus(async () => {
+      this.gespeichert.set(await firstValueFrom(this.wareneintragApi.analyseSpeichern(this.wareneintrag.id)));
+      this.analyse.set(null);
+    }, 'Die KI-Analyse konnte nicht gespeichert werden.');
   }
 
   protected async analysieren(): Promise<void> {
+    await this.fuehreAus(async () => {
+      this.analyse.set(await firstValueFrom(this.wareneintragApi.analysieren(this.wareneintrag.id)));
+    }, 'Die KI-Analyse ist fehlgeschlagen. Bitte später erneut versuchen.');
+  }
+
+  private async fuehreAus(aktion: () => Promise<void>, standardFehler: string): Promise<void> {
     this.analyseLaeuft.set(true);
     this.analyseFehler.set(null);
     try {
-      this.analyse.set(await firstValueFrom(this.wareneintragApi.analysieren(this.wareneintrag.id)));
+      await aktion();
     } catch (error) {
-      this.analyseFehler.set(extrahiereFehlermeldung(error, 'Die KI-Analyse ist fehlgeschlagen. Bitte später erneut versuchen.'));
+      this.analyseFehler.set(extrahiereFehlermeldung(error, standardFehler));
     } finally {
       this.analyseLaeuft.set(false);
     }

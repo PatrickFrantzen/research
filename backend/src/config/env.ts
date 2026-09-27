@@ -31,6 +31,8 @@ export interface EnvConfig {
   gemini?: {
     apiKey: string;
     model: string;
+    // Nur für Tests überschrieben (E2E-Stub, siehe frontend/e2e/gemini-stub.mjs).
+    apiUrl: string;
   };
 }
 
@@ -102,7 +104,11 @@ export function loadEnv(): EnvConfig {
     },
     mail: loadMail(),
     gemini: process.env['GEMINI_API_KEY']
-      ? { apiKey: process.env['GEMINI_API_KEY'], model: process.env['GEMINI_MODEL'] || 'gemini-3.8-flash' }
+      ? {
+          apiKey: process.env['GEMINI_API_KEY'],
+          model: process.env['GEMINI_MODEL'] || 'gemini-3.8-flash',
+          apiUrl: process.env['GEMINI_API_URL'] || 'https://generativelanguage.googleapis.com/v1beta',
+        }
       : undefined,
   };
 }

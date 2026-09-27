@@ -58,6 +58,18 @@
   }
 }
 
+.status {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0 0 12px;
+}
+
+.ki-aktionen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .fehler {
   color: var(--mat-sys-error);
 }

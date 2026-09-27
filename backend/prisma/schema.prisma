@@ -47,6 +47,7 @@ model Nutzer {
   erstellteNutzer Nutzer[] @relation("NutzerErstelltVon")
 
   wareneintraege Wareneintrag[]
+  analysen       WareneintragAnalyse[]
 
   erstelltAm DateTime @default(now()) @map("erstellt_am")
 
@@ -87,5 +88,25 @@ model Wareneintrag {
 
   erstelltAm DateTime @default(now()) @map("erstellt_am")
 
+  analyse WareneintragAnalyse?
+
   @@map("wareneintraege")
+}
+
+// Gespeicherte KI-Analyse, genau eine pro Wareneintrag (ADR-0008). Speichern
+// überschreibt, Löschen des Eintrags löscht sie mit.
+model WareneintragAnalyse {
+  wareneintragId String       @id @map("wareneintrag_id")
+  wareneintrag   Wareneintrag @relation(fields: [wareneintragId], references: [id], onDelete: Cascade)
+
+  // { fraktionen: [{ name, anteilProzent }], einschaetzung }, geprüft und
+  // gerundet aus der Redis-Vorschau, nie aus dem Client.
+  ergebnis Json
+
+  analysiertVonId String @map("analysiert_von_id")
+  analysiertVon   Nutzer @relation(fields: [analysiertVonId], references: [id])
+
+  analysiertAm DateTime @default(now()) @map("analysiert_am")
+
+  @@map("wareneintrag_analysen")
 }

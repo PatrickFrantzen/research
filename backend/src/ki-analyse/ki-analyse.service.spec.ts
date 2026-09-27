@@ -34,6 +34,8 @@ function fakeRedis() {
       werte.set(key, wert);
       return 'OK';
     }),
+    get: vi.fn(async (key: string) => werte.get(key) ?? null),
+    del: vi.fn(async (key: string) => Number(werte.delete(key))),
   };
 }
 
@@ -45,9 +47,13 @@ function erstelle(optionen: { wareneintrag?: unknown; gemini?: () => Promise<unk
   };
   const prisma = {
     wareneintrag: { findUnique: vi.fn(async () => ('wareneintrag' in optionen ? optionen.wareneintrag : WARENEINTRAG)) },
+    wareneintragAnalyse: {
+      findUnique: vi.fn(async () => null as unknown),
+      upsert: vi.fn(async (args: { create: object }) => ({ ...args.create, analysiertVon: { vorname: 'Erika', nachname: 'Musterfrau' } })),
+    },
   };
   const service = new KiAnalyseService(prisma as never, objectStorage as never, gemini as never, redis as never);
-  return { service, redis, gemini, objectStorage };
+  return { service, redis, gemini, objectStorage, prisma };
 }
 
 describe('KiAnalyseService', () => {
@@ -130,5 +136,44 @@ describe('KiAnalyseService', () => {
   it('answers 503 when no API key is configured', async () => {
     const { service } = erstelle({ gemini: async () => Promise.reject(new GeminiNichtEingerichtet()) });
     await expect(service.analysiere('wareneintrag-1', 'nutzer-1')).rejects.toMatchObject({ status: 503 });
+  });
+
+  describe('speichern (Issue #94)', () => {
+    it('stores exactly the Redis preview of this Nutzer as the single analysis and removes the preview', async () => {
+      const { service, prisma, redis } = erstelle();
+      const vorschau = await service.analysiere('wareneintrag-1', 'nutzer-1');
+
+      const gespeichert = await service.speichern('wareneintrag-1', 'nutzer-1');
+
+      const { where, create, update } = prisma.wareneintragAnalyse.upsert.mock.calls[0][0] as never as {
+        where: object;
+        create: { ergebnis: unknown; analysiertVonId: string };
+        update: { ergebnis: unknown; analysiertVonId: string };
+      };
+      expect(where).toEqual({ wareneintragId: 'wareneintrag-1' });
+      expect(create).toMatchObject({ wareneintragId: 'wareneintrag-1', ergebnis: vorschau, analysiertVonId: 'nutzer-1' });
+      expect(update).toMatchObject({ ergebnis: vorschau, analysiertVonId: 'nutzer-1' });
+      expect(gespeichert.analysiertVon).toEqual({ vorname: 'Erika', nachname: 'Musterfrau' });
+      expect(redis.werte.has(vorschauSchluessel('wareneintrag-1', 'nutzer-1'))).toBe(false);
+    });
+
+    it('rejects saving without a valid preview and writes nothing', async () => {
+      const { service, prisma } = erstelle();
+      await expect(service.speichern('wareneintrag-1', 'nutzer-1')).rejects.toMatchObject({ status: 400 });
+      expect(prisma.wareneintragAnalyse.upsert).not.toHaveBeenCalled();
+    });
+
+    it('does not save the preview of another Nutzer', async () => {
+      const { service, prisma } = erstelle();
+      await service.analysiere('wareneintrag-1', 'nutzer-2');
+      await expect(service.speichern('wareneintrag-1', 'nutzer-1')).rejects.toMatchObject({ status: 400 });
+      expect(prisma.wareneintragAnalyse.upsert).not.toHaveBeenCalled();
+    });
+
+    it('keeps the saved analysis untouched while a new preview is only analysed', async () => {
+      const { service, prisma } = erstelle();
+      await service.analysiere('wareneintrag-1', 'nutzer-1');
+      expect(prisma.wareneintragAnalyse.upsert).not.toHaveBeenCalled();
+    });
   });
 });

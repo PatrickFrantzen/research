@@ -25,7 +25,9 @@ Projekt ist ein Prototyp ohne Budget für KI-Dienste.
 - Der Key bleibt im Backend und geht per Header `x-goog-api-key`, nie in
   der URL, damit er in keinem Log und keiner Response auftaucht.
 - Das Ergebnis ist zuerst eine Vorschau in Redis (pro Eintrag und Nutzer,
-  1 h), damit ein späteres Speichern nur echte KI-Ergebnisse übernimmt.
+  1 h). Speichern übernimmt ausschließlich diese Vorschau, nie Werte aus dem
+  Request, in die Tabelle `wareneintrag_analysen` (eine pro Eintrag,
+  überschreibbar, Löschen des Eintrags löscht sie mit).
 - Limit 5 Analysen pro Minute pro Nutzer, per Redis-Zähler. Der globale
   ThrottlerGuard läuft vor der Anmeldung und kennt nur die IP.
 - Jede Analyse steht im Aktivitäts-Log (ADR-0007).

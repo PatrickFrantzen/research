@@ -23,6 +23,13 @@ export interface KiAnalyseErgebnis {
   einschaetzung: string;
 }
 
+// Gespeicherte KI-Analyse (Issue #94), eine pro Wareneintrag.
+export interface GespeicherteKiAnalyse {
+  ergebnis: KiAnalyseErgebnis;
+  analysiertVon: { vorname: string; nachname: string };
+  analysiertAm: string;
+}
+
 export interface PaginierteWareneintraege {
   daten: Wareneintrag[];
   gesamt: number;
@@ -61,6 +68,16 @@ export class WareneintragApi {
 
   analysieren(id: string) {
     return this.http.post<KiAnalyseErgebnis>(`/api/v1/wareneintraege/${id}/ki-analyse`, null);
+  }
+
+  // null, solange der Eintrag keine gespeicherte Analyse hat.
+  gespeicherteAnalyse(id: string) {
+    return this.http.get<GespeicherteKiAnalyse | null>(`/api/v1/wareneintraege/${id}/ki-analyse`);
+  }
+
+  // Ohne Body: das Backend übernimmt die eigene Vorschau aus Redis.
+  analyseSpeichern(id: string) {
+    return this.http.put<GespeicherteKiAnalyse>(`/api/v1/wareneintraege/${id}/ki-analyse`, null);
   }
 
   loeschen(id: string) {

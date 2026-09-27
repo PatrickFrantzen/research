@@ -10,12 +10,25 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import type { Redis } from 'ioredis';
+import { Prisma } from '../generated/prisma/client.js';
 import { ObjectStorageService } from '../object-storage/object-storage.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { GeminiClient, GeminiKontingentErschoepft, GeminiNichtEingerichtet } from './gemini.client.js';
 import { KiAnalyseErgebnis, pruefeAntwort } from './ki-analyse.js';
 
 export const KI_REDIS = Symbol('KI_REDIS');
+
+export interface GespeicherteAnalyse {
+  ergebnis: KiAnalyseErgebnis;
+  analysiertVon: { vorname: string; nachname: string };
+  analysiertAm: Date;
+}
+
+const ANALYSE_AUSWAHL = {
+  ergebnis: true,
+  analysiertAm: true,
+  analysiertVon: { select: { vorname: true, nachname: true } },
+} as const;
 
 // Gemini nimmt inline höchstens ~20 MB pro Request, Base64 bläht um 4/3 auf.
 export const MAX_FOTOS_BYTES = 14 * 1024 * 1024;
@@ -34,8 +47,34 @@ export class KiAnalyseService {
     private readonly prisma: PrismaService,
     private readonly objectStorage: ObjectStorageService,
     private readonly gemini: GeminiClient,
-    @Inject(KI_REDIS) private readonly redis: Pick<Redis, 'incr' | 'expire' | 'set'>,
+    @Inject(KI_REDIS) private readonly redis: Pick<Redis, 'incr' | 'expire' | 'set' | 'get' | 'del'>,
   ) {}
+
+  async gespeicherte(wareneintragId: string): Promise<GespeicherteAnalyse | null> {
+    const analyse = await this.prisma.wareneintragAnalyse.findUnique({ where: { wareneintragId }, select: ANALYSE_AUSWAHL });
+    return analyse as unknown as GespeicherteAnalyse | null;
+  }
+
+  // Übernimmt ausschließlich die Vorschau dieses Nutzers aus Redis (Issue #94):
+  // ein Request-Body wird gar nicht gelesen, manipulierte Werte kommen nie an.
+  // Eine Analyse pro Eintrag, jeder Nutzer darf überschreiben.
+  async speichern(wareneintragId: string, nutzerId: string): Promise<GespeicherteAnalyse> {
+    const schluessel = vorschauSchluessel(wareneintragId, nutzerId);
+    const vorschau = await this.redis.get(schluessel);
+    if (!vorschau) {
+      throw new BadRequestException('Keine aktuelle Analyse zum Speichern vorhanden. Bitte erneut analysieren.');
+    }
+    const ergebnis = JSON.parse(vorschau) as Prisma.InputJsonObject;
+    const daten = { ergebnis, analysiertVonId: nutzerId, analysiertAm: new Date() };
+    const analyse = await this.prisma.wareneintragAnalyse.upsert({
+      where: { wareneintragId },
+      create: { wareneintragId, ...daten },
+      update: daten,
+      select: ANALYSE_AUSWAHL,
+    });
+    await this.redis.del(schluessel);
+    return analyse as unknown as GespeicherteAnalyse;
+  }
 
   async analysiere(wareneintragId: string, nutzerId: string): Promise<KiAnalyseErgebnis> {
     const wareneintrag = await this.prisma.wareneintrag.findUnique({

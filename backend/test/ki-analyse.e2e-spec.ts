@@ -30,6 +30,8 @@ describe('KI-Analyse-Endpunkt', () => {
   let app: INestApplication;
   const protokoll = { aktivitaet: vi.fn() };
   const werte = new Map<string, number>();
+  const vorschauen = new Map<string, string>();
+  const upsert = vi.fn(async (args: { create: object }) => ({ ...args.create, analysiertVon: { vorname: 'Erika', nachname: 'Musterfrau' } }));
   const fetchMock = vi.fn<typeof fetch>();
 
   beforeAll(async () => {
@@ -38,7 +40,10 @@ describe('KI-Analyse-Endpunkt', () => {
       controllers: [KiAnalyseController],
       providers: [
         KiAnalyseService,
-        { provide: GeminiClient, useValue: new GeminiClient({ apiKey: API_KEY, model: 'gemini-test-flash' }) },
+        {
+          provide: GeminiClient,
+          useValue: new GeminiClient({ apiKey: API_KEY, model: 'gemini-test-flash', apiUrl: 'https://generativelanguage.googleapis.com/v1beta' }),
+        },
         {
           provide: KI_REDIS,
           useValue: {
@@ -47,7 +52,9 @@ describe('KI-Analyse-Endpunkt', () => {
               return werte.get(key);
             },
             expire: async () => 1,
-            set: async () => 'OK',
+            set: async (key: string, wert: string) => vorschauen.set(key, wert) && 'OK',
+            get: async (key: string) => vorschauen.get(key) ?? null,
+            del: async (key: string) => Number(vorschauen.delete(key)),
           },
         },
         {
@@ -62,6 +69,7 @@ describe('KI-Analyse-Endpunkt', () => {
                 avvCode: { code: '17 01 01', bezeichnung: 'Beton' },
               }),
             },
+            wareneintragAnalyse: { upsert },
           },
         },
         { provide: ObjectStorageService, useValue: { ladeFoto: async () => ({ daten: Buffer.from('bild'), mimeType: 'image/jpeg' }) } },
@@ -118,5 +126,27 @@ describe('KI-Analyse-Endpunkt', () => {
     for (let i = 0; i < 5; i++) expect((await analysiere('vielnutzer')).status).toBe(200);
     expect((await analysiere('vielnutzer')).status).toBe(429);
     expect((await analysiere('andere-nutzerin')).status).toBe(200);
+  });
+
+  it('saves only the server-side preview, ignoring manipulated values in the request body', async () => {
+    fetchMock.mockResolvedValueOnce(antwort('{"fraktionen":[{"name":"Holz","anteilProzent":100}],"einschaetzung":"Holz."}'));
+    const server = app.getHttpServer();
+    await request(server).post('/api/v1/wareneintraege/wareneintrag-1/ki-analyse').set('x-test-nutzer', 'speichernde');
+
+    const response = await request(server)
+      .put('/api/v1/wareneintraege/wareneintrag-1/ki-analyse')
+      .set('x-test-nutzer', 'speichernde')
+      .send({ ergebnis: { fraktionen: [{ name: 'Gold', anteilProzent: 100 }], einschaetzung: 'Wertvoll.' }, analysiertVonId: 'jemand-anders' });
+
+    expect(response.status).toBe(200);
+    expect(upsert).toHaveBeenCalledOnce();
+    const { create } = upsert.mock.calls[0][0] as unknown as { create: { ergebnis: unknown; analysiertVonId: string } };
+    expect(create.ergebnis).toEqual({ fraktionen: [{ name: 'Holz', anteilProzent: 100 }], einschaetzung: 'Holz.' });
+    expect(create.analysiertVonId).toBe('speichernde');
+    expect(protokoll.aktivitaet).toHaveBeenCalledWith(['speichernde@research.local', 'KI-Analyse gespeichert', 'wareneintrag-1']);
+
+    // Die Vorschau ist verbraucht: ein zweites Speichern ohne neue Analyse scheitert.
+    const nochmal = await request(server).put('/api/v1/wareneintraege/wareneintrag-1/ki-analyse').set('x-test-nutzer', 'speichernde');
+    expect(nochmal.status).toBe(400);
   });
 });

@@ -25,6 +25,13 @@ export INITIAL_NUTZER_EMAIL=erika.e2e@example.com
 export INITIAL_NUTZER_PASSWORT=e2e-Passwort-Erika-1
 export INITIAL_NUTZER_STANDORT=Hauptsitz
 
+# KI-Analyse gegen den lokalen Gemini-Stub, nie gegen Google (Issue #93).
+# ponytail: der Stub überlebt das Ende der Tests; ein zweiter Lauf scheitert
+# dann still am belegten Port und nutzt den alten Stub weiter.
+export GEMINI_API_KEY=e2e-key
+export GEMINI_API_URL="http://localhost:${GEMINI_STUB_PORT:-4010}/v1beta"
+node ../frontend/e2e/gemini-stub.mjs &
+
 npx tsx prisma/e2e-vorbereiten.ts reset
 npx prisma migrate deploy
 npm run db:seed

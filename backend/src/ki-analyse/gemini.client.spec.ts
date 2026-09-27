@@ -7,7 +7,7 @@ function geminiAntwort(text: string, status = 200) {
   return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text }] } }] }), { status });
 }
 
-const client = () => new GeminiClient({ apiKey: 'geheimer-key', model: 'gemini-test-flash' });
+const client = () => new GeminiClient({ apiKey: 'geheimer-key', model: 'gemini-test-flash', apiUrl: 'https://generativelanguage.googleapis.com/v1beta' });
 
 // Gemini ist hier immer gemockt: kein echter API-Call in CI (Issue #93).
 describe('GeminiClient', () => {
