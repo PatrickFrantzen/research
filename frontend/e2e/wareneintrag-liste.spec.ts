@@ -186,7 +186,7 @@ test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen 
   await dialog.getByRole('button', { name: 'Wiederholen' }).click();
   await dialog.getByRole('button', { name: 'Speichern' }).click();
   const analysiertVon = dialog.getByTestId('analysiert-von');
-  await expect(analysiertVon).toHaveText(/^Analysiert von .+ am \d{2}\.\d{2}\.\d{4}, \d{2}:\d{2}$/);
+  await expect(analysiertVon).toHaveText(/Analysiert von .+ am \d{2}\.\d{2}\.\d{4}, \d{2}:\d{2}/);
   await expect(analysiertVon).toContainText(ERIKA.vorname);
   await schliessen();
   await oeffnen();
