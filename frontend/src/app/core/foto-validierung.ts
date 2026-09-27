@@ -15,3 +15,20 @@ export function pruefeFoto(datei: File): string | null {
 export function beschreibeFoto(datei: File): string {
   return `(Typ ${datei.type || 'unbekannt'}, ${(datei.size / 1024 / 1024).toFixed(1)} MB)`;
 }
+
+// Prüft das Foto und liest es sofort ein. Cloud-Fotos aus der Galerie (Google
+// Fotos, OneDrive) sind nur Verweise, die beim späteren Upload ungültig sein
+// können; die eigene Kopie im Speicher macht den Upload davon unabhängig und
+// zeigt unlesbare Dateien schon bei der Auswahl.
+export async function uebernehmeFoto(auswahl: File): Promise<{ datei: File | null; meldung: string | null }> {
+  const meldung = pruefeFoto(auswahl);
+  if (meldung) return { datei: null, meldung };
+  try {
+    return { datei: new File([await auswahl.arrayBuffer()], auswahl.name, { type: auswahl.type }), meldung: null };
+  } catch {
+    return {
+      datei: null,
+      meldung: 'Foto konnte nicht gelesen werden. Bitte mit der Kamera aufnehmen oder erst auf dem Gerät speichern.',
+    };
+  }
+}

@@ -11,7 +11,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { debounceTime, distinctUntilChanged, firstValueFrom, Subject } from 'rxjs';
 import { AvvCodeApi } from '../../../core/avv-code-api.js';
 import { AppFehlerMelder } from '../../../core/app-fehler-melder.js';
-import { beschreibeFoto, pruefeFoto } from '../../../core/foto-validierung.js';
+import { beschreibeFoto, uebernehmeFoto } from '../../../core/foto-validierung.js';
 import { extrahiereFehlermeldung } from '../../../core/http-fehler.js';
 import { FREITEXT_MAX_LAENGE, Wareneintrag, WareneintragApi } from '../../../core/wareneintrag-api.js';
 import { FokusBeiAnzeige } from '../../../core/fokus-bei-anzeige.js';
@@ -138,14 +138,13 @@ export class WareneintragBearbeitenDialog {
     this.avvSucheAnzeige = `${avvCode.code} – ${avvCode.bezeichnung}`;
   }
 
-  fotoErsetzen(ansicht: FotoAnsicht, event: Event): void {
+  async fotoErsetzen(ansicht: FotoAnsicht, event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const auswahl = input.files?.item(0) ?? null;
-    const meldung = auswahl ? pruefeFoto(auswahl) : null;
+    const { datei, meldung } = auswahl ? await uebernehmeFoto(auswahl) : { datei: null, meldung: null };
     const label = this.fotoKacheln.find((kachel) => kachel.ansicht === ansicht)?.label;
     this.fotoFehler.set(meldung ? `${label}: ${meldung}` : null);
     if (meldung && auswahl) this.fehlerMelder.melde(`Foto abgelehnt: ${label}: ${meldung} ${beschreibeFoto(auswahl)}`);
-    const datei = meldung ? null : auswahl;
     this.fotos.update((fotos) => ({ ...fotos, [ansicht]: datei }));
   }
 

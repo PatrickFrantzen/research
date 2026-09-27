@@ -23,7 +23,7 @@ interface TestableDialog {
   freitext: string;
   kannSpeichern: boolean;
   fehler: () => string | null;
-  fotoErsetzen: (ansicht: 'fotoFern' | 'fotoNah' | 'fotoDetail', event: Event) => void;
+  fotoErsetzen: (ansicht: 'fotoFern' | 'fotoNah' | 'fotoDetail', event: Event) => Promise<void>;
 }
 
 function asTestable(component: WareneintragBearbeitenDialog): TestableDialog {
@@ -66,11 +66,11 @@ describe('WareneintragBearbeitenDialog', () => {
     return fixture;
   }
 
-  it('rejects an invalid replacement photo with a message and does not save it (Issue #59)', () => {
+  it('rejects an invalid replacement photo with a message and does not save it (Issue #59)', async () => {
     const fixture = createComponent();
     const component = asTestable(fixture.componentInstance);
 
-    component.fotoErsetzen('fotoNah', fotoAuswahlEvent(new File(['gif'], 'neu.gif', { type: 'image/gif' })));
+    await component.fotoErsetzen('fotoNah', fotoAuswahlEvent(new File(['gif'], 'neu.gif', { type: 'image/gif' })));
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Nahansicht: Nur JPEG, PNG oder WebP erlaubt.');
@@ -80,11 +80,11 @@ describe('WareneintragBearbeitenDialog', () => {
     request.flush({});
   });
 
-  it('meldet ein abgelehntes Ersatzfoto ans Fehler-Log', () => {
+  it('meldet ein abgelehntes Ersatzfoto ans Fehler-Log', async () => {
     const melde = spyOn(TestBed.inject(AppFehlerMelder), 'melde');
     const fixture = createComponent();
 
-    asTestable(fixture.componentInstance).fotoErsetzen(
+    await asTestable(fixture.componentInstance).fotoErsetzen(
       'fotoNah',
       fotoAuswahlEvent(new File([new Uint8Array(10 * 1024 * 1024 + 1)], 'gross.jpg', { type: 'image/jpeg' })),
     );
@@ -184,7 +184,11 @@ describe('WareneintragBearbeitenDialog', () => {
       .flush([{ id: 'avv-2', code: '20 03 01', bezeichnung: 'Siedlungsabfälle', gefaehrlich: false }]);
     tick();
     fixture.componentInstance.onAvvCodeAusgewaehlt({ option: { value: 'avv-2' } } as never);
-    component.fotoErsetzen('fotoDetail', fotoAuswahlEvent(new File(['foto'], 'neu.jpg', { type: 'image/jpeg' })));
+    const neuesFoto = new File(['foto'], 'neu.jpg', { type: 'image/jpeg' });
+    // Natives Einlesen läuft außerhalb von fakeAsync, daher über die Zone-Promise.
+    spyOn(neuesFoto, 'arrayBuffer').and.returnValue(Promise.resolve(new ArrayBuffer(4)));
+    void component.fotoErsetzen('fotoDetail', fotoAuswahlEvent(neuesFoto));
+    tick();
 
     void fixture.componentInstance.speichern();
 
