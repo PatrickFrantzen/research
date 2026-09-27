@@ -66,11 +66,16 @@ describe('AppAktualisierung', () => {
   }
 
   it('prüft beim Start und bei jeder Rückkehr in den Vordergrund auf eine neue Version', async () => {
+    // Fest vorgeben: ein lokal gestarteter Karma-Browser im Hintergrund meldet sonst 'hidden'.
+    const sichtbarkeit = spyOnProperty(document, 'visibilityState').and.returnValue('hidden');
     await gestartetAuf('/wareneintraege');
     expect(sw.checkForUpdate).toHaveBeenCalledTimes(1);
 
     document.dispatchEvent(new Event('visibilitychange'));
+    expect(sw.checkForUpdate).toHaveBeenCalledTimes(1);
 
+    sichtbarkeit.and.returnValue('visible');
+    document.dispatchEvent(new Event('visibilitychange'));
     expect(sw.checkForUpdate).toHaveBeenCalledTimes(2);
   });
 
