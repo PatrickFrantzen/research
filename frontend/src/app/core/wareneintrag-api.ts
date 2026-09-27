@@ -17,6 +17,12 @@ export interface Wareneintrag {
   erfasstVon: { id: string; vorname: string; nachname: string };
 }
 
+// KI-Analyse (Issue #93): Anteile ganzzahlig, Summe 100, absteigend.
+export interface KiAnalyseErgebnis {
+  fraktionen: { name: string; anteilProzent: number }[];
+  einschaetzung: string;
+}
+
 export interface PaginierteWareneintraege {
   daten: Wareneintrag[];
   gesamt: number;
@@ -51,6 +57,10 @@ export class WareneintragApi {
 
   aktualisieren(id: string, formData: FormData) {
     return this.http.patch(`/api/v1/wareneintraege/${id}`, formData);
+  }
+
+  analysieren(id: string) {
+    return this.http.post<KiAnalyseErgebnis>(`/api/v1/wareneintraege/${id}/ki-analyse`, null);
   }
 
   loeschen(id: string) {

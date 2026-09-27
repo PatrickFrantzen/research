@@ -27,6 +27,11 @@ export interface EnvConfig {
     // Basis für absolute Links in Mails, z.B. https://research.patrickfrantzen.de
     appUrl: string;
   };
+  // Ohne GEMINI_API_KEY ist die KI-Analyse abgeschaltet (ADR-0008).
+  gemini?: {
+    apiKey: string;
+    model: string;
+  };
 }
 
 // Bekannte Platzhalterwerte aus docker-compose.yml/.env.example. Wenn diese in
@@ -96,5 +101,8 @@ export function loadEnv(): EnvConfig {
       url: required('REDIS_URL'),
     },
     mail: loadMail(),
+    gemini: process.env['GEMINI_API_KEY']
+      ? { apiKey: process.env['GEMINI_API_KEY'], model: process.env['GEMINI_MODEL'] || 'gemini-3.8-flash' }
+      : undefined,
   };
 }

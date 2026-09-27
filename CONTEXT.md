@@ -57,3 +57,12 @@ nach Nutzerrolle (die es nicht mehr gibt). Mobil zeigt ein Dashboard mit der
 Wahl zwischen Einträge anlegen und Einträge ansehen. Desktop zeigt direkt
 die Einträge-ansehen-Liste als Startseite, mit Navigation zu den übrigen
 Bereichen.
+
+**KI-Analyse**:
+Eine von einer KI aus den Fotos eines Wareneintrags geschätzte
+Zusammensetzung: Materialfraktionen mit geschätztem Volumenanteil in Prozent
+(Summe 100) und eine Kurzeinschätzung in einem Satz. Eine Schätzung, keine
+Messung. Jeder Nutzer kann sie für jeden Wareneintrag mit Foto anstoßen und
+bekommt zuerst eine Vorschau (siehe
+[ADR-0008](docs/adr/0008-ki-analyse-ueber-gemini.md)).
+_Avoid_: Bilderkennung, Auswertung, Gutachten

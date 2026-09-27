@@ -3,7 +3,12 @@ import { Component, ElementRef, afterNextRender, inject, signal, viewChild } fro
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { Wareneintrag } from '../../../core/wareneintrag-api.js';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { firstValueFrom } from 'rxjs';
+import { extrahiereFehlermeldung } from '../../../core/http-fehler.js';
+import { KiAnalyseErgebnis, Wareneintrag, WareneintragApi } from '../../../core/wareneintrag-api.js';
+import { KiAnalyseErgebnisAnzeige } from '../ki-analyse-ergebnis/ki-analyse-ergebnis.js';
 
 export interface WareneintragDetailDialogDaten {
   wareneintrag: Wareneintrag;
@@ -30,7 +35,7 @@ export function fotosVon(wareneintrag: Wareneintrag): Foto[] {
 // dieselbe Spur. Die Position folgt dem Scrollstand, egal wodurch er kam.
 @Component({
   selector: 'app-wareneintrag-detail-dialog',
-  imports: [DatePipe, MatButtonModule, MatDialogModule, MatIconModule],
+  imports: [DatePipe, KiAnalyseErgebnisAnzeige, MatButtonModule, MatDialogModule, MatIconModule, MatProgressBarModule, MatTooltipModule],
   templateUrl: './wareneintrag-detail-dialog.html',
   styleUrl: './wareneintrag-detail-dialog.scss',
   host: {
@@ -44,9 +49,27 @@ export class WareneintragDetailDialog {
   protected readonly fotos = fotosVon(this.wareneintrag);
   protected readonly position = signal(this.daten.startFoto);
   private readonly spur = viewChild<ElementRef<HTMLElement>>('spur');
+  private readonly wareneintragApi = inject(WareneintragApi);
+
+  // Vorschau, noch nicht gespeichert (Speichern folgt mit Issue #94).
+  protected readonly analyse = signal<KiAnalyseErgebnis | null>(null);
+  protected readonly analyseLaeuft = signal(false);
+  protected readonly analyseFehler = signal<string | null>(null);
 
   constructor() {
     afterNextRender(() => this.scrolleZu(this.position(), 'instant'));
+  }
+
+  protected async analysieren(): Promise<void> {
+    this.analyseLaeuft.set(true);
+    this.analyseFehler.set(null);
+    try {
+      this.analyse.set(await firstValueFrom(this.wareneintragApi.analysieren(this.wareneintrag.id)));
+    } catch (error) {
+      this.analyseFehler.set(extrahiereFehlermeldung(error, 'Die KI-Analyse ist fehlgeschlagen. Bitte später erneut versuchen.'));
+    } finally {
+      this.analyseLaeuft.set(false);
+    }
   }
 
   protected zeige(index: number): void {

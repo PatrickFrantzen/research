@@ -145,3 +145,31 @@ test('Detail-Dialog mit Bildergalerie öffnen (Issue #92)', async ({ page }) => 
   await expect(page.getByRole('dialog')).toHaveCount(1);
   await expect(page.getByRole('dialog', { name: 'Wareneintrag bearbeiten' })).toBeVisible();
 });
+
+test('KI-Analyse als Vorschau im Detail-Dialog (Issue #93)', async ({ page }) => {
+  // Gemini wird nie echt aufgerufen: die Antwort des Backends ist gemockt.
+  await page.route('**/api/v1/wareneintraege/*/ki-analyse', (route) =>
+    route.fulfill({
+      json: {
+        fraktionen: [
+          { name: 'Mineralischer Bauschutt', anteilProzent: 70 },
+          { name: 'Holz', anteilProzent: 30 },
+        ],
+        einschaetzung: 'Überwiegend Bauschutt mit etwas Holz.',
+      },
+    }),
+  );
+  await legeEintragAn(page.request, 'E2E Analyse', ['fotoFern']);
+  await page.goto('/wareneintraege');
+  await sucheFreitext(page, 'E2E Analyse');
+  await expect(page.getByTestId('trefferanzahl')).toHaveText('1 Wareneintrag');
+
+  await page.getByTestId('wareneintrag-details').click();
+  const dialog = page.getByRole('dialog', { name: `AVV-Code ${AVV_A.code}` });
+  await dialog.getByRole('button', { name: 'Analysieren' }).click();
+
+  await expect(dialog.getByRole('listitem')).toHaveText([/Mineralischer Bauschutt\s*70 %/, /Holz\s*30 %/, /Gesamt\s*100 %/]);
+  await expect(dialog.getByTestId('einschaetzung')).toHaveText('Überwiegend Bauschutt mit etwas Holz.');
+  await expect(dialog).toContainText('KI-Schätzung aus den Fotos, keine Messung.');
+  await pruefeBarrierefreiheit(page, 'Detail-Dialog mit KI-Analyse');
+});

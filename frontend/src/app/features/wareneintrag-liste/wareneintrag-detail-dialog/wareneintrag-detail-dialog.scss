@@ -45,6 +45,23 @@
   }
 }
 
+.ki-analyse {
+  margin-top: 8px;
+
+  h3 {
+    font: var(--mat-sys-title-small);
+    margin: 0 0 12px;
+  }
+
+  mat-progress-bar {
+    margin-bottom: 12px;
+  }
+}
+
+.fehler {
+  color: var(--mat-sys-error);
+}
+
 .freitext {
   white-space: pre-wrap;
 }

@@ -51,6 +51,13 @@ export class ObjectStorageService {
     return key;
   }
 
+  // Für die KI-Analyse: Foto samt gespeichertem Content-Type ins Backend holen.
+  async ladeFoto(key: string): Promise<{ daten: Buffer; mimeType: string }> {
+    const antwort = await this.s3.send(new GetObjectCommand({ Bucket: this.env.objectStorage.bucket, Key: key }));
+    const daten = Buffer.from((await antwort.Body?.transformToByteArray()) ?? []);
+    return { daten, mimeType: antwort.ContentType ?? 'image/jpeg' };
+  }
+
   async deleteFoto(key: string): Promise<void> {
     await this.s3.send(new DeleteObjectCommand({ Bucket: this.env.objectStorage.bucket, Key: key }));
   }

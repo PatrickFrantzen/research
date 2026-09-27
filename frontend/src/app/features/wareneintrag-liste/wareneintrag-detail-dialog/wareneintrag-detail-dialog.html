@@ -29,18 +29,46 @@
     </section>
   }
 
-  <dl class="daten">
-    <dt>AVV-Code</dt>
-    <dd>{{ wareneintrag.avvCode.code }} – {{ wareneintrag.avvCode.bezeichnung }}</dd>
-    <dt>Datum</dt>
-    <dd>{{ wareneintrag.erstelltAm | date: 'dd.MM.yyyy, HH:mm' }}</dd>
-    <dt>Freitext</dt>
-    <dd class="freitext">{{ wareneintrag.freitext }}</dd>
-    <dt>Standort</dt>
-    <dd>{{ wareneintrag.standort.name }}</dd>
-    <dt>Erfasst von</dt>
-    <dd>{{ wareneintrag.erfasstVon.vorname }} {{ wareneintrag.erfasstVon.nachname }}</dd>
-  </dl>
+  <div class="rechts">
+    <dl class="daten">
+      <dt>AVV-Code</dt>
+      <dd>{{ wareneintrag.avvCode.code }} – {{ wareneintrag.avvCode.bezeichnung }}</dd>
+      <dt>Datum</dt>
+      <dd>{{ wareneintrag.erstelltAm | date: 'dd.MM.yyyy, HH:mm' }}</dd>
+      <dt>Freitext</dt>
+      <dd class="freitext">{{ wareneintrag.freitext }}</dd>
+      <dt>Standort</dt>
+      <dd>{{ wareneintrag.standort.name }}</dd>
+      <dt>Erfasst von</dt>
+      <dd>{{ wareneintrag.erfasstVon.vorname }} {{ wareneintrag.erfasstVon.nachname }}</dd>
+    </dl>
+
+    <section class="ki-analyse" aria-labelledby="ki-analyse-titel">
+      <h3 id="ki-analyse-titel">KI-Analyse</h3>
+      @if (analyse(); as ergebnis) {
+        <app-ki-analyse-ergebnis [ergebnis]="ergebnis" />
+      }
+      @if (analyseLaeuft()) {
+        <mat-progress-bar mode="indeterminate" aria-label="KI-Analyse läuft" />
+      }
+      @if (analyseFehler(); as meldung) {
+        <p class="fehler" role="alert">{{ meldung }}</p>
+      }
+      <!-- Deaktivierte Buttons zeigen keinen Tooltip, daher am Wrapper. -->
+      <span [matTooltip]="fotos.length ? '' : 'Zum Analysieren braucht der Eintrag mindestens ein Foto.'">
+        <button
+          matButton="tonal"
+          type="button"
+          data-testid="analysieren"
+          [disabled]="!fotos.length || analyseLaeuft()"
+          (click)="analysieren()"
+        >
+          <mat-icon>auto_awesome</mat-icon>
+          Analysieren
+        </button>
+      </span>
+    </section>
+  </div>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
