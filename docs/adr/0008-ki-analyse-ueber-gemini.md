@@ -22,6 +22,8 @@ Projekt ist ein Prototyp ohne Budget für KI-Dienste.
 - Alle Fotos eines Eintrags gehen in einem Request als `inlineData`. Die
   App verkleinert neue Fotos deshalb auf 2000 px (Issue #91); Altfotos über
   14 MB gesamt werden mit einer klaren Meldung abgelehnt.
+- Bei 503 (Modell überlastet, im Free Tier häufig) und 500 wiederholt das
+  Backend die Anfrage einmal nach 2 s. Googles Fehlertext steht im Log.
 - Der Key bleibt im Backend und geht per Header `x-goog-api-key`, nie in
   der URL, damit er in keinem Log und keiner Response auftaucht.
 - Das Ergebnis ist zuerst eine Vorschau in Redis (pro Eintrag und Nutzer,
