@@ -158,6 +158,12 @@ test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen 
     await page.getByTestId('wareneintrag-details').click();
     await expect(dialog).toBeVisible();
   };
+  // Erst schließen lassen, sonst ist der alte Dialog beim Wiederöffnen noch
+  // in der Ausblend-Animation und es gibt kurz zwei.
+  const schliessen = async () => {
+    await schliessen();
+    await expect(dialog).toBeHidden();
+  };
 
   // Vorschau, dann ohne Speichern schließen: nichts bleibt.
   await oeffnen();
@@ -171,7 +177,7 @@ test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen 
   await expect(dialog.getByTestId('avv-vorschlag')).toContainText(`Vorschlag: ${AVV_B.code} – `);
   await expect(dialog.getByTestId('avv-pruefung').getByRole('button')).toHaveCount(0);
   await pruefeBarrierefreiheit(page, 'Detail-Dialog mit KI-Vorschau');
-  await page.keyboard.press('Escape');
+  await schliessen();
   await oeffnen();
   await expect(dialog.getByTestId('einschaetzung')).toHaveCount(0);
 
@@ -182,12 +188,12 @@ test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen 
   const analysiertVon = dialog.getByTestId('analysiert-von');
   await expect(analysiertVon).toHaveText(/^Analysiert von .+ am \d{2}\.\d{2}\.\d{4}, \d{2}:\d{2}$/);
   await expect(analysiertVon).toContainText(ERIKA.vorname);
-  await page.keyboard.press('Escape');
+  await schliessen();
   await oeffnen();
   await expect(dialog.getByTestId('einschaetzung')).toHaveText('Überwiegend Bauschutt mit etwas Holz.');
   await expect(dialog.getByTestId('analysiert-von')).toBeVisible();
   await expect(dialog.getByTestId('avv-vorschlag')).toContainText(AVV_B.code);
-  await page.keyboard.press('Escape');
+  await schliessen();
 
   // Löschen des Eintrags nimmt die Analyse mit (ON DELETE CASCADE).
   await page.getByTestId('wareneintrag-loeschen').click();
