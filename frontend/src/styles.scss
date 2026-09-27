@@ -125,5 +125,12 @@ h1[mat-card-title] {
     .mat-mdc-dialog-surface {
       border-radius: 0;
     }
+
+    // Material begrenzt den Inhalt auf 65vh; im Vollbild füllt er den Rest,
+    // damit "Schließen" unten steht statt mitten im Bild.
+    .mat-mdc-dialog-content {
+      flex: 1;
+      max-height: none;
+    }
   }
 }
