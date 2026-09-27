@@ -55,6 +55,11 @@ services:
       # Ohne GEMINI_API_KEY ist die KI-Analyse abgeschaltet, siehe ADR-0008.
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.8-flash}
+      # Max. Größe pro Datei in MB, Uploads liegen komplett im RAM (Issue #102).
+      UPLOAD_MAX_MB: ${UPLOAD_MAX_MB:-50}
+    # Läuft der RAM voll, trifft es nur die App (Neustart), nicht Postgres
+    # oder MinIO. Mit UPLOAD_MAX_MB zusammen an den Server-RAM anpassen.
+    mem_limit: ${APP_MEM_LIMIT:-1536m}
     # Tages-Logs (Aktivität/Fehler) überleben so Rebuilds, siehe ADR-0007.
     volumes:
       - app-logs:/app/backend/logs

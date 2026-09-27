@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { DeleteObjectCommand, GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Injectable } from '@nestjs/common';
 import { loadEnv } from '../config/env.js';
@@ -56,6 +56,12 @@ export class ObjectStorageService {
     const antwort = await this.s3.send(new GetObjectCommand({ Bucket: this.env.objectStorage.bucket, Key: key }));
     const daten = Buffer.from((await antwort.Body?.transformToByteArray()) ?? []);
     return { daten, mimeType: antwort.ContentType ?? 'image/jpeg' };
+  }
+
+  // Größe in Bytes aus den Metadaten, ohne das Foto herunterzuladen.
+  async fotoGroesse(key: string): Promise<number> {
+    const antwort = await this.s3.send(new HeadObjectCommand({ Bucket: this.env.objectStorage.bucket, Key: key }));
+    return antwort.ContentLength ?? 0;
   }
 
   async deleteFoto(key: string): Promise<void> {

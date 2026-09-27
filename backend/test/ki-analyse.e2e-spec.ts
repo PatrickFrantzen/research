@@ -72,7 +72,7 @@ describe('KI-Analyse-Endpunkt', () => {
             wareneintragAnalyse: { upsert },
           },
         },
-        { provide: ObjectStorageService, useValue: { ladeFoto: async () => ({ daten: Buffer.from('bild'), mimeType: 'image/jpeg' }) } },
+        { provide: ObjectStorageService, useValue: { ladeFoto: async () => ({ daten: Buffer.from('bild'), mimeType: 'image/jpeg' }), fotoGroesse: async () => 4 } },
         { provide: Protokoll, useValue: protokoll },
         { provide: APP_INTERCEPTOR, useClass: ProtokollInterceptor },
       ],

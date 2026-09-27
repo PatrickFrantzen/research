@@ -27,4 +27,21 @@ describe('uebernehmeFoto', () => {
     const bild = await createImageBitmap(datei!);
     expect([bild.width, bild.height]).toEqual([2000, 1000]);
   });
+
+  it('no longer rejects a large photo client-side, the limit is only the backend UPLOAD_MAX_MB', async () => {
+    // Nicht dekodierbar, bleibt daher unverkleinert bei 11 MB.
+    const gross = new File([new Uint8Array(11 * 1024 * 1024)], 'gross.png', { type: 'image/png' });
+
+    const { datei, meldung } = await uebernehmeFoto(gross);
+
+    expect(meldung).toBeNull();
+    expect(datei!.size).toBe(11 * 1024 * 1024);
+  });
+
+  it('still rejects a file that is not JPEG, PNG or WebP', async () => {
+    const { datei, meldung } = await uebernehmeFoto(new File(['x'], 'bild.gif', { type: 'image/gif' }));
+
+    expect(datei).toBeNull();
+    expect(meldung).toBe('Nur JPEG, PNG oder WebP erlaubt.');
+  });
 });

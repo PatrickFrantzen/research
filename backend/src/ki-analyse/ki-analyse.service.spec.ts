@@ -49,6 +49,7 @@ function erstelle(optionen: { wareneintrag?: unknown; gemini?: () => Promise<unk
   const gemini = { analysiere: vi.fn(optionen.gemini ?? (async () => ANTWORT)) };
   const objectStorage = {
     ladeFoto: vi.fn(async () => ({ daten: Buffer.alloc(optionen.fotoBytes ?? 10), mimeType: 'image/jpeg' })),
+    fotoGroesse: vi.fn(async () => optionen.fotoBytes ?? 10),
   };
   const prisma = {
     wareneintrag: { findUnique: vi.fn(async () => ('wareneintrag' in optionen ? optionen.wareneintrag : WARENEINTRAG)) },
@@ -147,13 +148,14 @@ describe('KiAnalyseService', () => {
     await expect(service.analysiere('gibt-es-nicht', 'nutzer-1')).rejects.toMatchObject({ status: 404 });
   });
 
-  it('rejects old fotos that are too large for one request with a clear message', async () => {
-    const { service, gemini } = erstelle({ fotoBytes: MAX_FOTOS_BYTES / 2 + 1 });
+  it('rejects fotos too large for one request with a clear message, without loading them into memory', async () => {
+    const { service, gemini, objectStorage } = erstelle({ fotoBytes: MAX_FOTOS_BYTES / 2 + 1 });
     await expect(service.analysiere('wareneintrag-1', 'nutzer-1')).rejects.toMatchObject({
       status: 422,
       message: expect.stringContaining('zu groß'),
     });
     expect(gemini.analysiere).not.toHaveBeenCalled();
+    expect(objectStorage.ladeFoto).not.toHaveBeenCalled();
   });
 
   it('maps an exhausted Gemini quota to the daily quota message', async () => {

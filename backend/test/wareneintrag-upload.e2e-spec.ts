@@ -1,12 +1,18 @@
 import { ExecutionContext, INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { JwtAuthGuard } from '../src/auth/jwt-auth.guard.js';
 import { ObjectStorageService } from '../src/object-storage/object-storage.service.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 import { WareneintragController } from '../src/wareneintrag/wareneintrag.controller.js';
 import { WareneintragService } from '../src/wareneintrag/wareneintrag.service.js';
+
+// Kleines Limit, damit die Grenzfälle ohne 50-MB-Puffer testbar sind (Issue #102).
+// Muss vor dem Import des Controllers gesetzt sein, der das Limit beim Laden liest.
+vi.hoisted(() => {
+  process.env['UPLOAD_MAX_MB'] = '1';
+});
 
 // Guard wird überschrieben, um ausschließlich die Upload-Härtung
 // (Größenlimit im Stream, Magic-Number-Whitelist) end-to-end zu prüfen –
@@ -18,6 +24,12 @@ class AlsNutzerAngemeldet {
     return true;
   }
 }
+
+// Minimaler gültiger PNG-Header + IHDR-Chunk-Anfang reicht der Magic-Number-Erkennung.
+const PNG_BYTES = Buffer.from([
+  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52, 0x00, 0x00,
+  0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06, 0x00, 0x00, 0x00, 0x1f, 0x15, 0xc4, 0x89,
+]);
 
 describe('Wareneintrag-Foto-Upload: Härtung', () => {
   let app: INestApplication;
@@ -48,17 +60,11 @@ describe('Wareneintrag-Foto-Upload: Härtung', () => {
   });
 
   it('accepts a real PNG image', async () => {
-    // Minimaler gültiger PNG-Header + IHDR-Chunk-Anfang reicht der Magic-Number-Erkennung.
-    const pngBytes = Buffer.from([
-      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52, 0x00, 0x00,
-      0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06, 0x00, 0x00, 0x00, 0x1f, 0x15, 0xc4, 0x89,
-    ]);
-
     const response = await request(app.getHttpServer())
       .post('/wareneintraege')
       .field('avvCodeId', 'f8a3632d-6b2c-4843-b223-85a711b4a9a7')
       .field('freitext', 'Testeintrag')
-      .attach('fotoFern', pngBytes, { filename: 'foto.png', contentType: 'image/png' });
+      .attach('fotoFern', PNG_BYTES, { filename: 'foto.png', contentType: 'image/png' });
 
     expect(response.status).toBe(201);
   });
@@ -96,8 +102,20 @@ describe('Wareneintrag-Foto-Upload: Härtung', () => {
     expect(response.status).toBe(400);
   });
 
-  it('aborts uploads larger than the configured limit before fully buffering them', async () => {
-    const zuGross = Buffer.alloc(11 * 1024 * 1024, 1); // > 10 MB Limit
+  it('accepts a photo just below the configured UPLOAD_MAX_MB', async () => {
+    const knappDarunter = Buffer.concat([PNG_BYTES, Buffer.alloc(1024 * 1024 - PNG_BYTES.length - 1024)]);
+
+    const response = await request(app.getHttpServer())
+      .post('/wareneintraege')
+      .field('avvCodeId', 'f8a3632d-6b2c-4843-b223-85a711b4a9a7')
+      .field('freitext', 'Testeintrag')
+      .attach('fotoFern', knappDarunter, { filename: 'foto.png', contentType: 'image/png' });
+
+    expect(response.status).toBe(201);
+  });
+
+  it('rejects a photo above UPLOAD_MAX_MB with 413 and a message naming the limit', async () => {
+    const zuGross = Buffer.concat([PNG_BYTES, Buffer.alloc(1024 * 1024)]);
 
     const response = await request(app.getHttpServer())
       .post('/wareneintraege')
@@ -105,8 +123,10 @@ describe('Wareneintrag-Foto-Upload: Härtung', () => {
       .field('freitext', 'Testeintrag')
       .attach('fotoFern', zuGross, { filename: 'foto.png', contentType: 'image/png' });
 
-    expect([413, 422]).toContain(response.status);
+    expect(response.status).toBe(413);
+    expect(response.body.message).toBe('Datei ist größer als 1 MB.');
   });
+
   it('rejects multipart requests with more text fields than the form has', async () => {
     let anfrage = request(app.getHttpServer())
       .post('/wareneintraege')

@@ -91,14 +91,17 @@ export class KiAnalyseService {
 
     await this.pruefeLimit(nutzerId);
 
-    const fotos = await Promise.all(
-      keys.map(async ({ label, key }) => ({ label, ...(await this.objectStorage.ladeFoto(key)) })),
-    );
-    if (fotos.reduce((summe, foto) => summe + foto.daten.length, 0) > MAX_FOTOS_BYTES) {
+    // Größe erst über die Metadaten prüfen: zu große Fotos nie in den RAM
+    // laden, Base64 für Gemini würde sie noch einmal aufblähen (Issue #102).
+    const groessen = await Promise.all(keys.map(({ key }) => this.objectStorage.fotoGroesse(key)));
+    if (groessen.reduce((summe, groesse) => summe + groesse, 0) > MAX_FOTOS_BYTES) {
       throw new UnprocessableEntityException(
         'Die Fotos sind zusammen zu groß für die KI-Analyse. Bitte im Bearbeiten-Dialog neu aufnehmen, sie werden dabei verkleinert.',
       );
     }
+    const fotos = await Promise.all(
+      keys.map(async ({ label, key }) => ({ label, ...(await this.objectStorage.ladeFoto(key)) })),
+    );
 
     const kontext = `Erfasster AVV-Code: ${wareneintrag.avvCode.code} ${wareneintrag.avvCode.bezeichnung}\nFreitext des Nutzers: ${wareneintrag.freitext}`;
     let antwort: GepruefteAntwort | null;
