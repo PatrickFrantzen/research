@@ -12,7 +12,7 @@ function buildService() {
   const prisma = {
     nutzer: {
       findUnique: vi.fn(),
-      update: vi.fn(),
+      update: vi.fn().mockResolvedValue({ id: 'nutzer-1', mussPasswortSetzen: false, istAdmin: false }),
     },
   };
   const jwtService = { signAsync: vi.fn().mockResolvedValue('signed-token') };
@@ -168,24 +168,30 @@ describe('AuthService', () => {
       await expect(service.passwortSetzen('unbekannt', 'neuesPasswort1')).rejects.toThrow();
     });
 
-    it('rejects an expired token', async () => {
-      const { service, prisma } = buildService();
+    it('rejects an expired token and signs nobody in', async () => {
+      const { service, prisma, jwtService } = buildService();
       prisma.nutzer.findUnique.mockResolvedValue({
         id: 'nutzer-1',
         passwortSetzenTokenAblauf: new Date(Date.now() - 1000),
       });
 
       await expect(service.passwortSetzen('abgelaufen', 'neuesPasswort1')).rejects.toThrow();
+      expect(jwtService.signAsync).not.toHaveBeenCalled();
     });
 
-    it('sets the new password and clears the token for a valid token', async () => {
-      const { service, prisma } = buildService();
+    it('sets the new password, clears the token and signs the Nutzer in directly', async () => {
+      const { service, prisma, jwtService } = buildService();
       prisma.nutzer.findUnique.mockResolvedValue({
         id: 'nutzer-1',
         passwortSetzenTokenAblauf: new Date(Date.now() + 1000 * 60),
       });
+      prisma.nutzer.update.mockResolvedValue({ id: 'nutzer-1', mussPasswortSetzen: false, istAdmin: false });
 
-      await service.passwortSetzen('gueltig', 'neuesPasswort1');
+      const anmeldung = await service.passwortSetzen('gueltig', 'neuesPasswort1');
+
+      expect(anmeldung).toEqual({ accessToken: 'signed-token', mussPasswortSetzen: false, id: 'nutzer-1', istAdmin: false });
+      expect(jwtService.signAsync).toHaveBeenCalledWith({ sub: 'nutzer-1' });
+      expect(jwtService.signAsync.mock.invocationCallOrder[0]).toBeGreaterThan(prisma.nutzer.update.mock.invocationCallOrder[0]);
 
       expect(prisma.nutzer.update).toHaveBeenCalledWith({
         where: { id: 'nutzer-1' },

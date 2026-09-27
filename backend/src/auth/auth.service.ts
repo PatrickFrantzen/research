@@ -8,6 +8,13 @@ import { erzeugePasswortSetzenToken, hashPasswortSetzenToken } from './passwort-
 
 const PASSWORT_VERGESSEN_GUELTIGKEIT_MS = 60 * 60 * 1000; // 1 Stunde
 
+export interface Anmeldung {
+  accessToken: string;
+  mussPasswortSetzen: boolean;
+  id: string;
+  istAdmin: boolean;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -16,15 +23,15 @@ export class AuthService {
     private readonly mailer: Mailer,
   ) {}
 
-  async login(
-    email: string,
-    passwort: string,
-  ): Promise<{ accessToken: string; mussPasswortSetzen: boolean; id: string; istAdmin: boolean }> {
+  async login(email: string, passwort: string): Promise<Anmeldung> {
     const nutzer = await this.prisma.nutzer.findUnique({ where: { email: normalisiereEmail(email) } });
     if (!nutzer || !(await bcrypt.compare(passwort, nutzer.passwortHash))) {
       throw new UnauthorizedException('E-Mail oder Passwort ungültig.');
     }
+    return this.anmeldung(nutzer);
+  }
 
+  private async anmeldung(nutzer: { id: string; mussPasswortSetzen: boolean; istAdmin: boolean }): Promise<Anmeldung> {
     const accessToken = await this.jwtService.signAsync({ sub: nutzer.id });
     return { accessToken, mussPasswortSetzen: nutzer.mussPasswortSetzen, id: nutzer.id, istAdmin: nutzer.istAdmin };
   }
@@ -55,7 +62,10 @@ export class AuthService {
     await this.mailer.sendPasswortSetzenLink(email, `/passwort-setzen?token=${rawToken}`);
   }
 
-  async passwortSetzen(token: string, neuesPasswort: string): Promise<void> {
+  // Wer den Link aus der Mail hat, ist danach direkt angemeldet: der Token
+  // ist einmalig und wird hier verbraucht, ein zweiter Login-Schritt mit dem
+  // eben gesetzten Passwort bringt keine zusätzliche Sicherheit.
+  async passwortSetzen(token: string, neuesPasswort: string): Promise<Anmeldung> {
     const nutzer = await this.prisma.nutzer.findUnique({
       where: { passwortSetzenToken: hashPasswortSetzenToken(token) },
     });
@@ -64,7 +74,7 @@ export class AuthService {
     }
 
     const passwortHash = await bcrypt.hash(neuesPasswort, 12);
-    await this.prisma.nutzer.update({
+    const aktualisiert = await this.prisma.nutzer.update({
       where: { id: nutzer.id },
       data: {
         passwortHash,
@@ -75,5 +85,6 @@ export class AuthService {
         passwortGeaendertAm: new Date(),
       },
     });
+    return this.anmeldung(aktualisiert);
   }
 }

@@ -79,10 +79,16 @@ export class AuthController {
     await this.authService.passwortVergessen(dto.email);
   }
 
+  // Setzt das Passwort und meldet direkt an (gleiche Cookies wie beim Login).
   @Post('passwort-setzen')
   @Throttle(AUTH_THROTTLE)
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async passwortSetzen(@Body() dto: PasswortSetzenDto): Promise<void> {
-    await this.authService.passwortSetzen(dto.token, dto.neuesPasswort);
+  @HttpCode(HttpStatus.OK)
+  async passwortSetzen(@Body() dto: PasswortSetzenDto, @Res({ passthrough: true }) res: Response) {
+    const { accessToken, mussPasswortSetzen, id, istAdmin } = await this.authService.passwortSetzen(
+      dto.token,
+      dto.neuesPasswort,
+    );
+    setzeAuthCookies(res, accessToken);
+    return { mussPasswortSetzen, id, istAdmin };
   }
 }

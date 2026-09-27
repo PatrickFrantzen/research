@@ -41,7 +41,9 @@ _Avoid_: Ort, Filiale, Niederlassung
 Ein Firmenaccount – jeder Nutzer kann Wareneinträge anlegen, alle
 Wareneinträge ansehen und nur seine eigenen bearbeiten/löschen. Angelegt
 ausschließlich durch einen Admin, der Nutzer bekommt per Mail eine
-Einladung zum Passwort-Setzen – kein Self-Signup.
+Einladung zum Passwort-Setzen und ist danach direkt angemeldet – kein
+Self-Signup. Ist der Link verloren oder abgelaufen, schickt ein Admin über
+die Nutzerverwaltung einen neuen.
 _Avoid_: User, Benutzer, Account, Mitarbeiter, Vorgesetzter
 
 **Admin**:

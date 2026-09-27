@@ -35,6 +35,19 @@ describe('AuthService', () => {
     expect(service.nutzerId()).toBe('nutzer-1');
   });
 
+  it('is signed in right after setting the password via the link (Issue #80)', async () => {
+    const service = TestBed.inject(AuthService);
+
+    const setzen = service.passwortSetzen('link-token', 'neuesGeheimnis1');
+    const request = httpMock.expectOne('/api/v1/auth/passwort-setzen');
+    expect(request.request.body).toEqual({ token: 'link-token', neuesPasswort: 'neuesGeheimnis1' });
+    request.flush({ mussPasswortSetzen: false, id: 'nutzer-2', istAdmin: false });
+    await setzen;
+
+    expect(service.istEingeloggt()).toBe(true);
+    expect(service.nutzerId()).toBe('nutzer-2');
+  });
+
   it('treats a 401 from /auth/me as logged out (no valid cookie) on init()', async () => {
     const service = TestBed.inject(AuthService);
 

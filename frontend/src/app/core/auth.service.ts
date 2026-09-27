@@ -48,6 +48,10 @@ export class AuthService {
 
   async login(email: string, passwort: string): Promise<{ mussPasswortSetzen: boolean }> {
     const response = await firstValueFrom(this.http.post<LoginResponse>('/api/v1/auth/login', { email, passwort }));
+    return this.angemeldet(response);
+  }
+
+  private angemeldet(response: LoginResponse): { mussPasswortSetzen: boolean } {
     this.nutzerIdSignal.set(response.id);
     this.istEingeloggtSignal.set(true);
     this.istAdminSignal.set(response.istAdmin);
@@ -67,7 +71,8 @@ export class AuthService {
     await firstValueFrom(this.http.post<void>('/api/v1/auth/passwort-vergessen', { email }));
   }
 
+  // Das Backend meldet nach dem Setzen direkt an.
   async passwortSetzen(token: string, neuesPasswort: string): Promise<void> {
-    await firstValueFrom(this.http.post<void>('/api/v1/auth/passwort-setzen', { token, neuesPasswort }));
+    this.angemeldet(await firstValueFrom(this.http.post<LoginResponse>('/api/v1/auth/passwort-setzen', { token, neuesPasswort })));
   }
 }

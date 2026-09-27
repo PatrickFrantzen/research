@@ -37,6 +37,7 @@ describe('Cookie-basierte Auth + CSRF (Issue #24)', () => {
     mussPasswortSetzen: false,
     istAdmin: true,
     passwortGeaendertAm: new Date(0),
+    passwortSetzenTokenAblauf: new Date(Date.now() + 60 * 60 * 1000),
   };
 
   beforeAll(async () => {
@@ -63,7 +64,7 @@ describe('Cookie-basierte Auth + CSRF (Issue #24)', () => {
         AuthService,
         JwtStrategy,
         { provide: APP_GUARD, useClass: ThrottlerGuard },
-        { provide: PrismaService, useValue: { nutzer: { findUnique: async () => nutzer } } },
+        { provide: PrismaService, useValue: { nutzer: { findUnique: async () => nutzer, update: async () => nutzer } } },
         { provide: Mailer, useValue: { sendPasswortSetzenLink: async () => undefined } },
       ],
     }).compile();
@@ -147,6 +148,25 @@ describe('Cookie-basierte Auth + CSRF (Issue #24)', () => {
 
     expect(response.status).toBe(201);
     expect(response.body).toEqual({ ok: true });
+  });
+
+  // Einladung/Reset: nach dem Passwort-Setzen direkt angemeldet (Issue #80).
+  it('POST /auth/passwort-setzen signs in with the same cookies as the login', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/api/v1/auth/passwort-setzen')
+      .send({ token: 'link-token', neuesPasswort: 'ein-neues-Passwort-1' });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ mussPasswortSetzen: false, id: 'nutzer-1', istAdmin: true });
+    const cookies = response.headers['set-cookie'] as unknown as string[];
+    expect(cookies.find((c) => c.startsWith('accessToken='))).toContain('HttpOnly');
+    const csrfToken = cookies.find((c) => c.startsWith('csrfToken='))!.split(';')[0].split('=')[1];
+
+    const geschuetzt = await request(app.getHttpServer())
+      .post('/api/v1/dummy/mutieren')
+      .set('Cookie', cookies)
+      .set('x-csrf-token', csrfToken);
+    expect(geschuetzt.status).toBe(201);
   });
 
   it('POST /auth/logout clears both cookies', async () => {

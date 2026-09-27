@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth.service.js';
 import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
@@ -18,6 +19,7 @@ export class PasswortSetzen {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly snackBar = inject(MatSnackBar);
 
   private readonly token = this.route.snapshot.queryParamMap.get('token') ?? '';
 
@@ -51,10 +53,11 @@ export class PasswortSetzen {
     this.fehler.set(null);
     this.wirdGeladen.set(true);
     try {
+      // Das Backend meldet nach dem Setzen direkt an: weiter zur Startseite
+      // statt noch einmal zum Login (Issue #80).
       await this.authService.passwortSetzen(this.token, this.neuesPasswort);
-      // Sofort weiterleiten statt verzögert per Timer – die Bestätigung zeigt
-      // die Login-Seite an (Issue #55).
-      await this.router.navigateByUrl('/login?passwortGesetzt=1');
+      await this.router.navigateByUrl('/');
+      this.snackBar.open('Passwort gesetzt, du bist angemeldet.', 'OK', { duration: 5000 });
     } catch (error) {
       this.fehler.set(extrahiereFehlermeldung(error, 'Link ist ungültig oder abgelaufen.'));
     } finally {

@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { AuthService } from '../../core/auth.service.js';
 import { PasswortSetzen } from './passwort-setzen.js';
@@ -39,19 +40,19 @@ describe('PasswortSetzen', () => {
     expect(authService.passwortSetzen).toHaveBeenCalledWith('reset-token-123', 'neuesGeheimnis1');
   });
 
-  it('redirects to /login immediately on success, with the confirmation flag, without any timer', async () => {
+  it('goes straight to the start page on success, signed in, and confirms it', async () => {
     authService.passwortSetzen.and.resolveTo();
     await setup('reset-token-123');
     router = TestBed.inject(Router);
     spyOn(router, 'navigateByUrl').and.resolveTo(true);
-    const timerSpy = spyOn(window, 'setTimeout').and.callThrough();
+    const snackBar = spyOn(TestBed.inject(MatSnackBar), 'open');
     const fixture = TestBed.createComponent(PasswortSetzen);
     fixture.componentInstance.neuesPasswort = 'neuesGeheimnis1';
 
     await fixture.componentInstance.submit();
 
-    expect(router.navigateByUrl).toHaveBeenCalledWith('/login?passwortGesetzt=1');
-    expect(timerSpy).not.toHaveBeenCalledWith(jasmine.any(Function), 2000);
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/');
+    expect(snackBar).toHaveBeenCalledWith('Passwort gesetzt, du bist angemeldet.', 'OK', jasmine.anything());
   });
 
   it('does not navigate when setting the password fails', async () => {
@@ -64,7 +65,7 @@ describe('PasswortSetzen', () => {
 
     await fixture.componentInstance.submit();
 
-    expect(router.navigateByUrl).not.toHaveBeenCalledWith('/login?passwortGesetzt=1');
+    expect(router.navigateByUrl).not.toHaveBeenCalledWith('/');
   });
 
   it('shows an error when the token is invalid or expired', async () => {
