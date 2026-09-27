@@ -52,10 +52,14 @@ setup('Testdaten anlegen und Sessions speichern', async ({ baseURL }) => {
   expect(angelegt.status()).toBe(201);
   const { passwortSetzenLink } = (await angelegt.json()) as { passwortSetzenLink: string };
   const token = new URL(passwortSetzenLink, baseURL).searchParams.get('token');
-  const gesetzt = await erika.post('/api/v1/auth/passwort-setzen', {
+  // Eigener Kontext wie Max' Browser: die Antwort meldet Max direkt an und
+  // würde sonst Erikas Session-Cookies überschreiben (Issue #80).
+  const linkKontext = await request.newContext({ baseURL });
+  const gesetzt = await linkKontext.post('/api/v1/auth/passwort-setzen', {
     data: { token, neuesPasswort: MAX.passwort },
   });
-  expect(gesetzt.status()).toBe(204);
+  expect(gesetzt.status()).toBe(200);
+  await linkKontext.dispose();
 
   // Aufsteigend angelegt: die Liste zeigt die neuesten zuerst.
   for (let i = 1; i <= ERIKA_EINTRAEGE; i++) {
