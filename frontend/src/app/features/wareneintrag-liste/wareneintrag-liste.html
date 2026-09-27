@@ -77,21 +77,22 @@
   <div class="karten">
     @if (wareneintraege.hasValue()) {
       @for (wareneintrag of wareneintraege.value().daten; track wareneintrag.id) {
-        <mat-card class="karte">
+        <!-- Klick auf die Karte öffnet die Details; Tastatur-Einstieg ist der Titel-Button (Issue #92). -->
+        <mat-card class="karte" data-testid="wareneintrag-karte" (click)="detailOeffnen(wareneintrag, 0)">
           <mat-card-header>
-            <mat-card-title>AVV-Code: {{ wareneintrag.avvCode.code }}</mat-card-title>
+            <mat-card-title>
+              <button type="button" class="titel-button" data-testid="wareneintrag-details" (click)="$event.stopPropagation(); detailOeffnen(wareneintrag, 0)">
+                AVV-Code: {{ wareneintrag.avvCode.code }}
+              </button>
+            </mat-card-title>
             <mat-card-subtitle class="datum">{{ wareneintrag.erstelltAm | date: 'dd.MM.yyyy, HH:mm' }}</mat-card-subtitle>
           </mat-card-header>
           <mat-card-content>
             <div class="fotos">
-              @if (wareneintrag.fotoFernUrl) {
-                <img [src]="wareneintrag.fotoFernUrl" [alt]="'Fernansicht – AVV ' + wareneintrag.avvCode.code + ', ' + (wareneintrag.erstelltAm | date: 'dd.MM.yyyy')" />
-              }
-              @if (wareneintrag.fotoNahUrl) {
-                <img [src]="wareneintrag.fotoNahUrl" [alt]="'Nahansicht – AVV ' + wareneintrag.avvCode.code + ', ' + (wareneintrag.erstelltAm | date: 'dd.MM.yyyy')" />
-              }
-              @if (wareneintrag.fotoDetailUrl) {
-                <img [src]="wareneintrag.fotoDetailUrl" [alt]="'Detailansicht – AVV ' + wareneintrag.avvCode.code + ', ' + (wareneintrag.erstelltAm | date: 'dd.MM.yyyy')" />
+              @for (foto of fotosVon(wareneintrag); track foto.label; let index = $index) {
+                <button type="button" class="foto-button" (click)="$event.stopPropagation(); detailOeffnen(wareneintrag, index)">
+                  <img [src]="foto.url" [alt]="foto.label + ' – AVV ' + wareneintrag.avvCode.code + ', ' + (wareneintrag.erstelltAm | date: 'dd.MM.yyyy')" />
+                </button>
               }
             </div>
             <p>{{ wareneintrag.freitext }}</p>
@@ -99,7 +100,7 @@
             <p>Erfasst von: {{ wareneintrag.erfasstVon.vorname }} {{ wareneintrag.erfasstVon.nachname }}</p>
           </mat-card-content>
           @if (istEigenerEintrag(wareneintrag)) {
-            <mat-card-actions align="end">
+          <mat-card-actions align="end" (click)="$event.stopPropagation()">
               <button matButton type="button" data-testid="wareneintrag-bearbeiten" (click)="bearbeitungOeffnen(wareneintrag)">
                 Bearbeiten
               </button>

@@ -3,7 +3,7 @@
 // und Löschen arbeiten auf eigens angelegten Einträgen, damit die Zählungen
 // der Seed-Daten unberührt bleiben.
 import { APIRequestContext, expect, Page, test } from '@playwright/test';
-import { AVV_A, AVV_B, csrfHeader, ERIKA, MAX, pruefeBarrierefreiheit } from './testdaten.js';
+import { AVV_A, AVV_B, csrfHeader, ERIKA, MAX, pruefeBarrierefreiheit, TEST_PNG } from './testdaten.js';
 
 test.use({ storageState: ERIKA.storageState });
 
@@ -16,11 +16,12 @@ async function sucheFreitext(page: Page, begriff: string): Promise<void> {
   await page.getByTestId('freitext-suche').fill(begriff);
 }
 
-async function legeEintragAn(api: APIRequestContext, freitext: string): Promise<void> {
+async function legeEintragAn(api: APIRequestContext, freitext: string, fotos: string[] = []): Promise<void> {
   const [avvCode] = (await (await api.get('/api/v1/avv-codes', { params: { suche: AVV_A.suche } })).json()) as { id: string }[];
+  const fotoFelder = Object.fromEntries(fotos.map((feld) => [feld, { name: `${feld}.png`, mimeType: 'image/png', buffer: TEST_PNG }]));
   const antwort = await api.post('/api/v1/wareneintraege', {
     headers: await csrfHeader(api),
-    multipart: { avvCodeId: avvCode.id, freitext },
+    multipart: { avvCodeId: avvCode.id, freitext, ...fotoFelder },
   });
   expect(antwort.status()).toBe(201);
 }
@@ -106,4 +107,41 @@ test('eigenen Wareneintrag nach Bestätigung löschen', async ({ page }) => {
   await expect(page.getByText('Wareneintrag wurde gelöscht.')).toBeVisible();
   await expect(page.getByTestId('keine-eintraege')).toBeVisible();
   await expect(page.getByRole('heading', { level: 1, name: 'Wareneinträge' })).toBeFocused();
+});
+
+test('Detail-Dialog mit Bildergalerie öffnen (Issue #92)', async ({ page }) => {
+  await legeEintragAn(page.request, 'E2E Details', ['fotoFern', 'fotoNah']);
+  await page.goto('/wareneintraege');
+  await sucheFreitext(page, 'E2E Details');
+  await expect(page.getByTestId('trefferanzahl')).toHaveText('1 Wareneintrag');
+  const dialog = page.getByRole('dialog', { name: `AVV-Code ${AVV_A.code}` });
+  const position = dialog.getByTestId('galerie-position');
+
+  // Klick auf das zweite Foto startet dort, ←/→ und Buttons blättern.
+  const nahFoto = page.getByRole('button', { name: /^Nahansicht/ });
+  await nahFoto.click();
+  await expect(position).toHaveText('2 / 2');
+  await expect(dialog).toContainText('E2E Details');
+  await expect(dialog).toContainText(ERIKA.standort);
+  await pruefeBarrierefreiheit(page, 'Detail-Dialog');
+  await page.keyboard.press('ArrowLeft');
+  await expect(position).toHaveText('1 / 2');
+  await dialog.getByRole('button', { name: 'Nächstes Foto' }).click();
+  await expect(position).toHaveText('2 / 2');
+
+  // Nach dem Schließen steht der Fokus wieder auf dem auslösenden Foto.
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  await expect(nahFoto).toBeFocused();
+
+  // Tastatur-Einstieg über den Titel.
+  await page.getByTestId('wareneintrag-details').focus();
+  await page.keyboard.press('Enter');
+  await expect(position).toHaveText('1 / 2');
+  await page.keyboard.press('Escape');
+
+  // Bearbeiten öffnet nur den Bearbeiten-Dialog.
+  await page.getByTestId('wareneintrag-bearbeiten').click();
+  await expect(page.getByRole('dialog')).toHaveCount(1);
+  await expect(page.getByRole('dialog', { name: 'Wareneintrag bearbeiten' })).toBeVisible();
 });

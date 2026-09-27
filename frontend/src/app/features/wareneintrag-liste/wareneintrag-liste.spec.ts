@@ -488,6 +488,62 @@ describe('WareneintragListe', () => {
     expect(datum.textContent?.trim()).toBe('19.09.2026, 20:08');
   }));
 
+  describe('Detail-Dialog (Issue #92)', () => {
+    function listeMitEintrag(fotos: { fotoFernUrl: string | null; fotoNahUrl: string | null }) {
+      spyOn(dialog, 'open').and.returnValue({ afterClosed: () => of(undefined) } as MatDialogRef<unknown>);
+      const fixture = TestBed.createComponent(WareneintragListe);
+      fixture.detectChanges();
+      httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([]);
+      httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({
+        daten: [
+          {
+            id: 'wareneintrag-1',
+            ...fotos,
+            fotoDetailUrl: null,
+            freitext: 'Text',
+            erstelltAm: '2026-09-19T20:08:00',
+            avvCode: { code: '17 01 01' },
+            standort: { id: 'standort-1', name: 'Hauptsitz' },
+            erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
+          },
+        ],
+        gesamt: 1,
+      });
+      tick();
+      fixture.detectChanges();
+      const element = fixture.nativeElement as HTMLElement;
+      const startFotos = () => (dialog.open as jasmine.Spy).calls.allArgs().map((args) => args[1].data.startFoto);
+      return { element, startFotos };
+    }
+
+    it('opens at the first foto when the card is clicked', fakeAsync(() => {
+      const { element, startFotos } = listeMitEintrag({ fotoFernUrl: '/fern.jpg', fotoNahUrl: '/nah.jpg' });
+      (element.querySelector('[data-testid="wareneintrag-karte"] p') as HTMLElement).click();
+      expect(startFotos()).toEqual([0]);
+    }));
+
+    it('opens exactly once at foto N when foto N is clicked', fakeAsync(() => {
+      const { element, startFotos } = listeMitEintrag({ fotoFernUrl: '/fern.jpg', fotoNahUrl: '/nah.jpg' });
+      (element.querySelectorAll('.foto-button')[1] as HTMLButtonElement).click();
+      expect(startFotos()).toEqual([1]);
+    }));
+
+    it('opens exactly once via the title button, also without fotos', fakeAsync(() => {
+      const { element, startFotos } = listeMitEintrag({ fotoFernUrl: null, fotoNahUrl: null });
+      (element.querySelector('[data-testid="wareneintrag-details"]') as HTMLButtonElement).click();
+      expect(startFotos()).toEqual([0]);
+    }));
+
+    it('does not open the details when Bearbeiten or Löschen is clicked', fakeAsync(() => {
+      const { element } = listeMitEintrag({ fotoFernUrl: null, fotoNahUrl: null });
+      (element.querySelector('[data-testid="wareneintrag-bearbeiten"]') as HTMLButtonElement).click();
+      (element.querySelector('[data-testid="wareneintrag-loeschen"]') as HTMLButtonElement).click();
+      const geoeffnet = (dialog.open as jasmine.Spy).calls.allArgs().map((args) => args[0].name);
+      expect(geoeffnet).not.toContain('WareneintragDetailDialog');
+      expect(geoeffnet.length).toBe(2);
+    }));
+  });
+
   it('opens the edit dialog with the selected Wareneintrag and reloads the list once it closes successfully', fakeAsync(() => {
     dialogSchliesstMit(true);
     const fixture = TestBed.createComponent(WareneintragListe);

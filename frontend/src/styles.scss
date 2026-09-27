@@ -111,3 +111,19 @@ h1[mat-card-title] {
     display: none !important;
   }
 }
+
+// Detail-Dialog (Issue #92): breit am Desktop, Vollbild auf dem Handy.
+.detail-dialog {
+  width: min(1000px, calc(100vw - 32px));
+}
+
+@media (max-width: 599px) {
+  .detail-dialog {
+    width: 100vw;
+    height: 100dvh;
+
+    .mat-mdc-dialog-surface {
+      border-radius: 0;
+    }
+  }
+}
