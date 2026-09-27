@@ -110,7 +110,7 @@ describe('KI-Analyse-Endpunkt', () => {
 
   it.each([
     [429, 'Tageskontingent der KI-Analyse erschöpft, bitte morgen erneut versuchen.'],
-    [500, 'Die KI-Analyse ist fehlgeschlagen. Bitte später erneut versuchen.'],
+    [502, 'Die KI-Analyse ist fehlgeschlagen. Bitte später erneut versuchen.'],
   ])('answers a Gemini status %i with its message and without the key', async (status, meldung) => {
     fetchMock.mockResolvedValueOnce(new Response(`{"error":"${API_KEY}"}`, { status }));
 
