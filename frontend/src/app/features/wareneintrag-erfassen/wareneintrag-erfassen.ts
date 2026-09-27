@@ -13,7 +13,7 @@ import { RouterLink } from '@angular/router';
 import { debounceTime, distinctUntilChanged, firstValueFrom, Subject } from 'rxjs';
 import { AvvCode, AvvCodeApi } from '../../core/avv-code-api.js';
 import { AppFehlerMelder } from '../../core/app-fehler-melder.js';
-import { beschreibeFoto, pruefeFoto } from '../../core/foto-validierung.js';
+import { beschreibeFoto, uebernehmeFoto } from '../../core/foto-validierung.js';
 import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
 import { FREITEXT_MAX_LAENGE, WareneintragApi } from '../../core/wareneintrag-api.js';
 import { FokusBeiAnzeige } from '../../core/fokus-bei-anzeige.js';
@@ -122,14 +122,13 @@ export class WareneintragErfassen {
     return this.fotoVorschauUrls()[ansicht];
   }
 
-  onFotoAusgewaehlt(ansicht: FotoAnsicht, event: Event): void {
+  async onFotoAusgewaehlt(ansicht: FotoAnsicht, event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const auswahl = input.files?.[0] ?? null;
-    const meldung = auswahl ? pruefeFoto(auswahl) : null;
+    const { datei, meldung } = auswahl ? await uebernehmeFoto(auswahl) : { datei: null, meldung: null };
     const label = this.fotoKacheln.find((kachel) => kachel.ansicht === ansicht)?.label;
     this.fotoFehler.set(meldung ? `${label}: ${meldung}` : null);
     if (meldung && auswahl) this.fehlerMelder.melde(`Foto abgelehnt: ${label}: ${meldung} ${beschreibeFoto(auswahl)}`);
-    const datei = meldung ? null : auswahl;
     this.fotos[ansicht] = datei;
     this.setzeFotoVorschau(ansicht, datei);
   }
