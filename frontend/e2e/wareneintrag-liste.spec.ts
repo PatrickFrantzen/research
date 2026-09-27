@@ -161,7 +161,7 @@ test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen 
   // Erst schließen lassen, sonst ist der alte Dialog beim Wiederöffnen noch
   // in der Ausblend-Animation und es gibt kurz zwei.
   const schliessen = async () => {
-    await schliessen();
+    await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();
   };
 
