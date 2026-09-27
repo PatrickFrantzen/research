@@ -34,7 +34,7 @@ describe('GeminiClient', () => {
     expect((init!.headers as Record<string, string>)['x-goog-api-key']).toBe('geheimer-key');
     const body = JSON.parse(String(init?.body));
     expect(body.generationConfig.responseMimeType).toBe('application/json');
-    expect(body.generationConfig.responseSchema.required).toEqual(['fraktionen', 'einschaetzung']);
+    expect(body.generationConfig.responseSchema.required).toEqual(['fraktionen', 'einschaetzung', 'avvPruefung']);
     expect(body.contents[0].parts).toContainEqual({ inlineData: { mimeType: 'image/jpeg', data: FOTO.daten.toString('base64') } });
   });
 

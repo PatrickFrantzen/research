@@ -94,12 +94,16 @@ describe('KI-Analyse-Endpunkt', () => {
     new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text }] } }] }), { status });
 
   it('returns the preview and logs the analysis without leaking the key', async () => {
-    fetchMock.mockResolvedValueOnce(antwort('{"fraktionen":[{"name":"Beton","anteilProzent":100}],"einschaetzung":"Beton."}'));
+    fetchMock.mockResolvedValueOnce(antwort('{"fraktionen":[{"name":"Beton","anteilProzent":100}],"einschaetzung":"Beton.","avvPruefung":{"urteil":"passt","begruendung":"Passt.","vorgeschlagenerCode":null}}'));
 
     const response = await request(app.getHttpServer()).post('/api/v1/wareneintraege/wareneintrag-1/ki-analyse');
 
     expect(response.status).toBe(200);
-    expect(response.body).toEqual({ fraktionen: [{ name: 'Beton', anteilProzent: 100 }], einschaetzung: 'Beton.' });
+    expect(response.body).toEqual({
+      fraktionen: [{ name: 'Beton', anteilProzent: 100 }],
+      einschaetzung: 'Beton.',
+      avvPruefung: { urteil: 'passt', begruendung: 'Passt.', vorschlag: null },
+    });
     expect(response.text).not.toContain(API_KEY);
     expect(protokoll.aktivitaet).toHaveBeenCalledWith(['nutzer-1@research.local', 'KI-Analyse', 'wareneintrag-1']);
   });
@@ -119,7 +123,7 @@ describe('KI-Analyse-Endpunkt', () => {
   });
 
   it('throttles to 5 analyses per minute per Nutzer', async () => {
-    fetchMock.mockImplementation(async () => antwort('{"fraktionen":[],"einschaetzung":"Leer."}'));
+    fetchMock.mockImplementation(async () => antwort('{"fraktionen":[],"einschaetzung":"Leer.","avvPruefung":{"urteil":"passt","begruendung":"Passt.","vorgeschlagenerCode":null}}'));
     const analysiere = (nutzer: string) =>
       request(app.getHttpServer()).post('/api/v1/wareneintraege/wareneintrag-1/ki-analyse').set('x-test-nutzer', nutzer);
 
@@ -129,7 +133,7 @@ describe('KI-Analyse-Endpunkt', () => {
   });
 
   it('saves only the server-side preview, ignoring manipulated values in the request body', async () => {
-    fetchMock.mockResolvedValueOnce(antwort('{"fraktionen":[{"name":"Holz","anteilProzent":100}],"einschaetzung":"Holz."}'));
+    fetchMock.mockResolvedValueOnce(antwort('{"fraktionen":[{"name":"Holz","anteilProzent":100}],"einschaetzung":"Holz.","avvPruefung":{"urteil":"passt","begruendung":"Passt.","vorgeschlagenerCode":null}}'));
     const server = app.getHttpServer();
     await request(server).post('/api/v1/wareneintraege/wareneintrag-1/ki-analyse').set('x-test-nutzer', 'speichernde');
 
@@ -141,7 +145,7 @@ describe('KI-Analyse-Endpunkt', () => {
     expect(response.status).toBe(200);
     expect(upsert).toHaveBeenCalledOnce();
     const { create } = upsert.mock.calls[0][0] as unknown as { create: { ergebnis: unknown; analysiertVonId: string } };
-    expect(create.ergebnis).toEqual({ fraktionen: [{ name: 'Holz', anteilProzent: 100 }], einschaetzung: 'Holz.' });
+    expect(create.ergebnis).toMatchObject({ fraktionen: [{ name: 'Holz', anteilProzent: 100 }], einschaetzung: 'Holz.' });
     expect(create.analysiertVonId).toBe('speichernde');
     expect(protokoll.aktivitaet).toHaveBeenCalledWith(['speichernde@research.local', 'KI-Analyse gespeichert', 'wareneintrag-1']);
 

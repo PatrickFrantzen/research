@@ -146,7 +146,7 @@ test('Detail-Dialog mit Bildergalerie öffnen (Issue #92)', async ({ page }) => 
   await expect(page.getByRole('dialog', { name: 'Wareneintrag bearbeiten' })).toBeVisible();
 });
 
-test('KI-Analyse: Vorschau, verwerfen, speichern, wieder anzeigen (Issues #93, #94)', async ({ page }) => {
+test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen (Issues #93 bis #95)', async ({ page }) => {
   // Gemini ist im E2E-Stack der lokale Stub (e2e/gemini-stub.mjs), der
   // Weg durch das Backend inklusive Redis-Vorschau ist echt.
   await legeEintragAn(page.request, 'E2E Analyse', ['fotoFern']);
@@ -166,6 +166,10 @@ test('KI-Analyse: Vorschau, verwerfen, speichern, wieder anzeigen (Issues #93, #
   await expect(dialog.getByRole('listitem')).toHaveText([/Mineralischer Bauschutt\s*70 %/, /Holz\s*30 %/, /Gesamt\s*100 %/]);
   await expect(dialog.getByTestId('einschaetzung')).toHaveText('Überwiegend Bauschutt mit etwas Holz.');
   await expect(dialog).toContainText('KI-Schätzung aus den Fotos, keine Messung.');
+  // AVV-Prüfung (Issue #95): Vorschlag aus avv_codes, nur Anzeige.
+  await expect(dialog.getByTestId('avv-pruefung')).toContainText('AVV-Code passt eher nicht');
+  await expect(dialog.getByTestId('avv-vorschlag')).toContainText(`Vorschlag: ${AVV_B.code} – `);
+  await expect(dialog.getByTestId('avv-pruefung').getByRole('button')).toHaveCount(0);
   await pruefeBarrierefreiheit(page, 'Detail-Dialog mit KI-Vorschau');
   await page.keyboard.press('Escape');
   await oeffnen();
@@ -182,6 +186,7 @@ test('KI-Analyse: Vorschau, verwerfen, speichern, wieder anzeigen (Issues #93, #
   await oeffnen();
   await expect(dialog.getByTestId('einschaetzung')).toHaveText('Überwiegend Bauschutt mit etwas Holz.');
   await expect(dialog.getByTestId('analysiert-von')).toBeVisible();
+  await expect(dialog.getByTestId('avv-vorschlag')).toContainText(AVV_B.code);
   await page.keyboard.press('Escape');
 
   // Löschen des Eintrags nimmt die Analyse mit (ON DELETE CASCADE).

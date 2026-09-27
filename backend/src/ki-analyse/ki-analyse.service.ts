@@ -14,7 +14,7 @@ import { Prisma } from '../generated/prisma/client.js';
 import { ObjectStorageService } from '../object-storage/object-storage.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { GeminiClient, GeminiKontingentErschoepft, GeminiNichtEingerichtet } from './gemini.client.js';
-import { KiAnalyseErgebnis, pruefeAntwort } from './ki-analyse.js';
+import { GepruefteAntwort, KiAnalyseErgebnis, pruefeAntwort } from './ki-analyse.js';
 
 export const KI_REDIS = Symbol('KI_REDIS');
 
@@ -101,20 +101,33 @@ export class KiAnalyseService {
     }
 
     const kontext = `Erfasster AVV-Code: ${wareneintrag.avvCode.code} ${wareneintrag.avvCode.bezeichnung}\nFreitext des Nutzers: ${wareneintrag.freitext}`;
-    let ergebnis: KiAnalyseErgebnis | null;
+    let antwort: GepruefteAntwort | null;
     try {
-      ergebnis = pruefeAntwort(await this.gemini.analysiere(fotos, kontext));
+      antwort = pruefeAntwort(await this.gemini.analysiere(fotos, kontext));
     } catch (error) {
       if (error instanceof GeminiNichtEingerichtet) throw new ServiceUnavailableException('Die KI-Analyse ist nicht eingerichtet.');
       if (error instanceof GeminiKontingentErschoepft) {
         throw new HttpException('Tageskontingent der KI-Analyse erschöpft, bitte morgen erneut versuchen.', HttpStatus.TOO_MANY_REQUESTS);
       }
-      ergebnis = null;
+      antwort = null;
     }
-    if (!ergebnis) throw new BadGatewayException('Die KI-Analyse ist fehlgeschlagen. Bitte später erneut versuchen.');
+    if (!antwort) throw new BadGatewayException('Die KI-Analyse ist fehlgeschlagen. Bitte später erneut versuchen.');
+    const ergebnis = await this.mitAvvVorschlag(antwort, wareneintrag.avvCode.code);
 
     await this.redis.set(vorschauSchluessel(wareneintragId, nutzerId), JSON.stringify(ergebnis), 'EX', VORSCHAU_TTL_SEKUNDEN);
     return ergebnis;
+  }
+
+  // Nur existierende Codes werden vorgeschlagen, samt Bezeichnung aus
+  // avv_codes (Issue #95). Unbekannte Codes und der bereits erfasste Code
+  // entfallen, das Urteil bleibt. Übernommen wird nur über "Bearbeiten".
+  private async mitAvvVorschlag(antwort: GepruefteAntwort, erfassterCode: string): Promise<KiAnalyseErgebnis> {
+    const { vorgeschlagenerCode, ...pruefung } = antwort.avvPruefung;
+    const vorschlag =
+      vorgeschlagenerCode && vorgeschlagenerCode !== erfassterCode
+        ? await this.prisma.avvCode.findUnique({ where: { code: vorgeschlagenerCode }, select: { code: true, bezeichnung: true } })
+        : null;
+    return { ...antwort, avvPruefung: { ...pruefung, vorschlag } };
   }
 
   // Eigener Zähler statt ThrottlerGuard: der globale Guard läuft vor der

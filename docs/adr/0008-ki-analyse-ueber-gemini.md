@@ -30,6 +30,10 @@ Projekt ist ein Prototyp ohne Budget für KI-Dienste.
   überschreibbar, Löschen des Eintrags löscht sie mit).
 - Limit 5 Analysen pro Minute pro Nutzer, per Redis-Zähler. Der globale
   ThrottlerGuard läuft vor der Anmeldung und kennt nur die IP.
+- Die KI prüft auch, ob der erfasste AVV-Code passt (Urteil, Begründung,
+  optional ein Vorschlag). Vorgeschlagene Codes gelten nur, wenn sie in
+  `avv_codes` existieren. Der Vorschlag wird nur angezeigt; übernommen wird
+  er über das normale Bearbeiten durch den Ersteller.
 - Jede Analyse steht im Aktivitäts-Log (ADR-0007).
 
 ## Konsequenzen

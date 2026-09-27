@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pruefeAntwort, rundeAufHundert } from './ki-analyse.js';
+import { normalisiereAvvCode, pruefeAntwort, rundeAufHundert } from './ki-analyse.js';
 
 const summe = (fraktionen: { anteilProzent: number }[]) => fraktionen.reduce((s, f) => s + f.anteilProzent, 0);
 
@@ -53,6 +53,7 @@ describe('pruefeAntwort', () => {
       { name: 'Kunststoff', anteilProzent: 40 },
     ],
     einschaetzung: 'Überwiegend Holz.',
+    avvPruefung: { urteil: 'passt_eher_nicht', begruendung: ' Holz statt Beton. ', vorgeschlagenerCode: '170201' },
   };
 
   it('accepts a valid answer and trims names', () => {
@@ -60,11 +61,25 @@ describe('pruefeAntwort', () => {
   });
 
   it('accepts an empty fraction list (no waste visible)', () => {
-    expect(pruefeAntwort({ fraktionen: [], einschaetzung: 'Kein Abfall erkennbar.' })?.fraktionen).toEqual([]);
+    const avvPruefung = { urteil: 'nicht_beurteilbar', begruendung: 'Kein Abfall.', vorgeschlagenerCode: null };
+    expect(pruefeAntwort({ fraktionen: [], einschaetzung: 'Kein Abfall erkennbar.', avvPruefung })?.fraktionen).toEqual([]);
   });
 
   it('cuts the assessment to 200 characters', () => {
     expect(pruefeAntwort({ ...gueltig, einschaetzung: 'x'.repeat(300) })?.einschaetzung).toHaveLength(200);
+  });
+
+  it('keeps the AVV check with a normalised suggested code', () => {
+    expect(pruefeAntwort(gueltig)?.avvPruefung).toEqual({
+      urteil: 'passt_eher_nicht',
+      begruendung: 'Holz statt Beton.',
+      vorgeschlagenerCode: '17 02 01',
+    });
+  });
+
+  it('drops a malformed suggested code but keeps the verdict', () => {
+    const antwort = pruefeAntwort({ ...gueltig, avvPruefung: { ...gueltig.avvPruefung, vorgeschlagenerCode: 'Holz' } });
+    expect(antwort?.avvPruefung).toMatchObject({ urteil: 'passt_eher_nicht', vorgeschlagenerCode: null });
   });
 
   const neunFraktionen = Array.from({ length: 9 }, (_, i) => ({ name: `F${i}`, anteilProzent: 1 }));
@@ -78,7 +93,24 @@ describe('pruefeAntwort', () => {
     ['empty name', { ...gueltig, fraktionen: [{ name: ' ', anteilProzent: 100 }] }],
     ['all shares zero', { ...gueltig, fraktionen: [{ name: 'Holz', anteilProzent: 0 }] }],
     ['empty assessment', { ...gueltig, einschaetzung: '' }],
+    ['missing AVV check', { fraktionen: gueltig.fraktionen, einschaetzung: 'x' }],
+    ['unknown verdict', { ...gueltig, avvPruefung: { ...gueltig.avvPruefung, urteil: 'vielleicht' } }],
+    ['empty reasoning', { ...gueltig, avvPruefung: { ...gueltig.avvPruefung, begruendung: '' } }],
   ])('rejects an invalid answer: %s', (_, antwort) => {
     expect(pruefeAntwort(antwort)).toBeNull();
+  });
+});
+
+describe('normalisiereAvvCode', () => {
+  it.each([
+    ['170101', '17 01 01'],
+    ['17 01 01', '17 01 01'],
+    ['17 01 06*', '17 01 06'],
+  ])('normalises %s to %s', (roh, erwartet) => {
+    expect(normalisiereAvvCode(roh)).toBe(erwartet);
+  });
+
+  it.each([null, '', '17 01', '1701011', 'AB 01 01', 170101])('rejects %s', (roh) => {
+    expect(normalisiereAvvCode(roh)).toBeNull();
   });
 });

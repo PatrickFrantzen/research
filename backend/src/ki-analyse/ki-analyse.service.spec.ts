@@ -17,6 +17,11 @@ const ANTWORT = {
     { name: 'Beton', anteilProzent: 66.7 },
   ],
   einschaetzung: 'Überwiegend Beton.',
+  avvPruefung: { urteil: 'passt', begruendung: 'Überwiegend Beton.', vorgeschlagenerCode: null },
+};
+
+const AVV_CODES: Record<string, { code: string; bezeichnung: string }> = {
+  '17 01 07': { code: '17 01 07', bezeichnung: 'Gemische aus Beton, Ziegeln, Fliesen und Keramik' },
 };
 
 // Minimaler Redis-Ersatz: genau die Befehle, die der Service nutzt.
@@ -47,6 +52,7 @@ function erstelle(optionen: { wareneintrag?: unknown; gemini?: () => Promise<unk
   };
   const prisma = {
     wareneintrag: { findUnique: vi.fn(async () => ('wareneintrag' in optionen ? optionen.wareneintrag : WARENEINTRAG)) },
+    avvCode: { findUnique: vi.fn(async (args: { where: { code: string } }) => AVV_CODES[args.where.code] ?? null) },
     wareneintragAnalyse: {
       findUnique: vi.fn(async () => null as unknown),
       upsert: vi.fn(async (args: { create: object }) => ({ ...args.create, analysiertVon: { vorname: 'Erika', nachname: 'Musterfrau' } })),
@@ -73,6 +79,43 @@ describe('KiAnalyseService', () => {
         { name: 'Holz', anteilProzent: 33 },
       ],
       einschaetzung: 'Überwiegend Beton.',
+      avvPruefung: { urteil: 'passt', begruendung: 'Überwiegend Beton.', vorschlag: null },
+    });
+  });
+
+  describe('AVV-Prüfung (Issue #95)', () => {
+    const mitVorschlag = (code: string) => async () => ({
+      ...ANTWORT,
+      avvPruefung: { urteil: 'passt_eher_nicht', begruendung: 'Gemischter Bauschutt.', vorgeschlagenerCode: code },
+    });
+
+    it('shows an existing suggested code with its designation from avv_codes', async () => {
+      const { service } = erstelle({ gemini: mitVorschlag('170107') });
+      const { avvPruefung } = await service.analysiere('wareneintrag-1', 'nutzer-1');
+      expect(avvPruefung).toEqual({
+        urteil: 'passt_eher_nicht',
+        begruendung: 'Gemischter Bauschutt.',
+        vorschlag: { code: '17 01 07', bezeichnung: 'Gemische aus Beton, Ziegeln, Fliesen und Keramik' },
+      });
+    });
+
+    it('drops a suggested code that does not exist, the verdict stays', async () => {
+      const { service } = erstelle({ gemini: mitVorschlag('99 99 99') });
+      const { avvPruefung } = await service.analysiere('wareneintrag-1', 'nutzer-1');
+      expect(avvPruefung).toEqual({ urteil: 'passt_eher_nicht', begruendung: 'Gemischter Bauschutt.', vorschlag: null });
+    });
+
+    it('does not suggest the code that is already recorded', async () => {
+      const { service, prisma } = erstelle({ gemini: mitVorschlag('17 01 01') });
+      const { avvPruefung } = await service.analysiere('wareneintrag-1', 'nutzer-1');
+      expect(avvPruefung.vorschlag).toBeNull();
+      expect(prisma.avvCode.findUnique).not.toHaveBeenCalled();
+    });
+
+    it('never changes the Wareneintrag itself', async () => {
+      const { service, prisma } = erstelle({ gemini: mitVorschlag('170107') });
+      await service.analysiere('wareneintrag-1', 'nutzer-1');
+      expect(Object.keys(prisma.wareneintrag)).toEqual(['findUnique']);
     });
   });
 

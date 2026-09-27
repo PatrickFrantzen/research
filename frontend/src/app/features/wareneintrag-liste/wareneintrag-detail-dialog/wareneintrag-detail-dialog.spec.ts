@@ -7,6 +7,8 @@ import { WareneintragDetailDialog } from './wareneintrag-detail-dialog.js';
 
 const PIXEL = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 
+const AVV_PASST = { urteil: 'passt', begruendung: 'Passt zum Bauschutt.', vorschlag: null };
+
 const WARENEINTRAG: Wareneintrag = {
   id: 'wareneintrag-1',
   fotoFernUrl: PIXEL,
@@ -112,6 +114,7 @@ describe('WareneintragDetailDialog', () => {
           { name: 'Holz', anteilProzent: 30 },
         ],
         einschaetzung: 'Überwiegend Beton.',
+        avvPruefung: AVV_PASST,
       });
       await fixture.whenStable();
       fixture.detectChanges();
@@ -130,7 +133,7 @@ describe('WareneintragDetailDialog', () => {
     it('says so when no waste is visible', async () => {
       const { fixture, element } = erstelle(WARENEINTRAG, 0);
       analysierenButton(element).click();
-      TestBed.inject(HttpTestingController).expectOne({ method: 'POST', url: URL }).flush({ fraktionen: [], einschaetzung: 'Nur Boden.' });
+      TestBed.inject(HttpTestingController).expectOne({ method: 'POST', url: URL }).flush({ fraktionen: [], einschaetzung: 'Nur Boden.', avvPruefung: AVV_PASST });
       await fixture.whenStable();
       fixture.detectChanges();
 
@@ -162,7 +165,7 @@ describe('WareneintragDetailDialog', () => {
 
   describe('gespeicherte KI-Analyse (Issue #94)', () => {
     const URL = '/api/v1/wareneintraege/wareneintrag-1/ki-analyse';
-    const ERGEBNIS = { fraktionen: [{ name: 'Beton', anteilProzent: 100 }], einschaetzung: 'Nur Beton.' };
+    const ERGEBNIS = { fraktionen: [{ name: 'Beton', anteilProzent: 100 }], einschaetzung: 'Nur Beton.', avvPruefung: AVV_PASST };
     const GESPEICHERT = {
       ergebnis: ERGEBNIS,
       analysiertVon: { vorname: 'Max', nachname: 'Mustermann' },
@@ -244,6 +247,46 @@ describe('WareneintragDetailDialog', () => {
       await nach(fixture);
 
       expect(element.querySelector('[role="alert"]')?.textContent).toContain('Keine aktuelle Analyse zum Speichern vorhanden.');
+    });
+  });
+
+  describe('AVV-Prüfung (Issue #95)', () => {
+    const URL = '/api/v1/wareneintraege/wareneintrag-1/ki-analyse';
+
+    async function mitPruefung(avvPruefung: object) {
+      const { fixture, element } = erstelle(WARENEINTRAG, 0);
+      const httpMock = TestBed.inject(HttpTestingController);
+      (element.querySelector('[data-testid="analysieren"]') as HTMLButtonElement).click();
+      httpMock
+        .expectOne({ method: 'POST', url: URL })
+        .flush({ fraktionen: [{ name: 'Beton', anteilProzent: 100 }], einschaetzung: 'Beton.', avvPruefung });
+      await fixture.whenStable();
+      fixture.detectChanges();
+      return element.querySelector('[data-testid="avv-pruefung"]') as HTMLElement;
+    }
+
+    it('shows verdict with icon and text, reasoning and the suggested code with designation', async () => {
+      const pruefung = await mitPruefung({
+        urteil: 'passt_eher_nicht',
+        begruendung: 'Gemischter Bauschutt statt reinem Beton.',
+        vorschlag: { code: '17 01 07', bezeichnung: 'Gemische aus Beton, Ziegeln, Fliesen und Keramik' },
+      });
+
+      expect(pruefung.querySelector('.urteil')?.textContent).toContain('AVV-Code passt eher nicht');
+      expect(pruefung.querySelector('mat-icon')?.textContent?.trim()).toBe('warning');
+      expect(pruefung.textContent).toContain('Gemischter Bauschutt statt reinem Beton.');
+      expect(pruefung.querySelector('[data-testid="avv-vorschlag"]')?.textContent).toContain(
+        'Vorschlag: 17 01 07 – Gemische aus Beton, Ziegeln, Fliesen und Keramik',
+      );
+      // Nur Anzeige: kein Button zum Übernehmen.
+      expect(pruefung.querySelector('button')).toBeNull();
+    });
+
+    it('shows no suggestion when there is none', async () => {
+      const pruefung = await mitPruefung({ urteil: 'passt', begruendung: 'Passt.', vorschlag: null });
+      expect(pruefung.querySelector('.urteil')?.textContent).toContain('AVV-Code passt');
+      expect(pruefung.querySelector('mat-icon')?.textContent?.trim()).toBe('check_circle');
+      expect(pruefung.querySelector('[data-testid="avv-vorschlag"]')).toBeNull();
     });
   });
 });

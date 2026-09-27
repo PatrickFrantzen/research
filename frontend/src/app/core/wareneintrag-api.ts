@@ -18,9 +18,15 @@ export interface Wareneintrag {
 }
 
 // KI-Analyse (Issue #93): Anteile ganzzahlig, Summe 100, absteigend.
+// Der AVV-Vorschlag existiert immer in avv_codes (Issue #95).
 export interface KiAnalyseErgebnis {
   fraktionen: { name: string; anteilProzent: number }[];
   einschaetzung: string;
+  avvPruefung: {
+    urteil: 'passt' | 'passt_eher_nicht' | 'nicht_beurteilbar';
+    begruendung: string;
+    vorschlag: { code: string; bezeichnung: string } | null;
+  };
 }
 
 // Gespeicherte KI-Analyse (Issue #94), eine pro Wareneintrag.

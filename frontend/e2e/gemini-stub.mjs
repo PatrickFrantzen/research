@@ -10,6 +10,11 @@ const analyse = {
     { name: 'Holz', anteilProzent: 29.6 },
   ],
   einschaetzung: 'Überwiegend Bauschutt mit etwas Holz.',
+  avvPruefung: {
+    urteil: 'passt_eher_nicht',
+    begruendung: 'Die Fotos zeigen Bauschutt statt Verpackungen.',
+    vorgeschlagenerCode: '170107',
+  },
 };
 
 createServer((request, response) => {
