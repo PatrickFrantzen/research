@@ -1,0 +1,85 @@
+// Desktop: Galerie links, Daten rechts. Mobil (Vollbild, siehe styles.scss):
+// Galerie oben, Daten darunter.
+.inhalt {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.spur {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  border-radius: var(--mat-sys-corner-medium);
+  background: var(--mat-sys-surface-container-highest);
+
+  img {
+    flex: 0 0 100%;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: contain;
+    scroll-snap-align: start;
+  }
+}
+
+.steuerung {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.daten {
+  margin: 0;
+
+  dt {
+    font: var(--mat-sys-label-medium);
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  dd {
+    margin: 0 0 12px;
+  }
+}
+
+.ki-analyse {
+  margin-top: 8px;
+
+  h3 {
+    font: var(--mat-sys-title-small);
+    margin: 0 0 12px;
+  }
+
+  mat-progress-bar {
+    margin-bottom: 12px;
+  }
+}
+
+.status {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0 0 12px;
+}
+
+.ki-aktionen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fehler {
+  color: var(--mat-sys-error);
+}
+
+.freitext {
+  white-space: pre-wrap;
+}
+
+@media (max-width: 599px) {
+  .inhalt {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

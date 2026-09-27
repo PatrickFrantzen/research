@@ -1,0 +1,96 @@
+<h2 mat-dialog-title>AVV-Code {{ wareneintrag.avvCode.code }}</h2>
+
+<mat-dialog-content class="inhalt">
+  @if (fotos.length) {
+    <section class="galerie" aria-label="Fotos">
+      <!-- Fokussierbar, damit die Spur auch per Tastatur erreichbar ist (AXE: scrollable-region-focusable). -->
+      <div #spur class="spur" tabindex="0" aria-label="Fotos, mit Pfeiltasten wechseln" (scroll)="onScroll()">
+        @for (foto of fotos; track foto.label) {
+          <img [src]="foto.url" [alt]="foto.label" />
+        }
+      </div>
+      @if (fotos.length > 1) {
+        <div class="steuerung">
+          <button matIconButton type="button" aria-label="Vorheriges Foto" [disabled]="position() === 0" (click)="zeige(position() - 1)">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <span data-testid="galerie-position" aria-live="polite">{{ position() + 1 }} / {{ fotos.length }}</span>
+          <button
+            matIconButton
+            type="button"
+            aria-label="Nächstes Foto"
+            [disabled]="position() === fotos.length - 1"
+            (click)="zeige(position() + 1)"
+          >
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </div>
+      }
+    </section>
+  }
+
+  <div class="rechts">
+    <dl class="daten">
+      <dt>AVV-Code</dt>
+      <dd>{{ wareneintrag.avvCode.code }} – {{ wareneintrag.avvCode.bezeichnung }}</dd>
+      <dt>Datum</dt>
+      <dd>{{ wareneintrag.erstelltAm | date: 'dd.MM.yyyy, HH:mm' }}</dd>
+      <dt>Freitext</dt>
+      <dd class="freitext">{{ wareneintrag.freitext }}</dd>
+      <dt>Standort</dt>
+      <dd>{{ wareneintrag.standort.name }}</dd>
+      <dt>Erfasst von</dt>
+      <dd>{{ wareneintrag.erfasstVon.vorname }} {{ wareneintrag.erfasstVon.nachname }}</dd>
+    </dl>
+
+    <section class="ki-analyse" aria-labelledby="ki-analyse-titel">
+      <h3 id="ki-analyse-titel">KI-Analyse</h3>
+      @if (analyse(); as vorschau) {
+        <app-ki-analyse-ergebnis [ergebnis]="vorschau" />
+        <p class="status" data-testid="vorschau-hinweis">Vorschau, noch nicht gespeichert.</p>
+      } @else if (gespeichert(); as analyse) {
+        <app-ki-analyse-ergebnis [ergebnis]="analyse.ergebnis" />
+        <p class="status" data-testid="analysiert-von">
+          Analysiert von {{ analyse.analysiertVon.vorname }} {{ analyse.analysiertVon.nachname }} am
+          {{ analyse.analysiertAm | date: 'dd.MM.yyyy, HH:mm' }}
+        </p>
+      } @else if (!analyseLaeuft()) {
+        <p class="status" data-testid="nicht-analysiert">Noch nicht analysiert.</p>
+      }
+      @if (analyseLaeuft()) {
+        <mat-progress-bar mode="indeterminate" aria-label="KI-Analyse läuft" />
+      }
+      @if (analyseFehler(); as meldung) {
+        <p class="fehler" role="alert">{{ meldung }}</p>
+      }
+      <div class="ki-aktionen">
+        @if (analyse()) {
+          <button matButton="filled" type="button" data-testid="analyse-speichern" [disabled]="analyseLaeuft()" (click)="speichern()">
+            Speichern
+          </button>
+          <button matButton="outlined" type="button" data-testid="analyse-wiederholen" [disabled]="analyseLaeuft()" (click)="analysieren()">
+            Wiederholen
+          </button>
+        } @else {
+          <!-- Deaktivierte Buttons zeigen keinen Tooltip, daher am Wrapper. -->
+          <span [matTooltip]="fotos.length ? '' : 'Zum Analysieren braucht der Eintrag mindestens ein Foto.'">
+            <button
+              matButton="tonal"
+              type="button"
+              data-testid="analysieren"
+              [disabled]="!fotos.length || analyseLaeuft()"
+              (click)="analysieren()"
+            >
+              <mat-icon>auto_awesome</mat-icon>
+              Analysieren
+            </button>
+          </span>
+        }
+      </div>
+    </section>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button matButton type="button" mat-dialog-close data-testid="detail-schliessen">Schließen</button>
+</mat-dialog-actions>

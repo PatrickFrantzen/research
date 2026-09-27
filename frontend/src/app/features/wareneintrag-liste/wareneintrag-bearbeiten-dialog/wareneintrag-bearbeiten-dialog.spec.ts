@@ -187,6 +187,7 @@ describe('WareneintragBearbeitenDialog', () => {
     const neuesFoto = new File(['foto'], 'neu.jpg', { type: 'image/jpeg' });
     // Natives Einlesen läuft außerhalb von fakeAsync, daher über die Zone-Promise.
     spyOn(neuesFoto, 'arrayBuffer').and.returnValue(Promise.resolve(new ArrayBuffer(4)));
+    spyOn(window, 'createImageBitmap').and.returnValue(Promise.reject(new DOMException('kein Bild', 'InvalidStateError')));
     void component.fotoErsetzen('fotoDetail', fotoAuswahlEvent(neuesFoto));
     tick();
 

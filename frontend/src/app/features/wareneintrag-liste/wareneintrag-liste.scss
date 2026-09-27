@@ -40,6 +40,25 @@
 
 .karte {
   width: 280px;
+  cursor: pointer;
+}
+
+// Titel und Fotos sind echte Buttons, aber ohne Button-Optik.
+.titel-button,
+.foto-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.titel-button:focus-visible,
+.foto-button:focus-visible {
+  outline: 2px solid var(--mat-sys-primary);
+  outline-offset: 2px;
 }
 
 .fotos {
@@ -47,8 +66,14 @@
   gap: 4px;
   margin: 8px 0;
 
-  img {
+  .foto-button {
     width: calc((100% - 8px) / 3);
+    border-radius: var(--mat-sys-corner-small);
+  }
+
+  img {
+    display: block;
+    width: 100%;
     aspect-ratio: 1;
     object-fit: cover;
     border-radius: var(--mat-sys-corner-small);

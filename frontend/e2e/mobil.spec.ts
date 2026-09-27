@@ -46,6 +46,17 @@ test('Wareneintrag mit Foto erfassen und in der Liste wiederfinden', async ({ pa
   const foto = page.getByRole('img', { name: new RegExp(`^Fernansicht – AVV ${AVV_A.code}`) });
   await expect(foto).toBeVisible();
   await expect.poll(() => foto.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth)).toBe(1);
+
+  // Detail-Dialog (Issue #92) mobil als Vollbild, Galerie über den Daten.
+  await foto.click();
+  const dialog = page.getByRole('dialog', { name: `AVV-Code ${AVV_A.code}` });
+  await expect(dialog.getByRole('img', { name: 'Fernansicht' })).toBeVisible();
+  const viewport = page.viewportSize()!;
+  expect((await dialog.boundingBox())!.width).toBe(viewport.width);
+  const galerie = (await dialog.locator('.galerie').boundingBox())!;
+  const daten = (await dialog.locator('.daten').boundingBox())!;
+  expect(daten.y).toBeGreaterThanOrEqual(galerie.y + galerie.height);
+  await pruefeBarrierefreiheit(page, 'Detail-Dialog mobil');
 });
 
 test('"Mehr"-Menü per Tastatur öffnen, schließen und darüber navigieren', async ({ page }) => {

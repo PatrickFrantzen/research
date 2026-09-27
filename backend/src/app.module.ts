@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module.js';
 import { AvvModule } from './avv/avv.module.js';
 import { loadEnv } from './config/env.js';
 import { HealthModule } from './health/health.module.js';
+import { KiAnalyseModule } from './ki-analyse/ki-analyse.module.js';
 import { NutzerModule } from './nutzer/nutzer.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { ProtokollModule } from './protokoll/protokoll.module.js';
@@ -45,6 +46,7 @@ const frontendDistPath = path.resolve(
     StandortModule,
     AvvModule,
     WareneintragModule,
+    KiAnalyseModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

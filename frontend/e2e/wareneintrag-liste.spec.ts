@@ -3,7 +3,7 @@
 // und Löschen arbeiten auf eigens angelegten Einträgen, damit die Zählungen
 // der Seed-Daten unberührt bleiben.
 import { APIRequestContext, expect, Page, test } from '@playwright/test';
-import { AVV_A, AVV_B, csrfHeader, ERIKA, MAX, pruefeBarrierefreiheit } from './testdaten.js';
+import { AVV_A, AVV_B, csrfHeader, ERIKA, MAX, pruefeBarrierefreiheit, TEST_PNG } from './testdaten.js';
 
 test.use({ storageState: ERIKA.storageState });
 
@@ -16,11 +16,12 @@ async function sucheFreitext(page: Page, begriff: string): Promise<void> {
   await page.getByTestId('freitext-suche').fill(begriff);
 }
 
-async function legeEintragAn(api: APIRequestContext, freitext: string): Promise<void> {
+async function legeEintragAn(api: APIRequestContext, freitext: string, fotos: string[] = []): Promise<void> {
   const [avvCode] = (await (await api.get('/api/v1/avv-codes', { params: { suche: AVV_A.suche } })).json()) as { id: string }[];
+  const fotoFelder = Object.fromEntries(fotos.map((feld) => [feld, { name: `${feld}.png`, mimeType: 'image/png', buffer: TEST_PNG }]));
   const antwort = await api.post('/api/v1/wareneintraege', {
     headers: await csrfHeader(api),
-    multipart: { avvCodeId: avvCode.id, freitext },
+    multipart: { avvCodeId: avvCode.id, freitext, ...fotoFelder },
   });
   expect(antwort.status()).toBe(201);
 }
@@ -106,4 +107,132 @@ test('eigenen Wareneintrag nach Bestätigung löschen', async ({ page }) => {
   await expect(page.getByText('Wareneintrag wurde gelöscht.')).toBeVisible();
   await expect(page.getByTestId('keine-eintraege')).toBeVisible();
   await expect(page.getByRole('heading', { level: 1, name: 'Wareneinträge' })).toBeFocused();
+});
+
+test('Detail-Dialog mit Bildergalerie öffnen (Issue #92)', async ({ page }) => {
+  await legeEintragAn(page.request, 'E2E Details', ['fotoFern', 'fotoNah']);
+  await page.goto('/wareneintraege');
+  await sucheFreitext(page, 'E2E Details');
+  await expect(page.getByTestId('trefferanzahl')).toHaveText('1 Wareneintrag');
+  const dialog = page.getByRole('dialog', { name: `AVV-Code ${AVV_A.code}` });
+  const position = dialog.getByTestId('galerie-position');
+
+  // Klick auf das zweite Foto startet dort, ←/→ und Buttons blättern.
+  const nahFoto = page.getByRole('button', { name: /^Nahansicht/ });
+  await nahFoto.click();
+  await expect(position).toHaveText('2 / 2');
+  await expect(dialog).toContainText('E2E Details');
+  await expect(dialog).toContainText(ERIKA.standort);
+  await pruefeBarrierefreiheit(page, 'Detail-Dialog');
+  await page.keyboard.press('ArrowLeft');
+  await expect(position).toHaveText('1 / 2');
+  await dialog.getByRole('button', { name: 'Nächstes Foto' }).click();
+  await expect(position).toHaveText('2 / 2');
+
+  // Nach dem Schließen steht der Fokus wieder auf dem auslösenden Foto.
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  await expect(nahFoto).toBeFocused();
+
+  // Tastatur-Einstieg über den Titel.
+  await page.getByTestId('wareneintrag-details').focus();
+  await page.keyboard.press('Enter');
+  await expect(position).toHaveText('1 / 2');
+  await page.keyboard.press('Escape');
+
+  // Bearbeiten öffnet nur den Bearbeiten-Dialog.
+  await page.getByTestId('wareneintrag-bearbeiten').click();
+  await expect(page.getByRole('dialog')).toHaveCount(1);
+  await expect(page.getByRole('dialog', { name: 'Wareneintrag bearbeiten' })).toBeVisible();
+});
+
+test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen (Issues #93 bis #96)', async ({ page }) => {
+  // Gemini ist im E2E-Stack der lokale Stub (e2e/gemini-stub.mjs), der
+  // Weg durch das Backend inklusive Redis-Vorschau ist echt.
+  await legeEintragAn(page.request, 'E2E Analyse', ['fotoFern']);
+  await page.goto('/wareneintraege');
+  await sucheFreitext(page, 'E2E Analyse');
+  await expect(page.getByTestId('trefferanzahl')).toHaveText('1 Wareneintrag');
+  const dialog = page.getByRole('dialog', { name: `AVV-Code ${AVV_A.code}` });
+  const oeffnen = async () => {
+    await page.getByTestId('wareneintrag-details').click();
+    await expect(dialog).toBeVisible();
+  };
+  // Jede Analyse erst nach bestätigtem Hinweis auf Google Gemini.
+  const hinweis = page.getByRole('dialog', { name: 'Fotos an Google senden?' });
+  const analysieren = async (button: 'Analysieren' | 'Wiederholen') => {
+    await dialog.getByRole('button', { name: button }).click();
+    await hinweis.getByRole('button', { name: 'Senden und analysieren' }).click();
+    await expect(hinweis).toBeHidden();
+  };
+  // Erst schließen lassen, sonst ist der alte Dialog beim Wiederöffnen noch
+  // in der Ausblend-Animation und es gibt kurz zwei.
+  const schliessen = async () => {
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+  };
+
+  // Vorschau, dann ohne Speichern schließen: nichts bleibt.
+  await oeffnen();
+  await expect(dialog.getByTestId('analysiert-von')).toHaveCount(0);
+  // Abbrechen im Hinweis schickt nichts an Google.
+  await dialog.getByRole('button', { name: 'Analysieren' }).click();
+  await expect(hinweis).toContainText('Google Gemini API');
+  await expect(hinweis).toContainText('Google darf diese Eingaben');
+  await pruefeBarrierefreiheit(page, 'Hinweis vor der KI-Analyse');
+  await hinweis.getByRole('button', { name: 'Abbrechen' }).click();
+  await expect(hinweis).toBeHidden();
+  await expect(dialog.getByTestId('nicht-analysiert')).toBeVisible();
+
+  await analysieren('Analysieren');
+  await expect(dialog.getByRole('listitem')).toHaveText([/Mineralischer Bauschutt\s*70 %/, /Holz\s*30 %/, /Gesamt\s*100 %/]);
+  await expect(dialog.getByTestId('einschaetzung')).toHaveText('Überwiegend Bauschutt mit etwas Holz.');
+  await expect(dialog).toContainText('KI-Schätzung aus den Fotos, keine Messung.');
+  // AVV-Prüfung (Issue #95): Vorschlag aus avv_codes, nur Anzeige.
+  await expect(dialog.getByTestId('avv-pruefung')).toContainText('AVV-Code passt eher nicht');
+  await expect(dialog.getByTestId('avv-vorschlag')).toContainText(`Vorschlag: ${AVV_B.code} – `);
+  await expect(dialog.getByTestId('avv-pruefung').getByRole('button')).toHaveCount(0);
+  await pruefeBarrierefreiheit(page, 'Detail-Dialog mit KI-Vorschau');
+  await schliessen();
+  await oeffnen();
+  await expect(dialog.getByTestId('einschaetzung')).toHaveCount(0);
+
+  // Wiederholen, speichern, erneut öffnen: gespeicherte Analyse mit Urheber.
+  await analysieren('Analysieren');
+  await analysieren('Wiederholen');
+  await dialog.getByRole('button', { name: 'Speichern' }).click();
+  const analysiertVon = dialog.getByTestId('analysiert-von');
+  await expect(analysiertVon).toHaveText(/Analysiert von .+ am \d{2}\.\d{2}\.\d{4}, \d{2}:\d{2}/);
+  await expect(analysiertVon).toContainText(ERIKA.vorname);
+  await schliessen();
+  await oeffnen();
+  await expect(dialog.getByTestId('einschaetzung')).toHaveText('Überwiegend Bauschutt mit etwas Holz.');
+  await expect(dialog.getByTestId('analysiert-von')).toBeVisible();
+  await expect(dialog.getByTestId('avv-vorschlag')).toContainText(AVV_B.code);
+  await schliessen();
+
+  // Issue #96: nur Freitext ändern lässt die Analyse stehen ...
+  const bearbeiten = page.getByRole('dialog', { name: 'Wareneintrag bearbeiten' });
+  await page.getByTestId('wareneintrag-bearbeiten').click();
+  await bearbeiten.getByTestId('bearbeiten-freitext').fill('E2E Analyse geändert');
+  await bearbeiten.getByTestId('bearbeiten-speichern').click();
+  await expect(bearbeiten).toBeHidden();
+  await oeffnen();
+  await expect(dialog.getByTestId('analysiert-von')).toBeVisible();
+  await schliessen();
+
+  // ... ein ersetztes Foto löscht sie.
+  await page.getByTestId('wareneintrag-bearbeiten').click();
+  await bearbeiten.getByTestId('bearbeiten-foto-fotoFern').setInputFiles({ name: 'neu.png', mimeType: 'image/png', buffer: TEST_PNG });
+  await bearbeiten.getByTestId('bearbeiten-speichern').click();
+  await expect(bearbeiten).toBeHidden();
+  await oeffnen();
+  await expect(dialog.getByTestId('nicht-analysiert')).toHaveText('Noch nicht analysiert.');
+  await expect(dialog.getByTestId('analysiert-von')).toHaveCount(0);
+  await schliessen();
+
+  // Löschen des Eintrags nimmt die Analyse mit (ON DELETE CASCADE).
+  await page.getByTestId('wareneintrag-loeschen').click();
+  await page.getByRole('dialog', { name: 'Wareneintrag löschen' }).getByTestId('confirm-dialog-bestaetigen').click();
+  await expect(page.getByText('Wareneintrag wurde gelöscht.')).toBeVisible();
 });

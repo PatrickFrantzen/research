@@ -17,6 +17,25 @@ export interface Wareneintrag {
   erfasstVon: { id: string; vorname: string; nachname: string };
 }
 
+// KI-Analyse (Issue #93): Anteile ganzzahlig, Summe 100, absteigend.
+// Der AVV-Vorschlag existiert immer in avv_codes (Issue #95).
+export interface KiAnalyseErgebnis {
+  fraktionen: { name: string; anteilProzent: number }[];
+  einschaetzung: string;
+  avvPruefung: {
+    urteil: 'passt' | 'passt_eher_nicht' | 'nicht_beurteilbar';
+    begruendung: string;
+    vorschlag: { code: string; bezeichnung: string } | null;
+  };
+}
+
+// Gespeicherte KI-Analyse (Issue #94), eine pro Wareneintrag.
+export interface GespeicherteKiAnalyse {
+  ergebnis: KiAnalyseErgebnis;
+  analysiertVon: { vorname: string; nachname: string };
+  analysiertAm: string;
+}
+
 export interface PaginierteWareneintraege {
   daten: Wareneintrag[];
   gesamt: number;
@@ -51,6 +70,20 @@ export class WareneintragApi {
 
   aktualisieren(id: string, formData: FormData) {
     return this.http.patch(`/api/v1/wareneintraege/${id}`, formData);
+  }
+
+  analysieren(id: string) {
+    return this.http.post<KiAnalyseErgebnis>(`/api/v1/wareneintraege/${id}/ki-analyse`, null);
+  }
+
+  // null, solange der Eintrag keine gespeicherte Analyse hat.
+  gespeicherteAnalyse(id: string) {
+    return this.http.get<GespeicherteKiAnalyse | null>(`/api/v1/wareneintraege/${id}/ki-analyse`);
+  }
+
+  // Ohne Body: das Backend übernimmt die eigene Vorschau aus Redis.
+  analyseSpeichern(id: string) {
+    return this.http.put<GespeicherteKiAnalyse>(`/api/v1/wareneintraege/${id}/ki-analyse`, null);
   }
 
   loeschen(id: string) {

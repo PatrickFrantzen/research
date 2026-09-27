@@ -23,6 +23,7 @@ import { DeutscherPaginatorIntl } from '../../core/paginator-intl.js';
 import { StandortApi } from '../../core/standort-api.js';
 import { Wareneintrag, WareneintragApi } from '../../core/wareneintrag-api.js';
 import { WareneintragBearbeitenDialog } from './wareneintrag-bearbeiten-dialog/wareneintrag-bearbeiten-dialog.js';
+import { fotosVon, WareneintragDetailDialog } from './wareneintrag-detail-dialog/wareneintrag-detail-dialog.js';
 
 // Verzögerung, bevor Filteränderungen die Liste neu laden – analog zur
 // AVV-Suche in wareneintrag-erfassen.
@@ -195,6 +196,16 @@ export class WareneintragListe {
   // Backend erzwingt es zusätzlich – hier nur zur Anzeige der Buttons.
   protected istEigenerEintrag(wareneintrag: Wareneintrag): boolean {
     return wareneintrag.erfasstVon.id === this.authService.nutzerId();
+  }
+
+  protected readonly fotosVon = fotosVon;
+
+  detailOeffnen(wareneintrag: Wareneintrag, startFoto: number): void {
+    this.dialog.open(WareneintragDetailDialog, {
+      data: { wareneintrag, startFoto },
+      maxWidth: '100vw',
+      panelClass: 'detail-dialog',
+    });
   }
 
   bearbeitungOeffnen(wareneintrag: Wareneintrag): void {

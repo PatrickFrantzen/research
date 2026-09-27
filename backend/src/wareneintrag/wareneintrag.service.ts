@@ -158,6 +158,14 @@ export class WareneintragService {
       this.ersetzeFoto(bestehend.fotoDetailUrl, fotos.fotoDetail),
     ]);
 
+    // Andere Fotos, andere Grundlage: die gespeicherte KI-Analyse passt nicht
+    // mehr und wird gelöscht, ein falsches Ergebnis ist schlimmer als keins
+    // (Issue #96). Vor dem Update, damit ein späterer Fehler sie nicht stehen
+    // lässt. Freitext und AVV-Code allein lassen sie unberührt.
+    const fotosGeaendert =
+      fotoFernUrl !== bestehend.fotoFernUrl || fotoNahUrl !== bestehend.fotoNahUrl || fotoDetailUrl !== bestehend.fotoDetailUrl;
+    if (fotosGeaendert) await this.prisma.wareneintragAnalyse.deleteMany({ where: { wareneintragId: id } });
+
     return this.prisma.wareneintrag.update({
       where: { id },
       data: { avvCodeId: dto.avvCodeId, freitext: dto.freitext, fotoFernUrl, fotoNahUrl, fotoDetailUrl },
