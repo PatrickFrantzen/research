@@ -86,10 +86,10 @@ describe('WareneintragBearbeitenDialog', () => {
 
     await asTestable(fixture.componentInstance).fotoErsetzen(
       'fotoNah',
-      fotoAuswahlEvent(new File([new Uint8Array(10 * 1024 * 1024 + 1)], 'gross.jpg', { type: 'image/jpeg' })),
+      fotoAuswahlEvent(new File(['gif'], 'foto.gif', { type: 'image/gif' })),
     );
 
-    expect(melde).toHaveBeenCalledOnceWith(jasmine.stringContaining('Nahansicht: Datei ist größer als 10 MB.'));
+    expect(melde).toHaveBeenCalledOnceWith(jasmine.stringContaining('Nahansicht: Nur JPEG, PNG oder WebP erlaubt.'));
   });
 
   it('lässt beim Ersetzen eines Fotos zwischen Kamera und Galerie wählen', async () => {

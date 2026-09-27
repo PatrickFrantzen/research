@@ -75,6 +75,17 @@ function loadMail(): EnvConfig['mail'] {
   };
 }
 
+// Maximale Größe pro hochgeladener Datei in MB, pro Server einstellbar
+// (Issue #102). Upload liegt komplett im RAM, daher an den Server-RAM und
+// APP_MEM_LIMIT anpassen, Richtwerte in .env.prod.example.
+export function uploadMaxMb(): number {
+  const wert = Number(process.env['UPLOAD_MAX_MB'] || 50);
+  if (!Number.isInteger(wert) || wert < 1) {
+    throw new Error('UPLOAD_MAX_MB muss eine ganze Zahl ab 1 sein.');
+  }
+  return wert;
+}
+
 export function loadEnv(): EnvConfig {
   return {
     databaseUrl: required('DATABASE_URL'),

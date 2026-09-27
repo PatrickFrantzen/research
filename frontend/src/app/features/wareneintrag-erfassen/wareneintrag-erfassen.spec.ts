@@ -109,23 +109,11 @@ describe('WareneintragErfassen', () => {
       expect(melde.calls.mostRecent().args[0]).toContain('image/heic');
     });
 
-    it('rejects a file larger than 10 MB with a clear message and no preview', async () => {
-      const fixture = createComponent();
-      const component = asTestable(fixture.componentInstance);
-      const zuGross = new File([new Uint8Array(10 * 1024 * 1024 + 1)], 'riesig.jpg', { type: 'image/jpeg' });
-
-      await component.onFotoAusgewaehlt('fotoNah', fotoAuswahlEvent(zuGross));
-      fixture.detectChanges();
-
-      expect(fixture.nativeElement.textContent).toContain('Nahansicht: Datei ist größer als 10 MB.');
-      expect(component.fotoVorschau('fotoNah')).toBeNull();
-    });
-
-    it('accepts a PNG or WebP of exactly 10 MB: clears the previous message, shows a preview and submits it', async () => {
+    it('accepts a large PNG or WebP without a client-side size limit: clears the previous message, shows a preview and submits it', async () => {
       const fixture = createComponent();
       const component = asTestable(fixture.componentInstance);
       await component.onFotoAusgewaehlt('fotoDetail', fotoAuswahlEvent(new File(['gif'], 'alt.gif', { type: 'image/gif' })));
-      const grenze = new File([new Uint8Array(10 * 1024 * 1024)], 'detail.webp', { type: 'image/webp' });
+      const grenze = new File([new Uint8Array(11 * 1024 * 1024)], 'detail.webp', { type: 'image/webp' });
 
       await component.onFotoAusgewaehlt('fotoDetail', fotoAuswahlEvent(grenze));
       fixture.detectChanges();

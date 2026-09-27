@@ -1,14 +1,18 @@
 import {
   BadRequestException,
   Body,
+  CallHandler,
   Controller,
   Delete,
+  ExecutionContext,
   FileTypeValidator,
   Get,
-  MaxFileSizeValidator,
+  Injectable,
+  NestInterceptor,
   Param,
   ParseFilePipe,
   Patch,
+  PayloadTooLargeException,
   Post,
   Query,
   Req,
@@ -18,6 +22,8 @@ import {
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
+import { catchError, throwError } from 'rxjs';
+import { uploadMaxMb } from '../config/env.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { Aktivitaet } from '../protokoll/aktivitaet.decorator.js';
 import type { AuthenticatedRequest } from '../auth/jwt.strategy.js';
@@ -25,7 +31,7 @@ import { CreateWareneintragDto } from './dto/create-wareneintrag.dto.js';
 import { UpdateWareneintragDto } from './dto/update-wareneintrag.dto.js';
 import { WareneintragFotos, WareneintragService } from './wareneintrag.service.js';
 
-const FOTO_MAX_GROESSE_BYTES = 10 * 1024 * 1024; // 10 MB
+const UPLOAD_MAX_MB = uploadMaxMb();
 const STANDARD_PRO_SEITE = 20;
 const MAX_PRO_SEITE = 100;
 
@@ -41,7 +47,7 @@ const ERLAUBTE_FOTO_TYPEN = /^(image\/jpeg|image\/png|image\/webp)$/;
 const FOTO_UPLOAD_OPTIONS = {
   storage: memoryStorage(),
   limits: {
-    fileSize: FOTO_MAX_GROESSE_BYTES,
+    fileSize: UPLOAD_MAX_MB * 1024 * 1024,
     files: 3,
     fields: 5,
     fieldSize: 16 * 1024, // Freitext max. 2000 Zeichen à max. 4 Byte UTF-8
@@ -57,6 +63,24 @@ const FOTO_FELDER = [
   { name: 'fotoDetail', maxCount: 1 },
 ];
 
+// Multer meldet eine zu große Datei nur als "File too large". Die App zeigt
+// Backend-Meldungen direkt an, daher hier mit dem konfigurierten Limit.
+// Muss vor dem FileFieldsInterceptor stehen, um dessen Fehler zu sehen.
+@Injectable()
+class VerstaendlicheGroessenMeldung implements NestInterceptor {
+  intercept(_context: ExecutionContext, next: CallHandler) {
+    return next.handle().pipe(
+      catchError((error: unknown) =>
+        throwError(() =>
+          error instanceof PayloadTooLargeException && error.message === 'File too large'
+            ? new PayloadTooLargeException(`Datei ist größer als ${UPLOAD_MAX_MB} MB.`)
+            : error,
+        ),
+      ),
+    );
+  }
+}
+
 interface HochgeladeneFotos {
   fotoFern?: Express.Multer.File[];
   fotoNah?: Express.Multer.File[];
@@ -70,7 +94,6 @@ function fotoValidators() {
       // fallbackToMimetype: false – bei nicht erkennbarem Dateisignatur wird
       // abgelehnt statt dem client-kontrollierten MIME-Type zu vertrauen.
       new FileTypeValidator({ fileType: ERLAUBTE_FOTO_TYPEN, fallbackToMimetype: false }),
-      new MaxFileSizeValidator({ maxSize: FOTO_MAX_GROESSE_BYTES }),
     ],
   });
 }
@@ -125,7 +148,7 @@ export class WareneintragController {
 
   @Post()
   @Aktivitaet('Wareneintrag erstellt')
-  @UseInterceptors(FileFieldsInterceptor(FOTO_FELDER, FOTO_UPLOAD_OPTIONS))
+  @UseInterceptors(VerstaendlicheGroessenMeldung, FileFieldsInterceptor(FOTO_FELDER, FOTO_UPLOAD_OPTIONS))
   async create(
     @Req() request: AuthenticatedRequest,
     @UploadedFiles() dateien: HochgeladeneFotos,
@@ -137,7 +160,7 @@ export class WareneintragController {
 
   @Patch(':id')
   @Aktivitaet('Wareneintrag geändert')
-  @UseInterceptors(FileFieldsInterceptor(FOTO_FELDER, FOTO_UPLOAD_OPTIONS))
+  @UseInterceptors(VerstaendlicheGroessenMeldung, FileFieldsInterceptor(FOTO_FELDER, FOTO_UPLOAD_OPTIONS))
   async update(
     @Req() request: AuthenticatedRequest,
     @Param('id') id: string,
