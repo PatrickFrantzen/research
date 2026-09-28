@@ -1,0 +1,5 @@
+# Reine Formatierungs-Commits, von git blame zu überspringen:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# Prettier-Erstformatierung (Issue #82)
+813012656de3c79cd2b09f6ce62ac094739f7b0e

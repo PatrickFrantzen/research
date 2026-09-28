@@ -67,13 +67,16 @@ Dieselben Befehle laufen als CI-Gate bei jedem Pull Request und Push auf
 `main` (`.github/workflows/ci.yml`):
 
 ```
-cd frontend && npm run lint && npm test -- --watch=false --browsers=ChromeHeadlessNoSandbox && npm run build
-cd backend && npm run lint && npm run typecheck && npm test && npm run build
+cd frontend && npm run lint && npm run format:check && npm test -- --watch=false --browsers=ChromeHeadlessNoSandbox && npm run build
+cd backend && npm run lint && npm run format:check && npm run typecheck && npm test && npm run build
 ```
 
 - Frontend-Lint: ESLint mit `angular-eslint` für TypeScript und Templates
   inklusive Barrierefreiheitsregeln, ohne Warnungs-Baseline
   (`--max-warnings 0`).
+- Formatierung: Prettier, `npm run format:check` in beiden Paketen,
+  `npm run format` behebt Abweichungen. Konfiguration getrennt pro Paket
+  (Backend `.prettierrc`, Frontend `package.json`).
 - Backend: `npm ci --legacy-peer-deps` (wie im Dockerfile) und
   `npx prisma generate` vor Test/Build.
 - Backend-Typecheck: `npm run typecheck` (`tsc --noEmit -p tsconfig.json`)
