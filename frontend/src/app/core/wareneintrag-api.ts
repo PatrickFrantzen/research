@@ -88,6 +88,17 @@ export class WareneintragApi {
     return this.http.put<GespeicherteKiAnalyse>(`/api/v1/wareneintraege/${id}/ki-analyse`, null);
   }
 
+  // Einzelnes Foto oder PDF sofort löschen (Issue #104).
+  dateiLoeschen(
+    id: string,
+    feld: 'fotoFern' | 'fotoNah' | 'fotoDetail' | 'dokument',
+    analyseLoeschen: boolean,
+  ) {
+    return this.http.delete(`/api/v1/wareneintraege/${id}/dateien/${feld}`, {
+      params: analyseLoeschen ? { analyseLoeschen: 'true' } : {},
+    });
+  }
+
   loeschen(id: string) {
     return this.http.delete(`/api/v1/wareneintraege/${id}`);
   }

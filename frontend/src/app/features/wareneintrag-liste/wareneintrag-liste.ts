@@ -230,8 +230,9 @@ export class WareneintragListe {
     this.dialog
       .open(WareneintragBearbeitenDialog, { data: { wareneintrag } })
       .afterClosed()
-      .subscribe((gespeichert) => {
-        if (gespeichert) this.wareneintraege.reload();
+      .subscribe(() => {
+        // Auch nach Abbrechen: Dateien löscht der Dialog sofort (Issue #104).
+        this.wareneintraege.reload();
       });
   }
 

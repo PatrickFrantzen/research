@@ -1,13 +1,10 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-} from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { fileTypeFromBuffer } from 'file-type';
 import { Prisma } from '../generated/prisma/client.js';
 import { ObjectStorageService } from '../object-storage/object-storage.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateWareneintragDto } from './dto/create-wareneintrag.dto.js';
+import type { EntfernbareDatei } from './dto/entferne-datei.dto.js';
 import { UpdateWareneintragDto } from './dto/update-wareneintrag.dto.js';
 
 export interface WareneintragDateien {
@@ -215,11 +212,6 @@ export class WareneintragService {
     fotos: WareneintragDateien,
   ) {
     const bestehend = await this.pruefeBesitz(id, nutzerId);
-    const entfernen = new Set(dto.entfernen ?? []);
-    if ([...entfernen].some((feld) => fotos[feld]))
-      throw new BadRequestException(
-        'Eine Datei kann nicht gleichzeitig ersetzt und gelöscht werden.',
-      );
 
     // Altes Foto ersetzen: erst neues hochladen, dann altes im Objektspeicher
     // entfernen, um verwaiste Referenzen bei einem Fehlschlag zu vermeiden.
@@ -231,36 +223,47 @@ export class WareneintragService {
         this.ersetzeFoto(bestehend.dokumentUrl, fotos.dokument),
       ]);
 
-    // Ob die KI-Analyse nach geänderten Fotos noch passt, entscheidet der
-    // Nutzer per Rückfrage (Issue #104, löst das automatische Löschen aus
-    // #96 ab). Vor dem Update, damit ein späterer Fehler sie nicht stehen
-    // lässt.
-    if (dto.analyseLoeschen)
-      await this.prisma.wareneintragAnalyse.deleteMany({
-        where: { wareneintragId: id },
-      });
+    // Ob die KI-Analyse nach neuen Fotos noch passt, entscheidet der Nutzer
+    // per Rückfrage (Issue #104, löst das automatische Löschen aus #96 ab).
+    // Vor dem Update, damit ein späterer Fehler sie nicht stehen lässt.
+    if (dto.analyseLoeschen) await this.loescheAnalyse(id);
 
-    const aktualisiert = await this.prisma.wareneintrag.update({
+    return this.prisma.wareneintrag.update({
       where: { id },
       data: {
         avvCodeId: dto.avvCodeId,
         freitext: dto.freitext,
-        fotoFernUrl: entfernen.has('fotoFern') ? null : fotoFernUrl,
-        fotoNahUrl: entfernen.has('fotoNah') ? null : fotoNahUrl,
-        fotoDetailUrl: entfernen.has('fotoDetail') ? null : fotoDetailUrl,
-        dokumentUrl: entfernen.has('dokument') ? null : dokumentUrl,
+        fotoFernUrl,
+        fotoNahUrl,
+        fotoDetailUrl,
+        dokumentUrl,
       },
     });
+  }
 
-    // Gelöschte Dateien erst nach dem Update aus dem Objektspeicher nehmen,
-    // damit der Eintrag nie auf ein fehlendes Objekt zeigt.
-    await Promise.all(
-      [...entfernen]
-        .map((feld) => bestehend[`${feld}Url`])
-        .filter((key): key is string => key !== null)
-        .map((key) => this.objectStorage.deleteFoto(key)),
-    );
+  // Einzelne Datei sofort löschen, aus dem Bearbeiten-Dialog heraus (Issue #104).
+  async entferneDatei(
+    id: string,
+    nutzerId: string,
+    feld: EntfernbareDatei,
+    analyseLoeschen = false,
+  ) {
+    const bestehend = await this.pruefeBesitz(id, nutzerId);
+    if (analyseLoeschen) await this.loescheAnalyse(id);
+    const aktualisiert = await this.prisma.wareneintrag.update({
+      where: { id },
+      data: { [`${feld}Url`]: null },
+    });
+    // Erst nach dem Update, damit der Eintrag nie auf ein fehlendes Objekt zeigt.
+    const key = bestehend[`${feld}Url`];
+    if (key) await this.objectStorage.deleteFoto(key);
     return aktualisiert;
+  }
+
+  private loescheAnalyse(wareneintragId: string) {
+    return this.prisma.wareneintragAnalyse.deleteMany({
+      where: { wareneintragId },
+    });
   }
 
   private async ersetzeFoto(

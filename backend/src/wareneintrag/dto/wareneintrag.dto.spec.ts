@@ -24,43 +24,27 @@ describe.each([
   });
 });
 
-// Entfernen-Flags kommen als Multipart-Textfelder (Issue #104).
-describe('UpdateWareneintragDto entfernen und analyseLoeschen', () => {
-  function parse(felder: Record<string, string>) {
+// analyseLoeschen kommt als Multipart-Textfeld (Issue #104).
+describe('UpdateWareneintragDto analyseLoeschen', () => {
+  function parse(analyseLoeschen: string) {
     return plainToInstance(UpdateWareneintragDto, {
       avvCodeId: AVV_CODE_ID,
       freitext: 'x',
-      ...felder,
+      analyseLoeschen,
     });
   }
 
-  it('reads a comma separated list of fields to remove and a boolean flag', async () => {
-    const dto = parse({
-      entfernen: 'fotoFern,dokument',
-      analyseLoeschen: 'true',
-    });
+  it.each([
+    ['true', true],
+    ['false', false],
+  ])('reads %s as a boolean', async (wert, erwartet) => {
+    const dto = parse(wert);
 
     expect(await validate(dto)).toHaveLength(0);
-    expect(dto.entfernen).toEqual(['fotoFern', 'dokument']);
-    expect(dto.analyseLoeschen).toBe(true);
-  });
-
-  it('reads analyseLoeschen=false as false', async () => {
-    const dto = parse({ analyseLoeschen: 'false' });
-
-    expect(await validate(dto)).toHaveLength(0);
-    expect(dto.analyseLoeschen).toBe(false);
-  });
-
-  it('rejects unknown fields to remove', async () => {
-    expect(
-      await validate(parse({ entfernen: 'fotoFern,avvCodeId' })),
-    ).not.toHaveLength(0);
+    expect(dto.analyseLoeschen).toBe(erwartet);
   });
 
   it('rejects a non boolean analyseLoeschen', async () => {
-    expect(await validate(parse({ analyseLoeschen: 'ja' }))).not.toHaveLength(
-      0,
-    );
+    expect(await validate(parse('ja'))).not.toHaveLength(0);
   });
 });

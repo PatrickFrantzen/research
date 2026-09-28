@@ -229,31 +229,37 @@ describe('Wareneintrag-Foto-Upload: Härtung', () => {
 
   // Alle Textfelder des Bearbeiten-Dialogs plus vier Dateien müssen unter
   // den Multer-Grenzen (fields, parts) bleiben (Issue #104).
-  it('accepts an update with removal flags, analyseLoeschen and all four files', async () => {
+  it('accepts an update with analyseLoeschen and all four files', async () => {
     const png = { filename: 'foto.png', contentType: 'image/png' };
     const response = await request(app.getHttpServer())
       .patch('/wareneintraege/wareneintrag-1')
       .field('avvCodeId', 'f8a3632d-6b2c-4843-b223-85a711b4a9a7')
       .field('freitext', 'Testeintrag')
-      .field('entfernen', 'dokument')
       .field('analyseLoeschen', 'true')
       .attach('fotoFern', PNG_BYTES, png)
       .attach('fotoNah', PNG_BYTES, png)
-      .attach('fotoDetail', PNG_BYTES, png);
+      .attach('fotoDetail', PNG_BYTES, png)
+      .attach('dokument', PDF_BYTES, {
+        filename: 'lieferschein.pdf',
+        contentType: 'application/pdf',
+      });
 
     expect(response.status).toBe(200);
-    expect(response.body.data).toMatchObject({
-      fotoFernUrl: 'wareneintraege/foto-1',
-      dokumentUrl: null,
-    });
   });
 
-  it('rejects an unknown field name in entfernen', async () => {
-    const response = await request(app.getHttpServer())
-      .patch('/wareneintraege/wareneintrag-1')
-      .field('avvCodeId', 'f8a3632d-6b2c-4843-b223-85a711b4a9a7')
-      .field('freitext', 'Testeintrag')
-      .field('entfernen', 'erfasstVonId');
+  it('deletes a single file via DELETE /wareneintraege/:id/dateien/:feld', async () => {
+    const response = await request(app.getHttpServer()).delete(
+      '/wareneintraege/wareneintrag-1/dateien/dokument?analyseLoeschen=true',
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body.data).toEqual({ dokumentUrl: null });
+  });
+
+  it('rejects deleting a field that is not a file', async () => {
+    const response = await request(app.getHttpServer()).delete(
+      '/wareneintraege/wareneintrag-1/dateien/erfasstVonId',
+    );
 
     expect(response.status).toBe(400);
   });

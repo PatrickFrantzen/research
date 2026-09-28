@@ -1,4 +1,3 @@
-import { NgTemplateOutlet } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormField, form, maxLength, required } from '@angular/forms/signals';
@@ -68,7 +67,6 @@ const AVV_SUCHE_DEBOUNCE_MS = 300;
     MatIconModule,
     MatInputModule,
     MatMenuModule,
-    NgTemplateOutlet,
   ],
   templateUrl: './wareneintrag-bearbeiten-dialog.html',
   styles: `
@@ -111,8 +109,15 @@ export class WareneintragBearbeitenDialog {
   });
   // Neues PDF (Issue #103), ersetzt ein vorhandenes oder kommt neu hinzu.
   protected readonly dokument = signal<File | null>(null);
-  // Zum Löschen markiert, gelöscht wird erst beim Speichern (Issue #104).
-  protected readonly entfernen = signal<ReadonlySet<Datei>>(new Set());
+  // Welche Dateien der Eintrag hat; sofortiges Löschen (Issue #104) nimmt
+  // sie hier heraus, danach lässt sich direkt eine neue auswählen.
+  private readonly vorhandeneDateien = signal<Record<Datei, boolean>>({
+    fotoFern: this.daten.wareneintrag.fotoFernUrl !== null,
+    fotoNah: this.daten.wareneintrag.fotoNahUrl !== null,
+    fotoDetail: this.daten.wareneintrag.fotoDetailUrl !== null,
+    dokument: this.daten.wareneintrag.dokumentUrl !== null,
+  });
+  protected readonly statusMeldung = signal('');
 
   protected readonly bearbeitungDaten = signal({
     avvSucheAnzeige: `${this.daten.wareneintrag.avvCode.code} – ${this.daten.wareneintrag.avvCode.bezeichnung}`,
@@ -184,7 +189,6 @@ export class WareneintragBearbeitenDialog {
     if (meldung && auswahl)
       this.fehlerMelder.melde(`Foto abgelehnt: ${label}: ${meldung} ${beschreibeFoto(auswahl)}`);
     this.fotos.update((fotos) => ({ ...fotos, [ansicht]: datei }));
-    if (datei) this.entfernenAufheben(ansicht);
   }
 
   dokumentErsetzen(event: Event): void {
@@ -192,39 +196,43 @@ export class WareneintragBearbeitenDialog {
     const meldung = auswahl ? pruefeDokument(auswahl) : null;
     this.fotoFehler.set(meldung ? `Dokument (PDF): ${meldung}` : null);
     this.dokument.set(meldung ? null : auswahl);
-    if (auswahl && !meldung) this.entfernenAufheben('dokument');
   }
 
   protected vorhanden(datei: Datei): boolean {
-    return this.daten.wareneintrag[`${datei}Url`] !== null;
+    return this.vorhandeneDateien()[datei];
   }
 
-  // Löschen und Ersetzen derselben Datei schließen sich aus.
-  entfernenUmschalten(datei: Datei): void {
-    if (this.entfernen().has(datei)) return this.entfernenAufheben(datei);
-    this.entfernen.update((alt) => new Set(alt).add(datei));
-    if (datei === 'dokument') this.dokument.set(null);
-    else this.fotos.update((fotos) => ({ ...fotos, [datei]: null }));
-  }
-
-  private entfernenAufheben(datei: Datei): void {
-    this.entfernen.update((alt) => {
-      const neu = new Set(alt);
-      neu.delete(datei);
-      return neu;
-    });
-  }
-
-  private fotosGeaendert(): boolean {
-    return this.fotoKacheln.some(
-      ({ ansicht }) => this.fotos()[ansicht] || this.entfernen().has(ansicht),
+  async dateiLoeschen(datei: Datei, label: string): Promise<void> {
+    const bestaetigt = await firstValueFrom(
+      this.dialog
+        .open(ConfirmDialog, {
+          data: {
+            titel: `${label} löschen?`,
+            nachricht: `${label} wird sofort gelöscht, auch wenn Sie den Dialog danach abbrechen.`,
+            bestaetigenLabel: 'Löschen',
+          },
+        })
+        .afterClosed(),
     );
+    if (!bestaetigt) return;
+    // Das PDF wird nicht analysiert (Issue #103), nur Fotos betreffen die Analyse.
+    const analyseLoeschen = datei !== 'dokument' && (await this.frageAnalyseLoeschen());
+    this.fehler.set(null);
+    try {
+      await firstValueFrom(
+        this.wareneintragApi.dateiLoeschen(this.daten.wareneintrag.id, datei, analyseLoeschen),
+      );
+      this.vorhandeneDateien.update((dateien) => ({ ...dateien, [datei]: false }));
+      this.statusMeldung.set(`${label} gelöscht.`);
+    } catch (error) {
+      this.fehler.set(extrahiereFehlermeldung(error, `${label} konnte nicht gelöscht werden.`));
+    }
   }
 
   // Die Analyse gilt für alle Fotos zusammen (ADR-0008). Ändern sich Fotos,
-  // entscheidet der Nutzer, ob sie bleibt (Issue #104). Scheitert das Laden,
+  // entscheidet der Nutzer, ob sie bleibt (Issue #104), ohne Analyse keine Frage. Scheitert das Laden,
   // wird trotzdem gefragt, statt eine veraltete Analyse still zu behalten.
-  private async analyseLoeschen(): Promise<boolean> {
+  private async frageAnalyseLoeschen(): Promise<boolean> {
     const analyse = await firstValueFrom(
       this.wareneintragApi
         .gespeicherteAnalyse(this.daten.wareneintrag.id)
@@ -267,11 +275,10 @@ export class WareneintragBearbeitenDialog {
     }
     const dokument = this.dokument();
     if (dokument) formData.set('dokument', dokument);
-    if (this.entfernen().size) formData.set('entfernen', [...this.entfernen()].join(','));
 
     try {
-      if (this.fotosGeaendert() && (await this.analyseLoeschen()))
-        formData.set('analyseLoeschen', 'true');
+      const neueFotos = this.fotoKacheln.some(({ ansicht }) => this.fotos()[ansicht]);
+      if (neueFotos && (await this.frageAnalyseLoeschen())) formData.set('analyseLoeschen', 'true');
       await firstValueFrom(
         this.wareneintragApi.aktualisieren(this.daten.wareneintrag.id, formData),
       );

@@ -167,10 +167,15 @@ test('PDF-Dokument anlegen, in Liste und Details sehen, ersetzen und löschen (I
   await expect(bearbeiten).toBeHidden();
   await expect(page.getByRole('img', { name: 'Mit PDF-Dokument' })).toBeVisible();
 
-  // PDF löschen, ohne Rückfrage zur KI-Analyse (Issue #104).
+  // PDF löschen wirkt sofort, ohne Rückfrage zur KI-Analyse (Issue #104).
   await page.getByTestId('wareneintrag-bearbeiten').click();
-  await bearbeiten.getByTestId('bearbeiten-entfernen-dokument').click();
-  await bearbeiten.getByTestId('bearbeiten-speichern').click();
+  await bearbeiten.getByTestId('bearbeiten-loeschen-dokument').click();
+  await page
+    .getByRole('dialog', { name: 'Dokument (PDF) löschen?' })
+    .getByTestId('confirm-dialog-bestaetigen')
+    .click();
+  await expect(bearbeiten).toContainText('Dokument (PDF) hinzufügen');
+  await page.keyboard.press('Escape');
   await expect(bearbeiten).toBeHidden();
   await expect(page.getByRole('img', { name: 'Mit PDF-Dokument' })).toHaveCount(0);
 });
@@ -311,12 +316,20 @@ test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen 
   await expect(dialog.getByTestId('analysiert-von')).toBeVisible();
   await schliessen();
 
-  // ... Foto löschen und "Ja" entfernt Foto und Analyse.
+  // ... Foto löschen wirkt sofort, "Ja" entfernt auch die Analyse. Danach
+  // ließe sich direkt ein neues Foto wählen, hier wird abgebrochen.
   await page.getByTestId('wareneintrag-bearbeiten').click();
-  await bearbeiten.getByTestId('bearbeiten-entfernen-fotoFern').click();
-  await expect(bearbeiten).toContainText('Fernansicht wird gelöscht');
-  await bearbeiten.getByTestId('bearbeiten-speichern').click();
+  await bearbeiten.getByTestId('bearbeiten-loeschen-fotoFern').click();
+  await page
+    .getByRole('dialog', { name: 'Fernansicht löschen?' })
+    .getByTestId('confirm-dialog-bestaetigen')
+    .click();
   await rueckfrage.getByTestId('confirm-dialog-bestaetigen').click();
+  await expect(bearbeiten.getByTestId('bearbeiten-status')).toHaveText('Fernansicht gelöscht.');
+  await expect(bearbeiten).toContainText('Fernansicht hinzufügen');
+  await expect(bearbeiten.getByTestId('bearbeiten-loeschen-fotoFern')).toHaveCount(0);
+  await pruefeBarrierefreiheit(page, 'Bearbeiten-Dialog nach dem Löschen');
+  await bearbeiten.getByTestId('bearbeiten-abbrechen').click();
   await expect(bearbeiten).toBeHidden();
   await oeffnen();
   await expect(dialog.getByTestId('nicht-analysiert')).toHaveText('Noch nicht analysiert.');

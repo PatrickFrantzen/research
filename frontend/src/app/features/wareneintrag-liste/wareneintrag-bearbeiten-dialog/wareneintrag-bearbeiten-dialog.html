@@ -62,13 +62,17 @@
       <div class="datei-zeile">
         <button matButton="outlined" type="button" [matMenuTriggerFor]="quelle">
           <mat-icon>{{ dateiname(kachel.ansicht) ? 'check' : 'photo_camera' }}</mat-icon>
-          {{ kachel.label }} ersetzen
+          {{ kachel.label }} {{ vorhanden(kachel.ansicht) ? 'ersetzen' : 'hinzufügen' }}
         </button>
         @if (vorhanden(kachel.ansicht)) {
-          <ng-container
-            [ngTemplateOutlet]="entfernenKnopf"
-            [ngTemplateOutletContext]="{ datei: kachel.ansicht, label: kachel.label }"
-          />
+          <button
+            matButton
+            type="button"
+            [attr.data-testid]="'bearbeiten-loeschen-' + kachel.ansicht"
+            (click)="dateiLoeschen(kachel.ansicht, kachel.label)"
+          >
+            <mat-icon>delete</mat-icon>{{ kachel.label }} löschen
+          </button>
         }
       </div>
       @if (dateiname(kachel.ansicht); as name) {
@@ -89,10 +93,14 @@
         Dokument (PDF) {{ vorhanden('dokument') ? 'ersetzen' : 'hinzufügen' }}
       </button>
       @if (vorhanden('dokument')) {
-        <ng-container
-          [ngTemplateOutlet]="entfernenKnopf"
-          [ngTemplateOutletContext]="{ datei: 'dokument', label: 'Dokument (PDF)' }"
-        />
+        <button
+          matButton
+          type="button"
+          data-testid="bearbeiten-loeschen-dokument"
+          (click)="dateiLoeschen('dokument', 'Dokument (PDF)')"
+        >
+          <mat-icon>delete</mat-icon>Dokument (PDF) löschen
+        </button>
       }
     </div>
     @if (dokument(); as pdf) {
@@ -100,29 +108,7 @@
     }
   </div>
 
-  <ng-template #entfernenKnopf let-datei="datei" let-label="label">
-    @if (entfernen().has(datei)) {
-      <span class="dateiname">{{ label }} wird gelöscht</span>
-      <button
-        matButton
-        type="button"
-        [attr.data-testid]="'bearbeiten-entfernen-' + datei"
-        [attr.aria-label]="label + ' nicht löschen'"
-        (click)="entfernenUmschalten(datei)"
-      >
-        <mat-icon>undo</mat-icon>Rückgängig
-      </button>
-    } @else {
-      <button
-        matButton
-        type="button"
-        [attr.data-testid]="'bearbeiten-entfernen-' + datei"
-        (click)="entfernenUmschalten(datei)"
-      >
-        <mat-icon>delete</mat-icon>{{ label }} löschen
-      </button>
-    }
-  </ng-template>
+  <p class="dateiname" role="status" data-testid="bearbeiten-status">{{ statusMeldung() }}</p>
 
   @if (fotoFehler(); as meldung) {
     <p class="fehler" role="alert">{{ meldung }}</p>
