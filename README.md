@@ -105,17 +105,26 @@ Stammdaten ein, leert den Rate-Limit-Zähler und legt den Foto-Bucket an.
 am Standort „Außenlager“, 26 Wareneinträge).
 
 ```
-# einmalig: Dienste für den Test-Stack (Werte = Standardwerte in stack.sh)
-docker run -d --name e2e-postgres -p 5432:5432 -e POSTGRES_USER=research \
-  -e POSTGRES_PASSWORD=research -e POSTGRES_DB=research_e2e postgres:16-alpine
-docker run -d --name e2e-redis -p 6379:6379 redis:8.8.2-alpine
-docker run -d --name e2e-minio -p 9000:9000 -e MINIO_ROOT_USER=research \
-  -e MINIO_ROOT_PASSWORD=research-secret cgr.dev/chainguard/minio server /data
-npx playwright install chromium   # im Verzeichnis frontend
+# Dienste starten (Images und Werte wie in der CI, docker-compose.e2e.yml)
+docker compose -f docker-compose.e2e.yml up -d --wait
+
+# einmalig im Verzeichnis frontend
+npx playwright install chromium
 
 cd backend && npm run build && cd ../frontend && npm run build && npm run e2e
+
+# danach Dienste wieder entfernen
+docker compose -f docker-compose.e2e.yml down
 ```
 
+- Voraussetzung: laufendes Docker (unter Windows Docker Desktop). Die Ports
+  5432, 6379 und 9000 müssen frei sein, also vorher das Entwicklungs-Setup
+  (`docker-compose.yml`) stoppen.
+- `stack.sh` ist ein Bash-Skript, Playwright startet es selbst. Unter Windows
+  daher aus Git Bash oder WSL starten, nicht aus PowerShell/cmd.
+- Bricht ein Lauf ab, kann der Gemini-Stub auf Port 4010 weiterlaufen; der
+  nächste Lauf nutzt ihn dann still weiter. Bei Problemen den Node-Prozess
+  auf Port 4010 beenden.
 - Abweichende Dienste per `E2E_DATABASE_URL`, `E2E_REDIS_URL`,
   `E2E_OBJECT_STORAGE_*` und `E2E_PORT`. Der Datenbankname muss „e2e“
   enthalten, sonst bricht das Zurücksetzen ab (Schutz vor Datenverlust).
