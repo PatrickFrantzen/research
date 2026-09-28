@@ -58,6 +58,18 @@ describe('Shell', () => {
     expect(link?.getAttribute('href')).toBe('/impressum');
   });
 
+  it('links to the Datenschutzerklärung in the desktop footer (Issue #107)', () => {
+    const fixture = TestBed.createComponent(Shell);
+    fixture.detectChanges();
+
+    const links = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'footer.desktop-footer a',
+      ) as NodeListOf<HTMLAnchorElement>,
+    ).map((link) => link.getAttribute('href'));
+    expect(links).toEqual(['/impressum', '/datenschutz']);
+  });
+
   it('toggles the color mode from the desktop toolbar', () => {
     const umschaltenSpy = spyOn(TestBed.inject(ThemeService), 'umschalten');
     const fixture = TestBed.createComponent(Shell);

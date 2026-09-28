@@ -5,6 +5,7 @@ import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from './app.routes.js';
 import { AuthService } from './core/auth.service.js';
+import { Datenschutz } from './features/datenschutz/datenschutz.js';
 import { Impressum } from './features/impressum/impressum.js';
 import { NichtGefunden } from './features/nicht-gefunden/nicht-gefunden.js';
 
@@ -24,6 +25,14 @@ describe('app routes', () => {
     await harness.navigateByUrl('/impressum', Impressum);
 
     expect(TestBed.inject(Router).url).toBe('/impressum');
+  });
+
+  it('shows the Datenschutzerklärung without a session (Issue #107)', async () => {
+    const harness = await RouterTestingHarness.create();
+
+    await harness.navigateByUrl('/datenschutz', Datenschutz);
+
+    expect(TestBed.inject(Router).url).toBe('/datenschutz');
   });
 
   it('shows the not-found page with a way back to the login for unknown URLs without a session', async () => {
