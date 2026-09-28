@@ -145,6 +145,19 @@ describe('Login', () => {
     expect(logo?.alt).toBe('RE-SEARCH – Transparente Entsorgungswege');
   });
 
+  it('links to Impressum and Datenschutzerklärung without a login (Issue #107)', () => {
+    const fixture = TestBed.createComponent(Login);
+    fixture.detectChanges();
+
+    const links = Array.from(
+      fixture.nativeElement.querySelectorAll('.rechtliches a') as NodeListOf<HTMLAnchorElement>,
+    ).map((link) => [link.textContent?.trim(), link.getAttribute('href')]);
+    expect(links).toEqual([
+      ['Impressum', '/impressum'],
+      ['Datenschutz', '/datenschutz'],
+    ]);
+  });
+
   it('lets the user toggle password visibility', () => {
     const fixture = TestBed.createComponent(Login);
     fixture.detectChanges();

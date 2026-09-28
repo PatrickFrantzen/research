@@ -9,6 +9,7 @@ const OEFFENTLICHE_SEITEN = [
   { pfad: '/passwort-vergessen', ueberschrift: 'Passwort vergessen' },
   { pfad: '/passwort-setzen', ueberschrift: 'Passwort setzen' },
   { pfad: '/impressum', ueberschrift: 'Impressum' },
+  { pfad: '/datenschutz', ueberschrift: 'Datenschutzerklärung' },
   { pfad: '/gibt-es-nicht', ueberschrift: 'Seite nicht gefunden' },
 ];
 

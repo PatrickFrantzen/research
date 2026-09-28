@@ -146,6 +146,20 @@ describe('Einstellungen', () => {
     expect(link?.getAttribute('href')).toBe('/impressum');
   });
 
+  it('links to the Datenschutzerklärung, since mobile has no footer (Issue #107)', () => {
+    const fixture = TestBed.createComponent(Einstellungen);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/v1/standorte').flush([]);
+    httpMock
+      .expectOne('/api/v1/nutzer/me')
+      .flush({ vorname: '', nachname: '', email: '', standortId: '' });
+
+    const link = fixture.nativeElement.querySelector(
+      '.datenschutz-link',
+    ) as HTMLAnchorElement | null;
+    expect(link?.getAttribute('href')).toBe('/datenschutz');
+  });
+
   it('keeps the form locked until the own data and Standorte are loaded', async () => {
     const fixture = TestBed.createComponent(Einstellungen);
     fixture.detectChanges();

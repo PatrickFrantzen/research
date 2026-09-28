@@ -29,6 +29,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/impressum/impressum.js').then((m) => m.Impressum),
   },
   {
+    path: 'datenschutz',
+    title: 'Datenschutz – RE-SEARCH',
+    loadComponent: () => import('./features/datenschutz/datenschutz.js').then((m) => m.Datenschutz),
+  },
+  {
     path: '',
     canActivate: [authGuard],
     loadComponent: () => import('./core/shell/shell.js').then((m) => m.Shell),
