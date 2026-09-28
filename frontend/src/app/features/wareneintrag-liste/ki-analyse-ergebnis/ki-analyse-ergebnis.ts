@@ -10,7 +10,16 @@ const URTEILE = {
 } as const;
 
 // Feste Palette, Farbe nach Position: gleiche Reihenfolge, gleiche Farben.
-const PALETTE = ['#1a73e8', '#e8710a', '#188038', '#d93025', '#9334e6', '#12a4af', '#f9ab00', '#80868b'];
+const PALETTE = [
+  '#1a73e8',
+  '#e8710a',
+  '#188038',
+  '#d93025',
+  '#9334e6',
+  '#12a4af',
+  '#f9ab00',
+  '#80868b',
+];
 
 // Darstellung einer KI-Analyse (Issue #93): gestapelter Balken plus Liste.
 // Der Balken ist Deko, die Werte stehen vollständig in der Liste.
@@ -47,7 +56,9 @@ const PALETTE = ['#1a73e8', '#e8710a', '#188038', '#d93025', '#9334e6', '#12a4af
       </p>
       <p>{{ ergebnis().avvPruefung.begruendung }}</p>
       @if (ergebnis().avvPruefung.vorschlag; as vorschlag) {
-        <p data-testid="avv-vorschlag">Vorschlag: {{ vorschlag.code }} – {{ vorschlag.bezeichnung }}</p>
+        <p data-testid="avv-vorschlag">
+          Vorschlag: {{ vorschlag.code }} – {{ vorschlag.bezeichnung }}
+        </p>
       }
     </div>
     <p class="hinweis">KI-Schätzung aus den Fotos, keine Messung.</p>

@@ -27,11 +27,18 @@ test.describe('403: keine Berechtigung', () => {
     // Die UI zeigt für fremde Einträge keinen Lösch-Button. Um die echte
     // 403-Antwort des Backends zu provozieren, wird Max' Lösch-Request auf
     // einen Eintrag von Erika umgeleitet.
-    const liste = await page.request.get('/api/v1/wareneintraege', { params: { suche: 'Erika 01', proSeite: '1' } });
+    const liste = await page.request.get('/api/v1/wareneintraege', {
+      params: { suche: 'Erika 01', proSeite: '1' },
+    });
     const [fremderEintrag] = ((await liste.json()) as { daten: { id: string }[] }).daten;
     await page.route('**/api/v1/wareneintraege/*', async (route) => {
       if (route.request().method() !== 'DELETE') return route.continue();
-      await route.continue({ url: route.request().url().replace(/[^/]+$/, fremderEintrag.id) });
+      await route.continue({
+        url: route
+          .request()
+          .url()
+          .replace(/[^/]+$/, fremderEintrag.id),
+      });
     });
 
     await page.goto('/wareneintraege');
@@ -44,7 +51,9 @@ test.describe('403: keine Berechtigung', () => {
     await expect(page).toHaveURL(/\/wareneintraege$/);
     await expect(page.getByTestId('trefferanzahl')).toHaveText('1 Wareneintrag');
 
-    const nochDa = await page.request.get('/api/v1/wareneintraege', { params: { suche: 'Erika 01', proSeite: '1' } });
+    const nochDa = await page.request.get('/api/v1/wareneintraege', {
+      params: { suche: 'Erika 01', proSeite: '1' },
+    });
     expect(((await nochDa.json()) as { gesamt: number }).gesamt).toBe(1);
   });
 });

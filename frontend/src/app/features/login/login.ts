@@ -12,7 +12,17 @@ import { FokusBeiAnzeige } from '../../core/fokus-bei-anzeige.js';
 
 @Component({
   selector: 'app-login',
-  imports: [FokusBeiAnzeige, NgOptimizedImage, FormField, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule, MatButtonModule, RouterLink],
+  imports: [
+    FokusBeiAnzeige,
+    NgOptimizedImage,
+    FormField,
+    MatCardModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatButtonModule,
+    RouterLink,
+  ],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })

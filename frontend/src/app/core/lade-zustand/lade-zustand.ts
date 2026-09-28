@@ -23,7 +23,12 @@ export interface LadbareRessource {
     @if (ressource().status() === 'error') {
       <div class="ladefehler" role="alert">
         <p>{{ meldung() }}</p>
-        <button matButton="outlined" type="button" data-testid="erneut-laden" (click)="ressource().reload()">
+        <button
+          matButton="outlined"
+          type="button"
+          data-testid="erneut-laden"
+          (click)="ressource().reload()"
+        >
           Erneut versuchen
         </button>
       </div>

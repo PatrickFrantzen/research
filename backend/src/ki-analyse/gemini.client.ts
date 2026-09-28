@@ -41,17 +41,31 @@ export class GeminiClient {
             { text: kontext },
             ...fotos.flatMap((foto) => [
               { text: `${foto.label}:` },
-              { inlineData: { mimeType: foto.mimeType, data: foto.daten.toString('base64') } },
+              {
+                inlineData: {
+                  mimeType: foto.mimeType,
+                  data: foto.daten.toString('base64'),
+                },
+              },
             ]),
           ],
         },
       ],
-      generationConfig: { responseMimeType: 'application/json', responseSchema: ANTWORT_SCHEMA },
+      generationConfig: {
+        responseMimeType: 'application/json',
+        responseSchema: ANTWORT_SCHEMA,
+      },
     });
 
     let antwort = await this.sende(this.config, anfrage);
-    for (let versuch = 2; VORUEBERGEHENDE_FEHLER.has(antwort.status) && versuch <= MAX_VERSUCHE; versuch++) {
-      this.logger.warn(`Gemini ${await fehlertext(antwort)}, Versuch ${versuch} in ${this.wartezeitMs} ms`);
+    for (
+      let versuch = 2;
+      VORUEBERGEHENDE_FEHLER.has(antwort.status) && versuch <= MAX_VERSUCHE;
+      versuch++
+    ) {
+      this.logger.warn(
+        `Gemini ${await fehlertext(antwort)}, Versuch ${versuch} in ${this.wartezeitMs} ms`,
+      );
       await new Promise((resolve) => setTimeout(resolve, this.wartezeitMs));
       antwort = await this.sende(this.config, anfrage);
     }
@@ -61,7 +75,9 @@ export class GeminiClient {
       throw new GeminiFehler();
     }
     try {
-      const body = (await antwort.json()) as { candidates?: { content?: { parts?: { text?: string }[] } }[] };
+      const body = (await antwort.json()) as {
+        candidates?: { content?: { parts?: { text?: string }[] } }[];
+      };
       return JSON.parse(body.candidates?.[0]?.content?.parts?.[0]?.text ?? '');
     } catch {
       this.logger.warn('Gemini-Antwort ist kein gültiges JSON');
@@ -69,14 +85,23 @@ export class GeminiClient {
     }
   }
 
-  private async sende(config: NonNullable<EnvConfig['gemini']>, anfrage: string): Promise<Response> {
+  private async sende(
+    config: NonNullable<EnvConfig['gemini']>,
+    anfrage: string,
+  ): Promise<Response> {
     try {
-      return await fetch(`${config.apiUrl}/models/${config.model}:generateContent`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json', 'x-goog-api-key': config.apiKey },
-        body: anfrage,
-        signal: AbortSignal.timeout(TIMEOUT_MS),
-      });
+      return await fetch(
+        `${config.apiUrl}/models/${config.model}:generateContent`,
+        {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'x-goog-api-key': config.apiKey,
+          },
+          body: anfrage,
+          signal: AbortSignal.timeout(TIMEOUT_MS),
+        },
+      );
     } catch (error) {
       this.logger.warn(`Gemini nicht erreichbar: ${(error as Error).name}`);
       throw new GeminiFehler();
@@ -87,7 +112,14 @@ export class GeminiClient {
 // Status plus Googles Fehlertext fürs Log, z.B. "503 UNAVAILABLE: The model
 // is overloaded". Enthält den Key nicht (der steht nur im Request-Header).
 async function fehlertext(antwort: Response): Promise<string> {
-  const body = (await antwort.json().catch(() => ({}))) as { error?: { status?: string; message?: string } };
-  const grund = [body.error?.status, body.error?.message?.replace(/\s+/g, ' ').slice(0, 200)].filter(Boolean).join(': ');
+  const body = (await antwort.json().catch(() => ({}))) as {
+    error?: { status?: string; message?: string };
+  };
+  const grund = [
+    body.error?.status,
+    body.error?.message?.replace(/\s+/g, ' ').slice(0, 200),
+  ]
+    .filter(Boolean)
+    .join(': ');
   return `${antwort.status}${grund ? ` ${grund}` : ''}`;
 }

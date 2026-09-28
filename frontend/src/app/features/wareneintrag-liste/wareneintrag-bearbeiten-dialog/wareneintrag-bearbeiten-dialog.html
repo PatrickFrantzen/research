@@ -23,7 +23,12 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Freitext</mat-label>
-    <textarea matInput data-testid="bearbeiten-freitext" [formField]="bearbeitenForm.freitext" rows="4"></textarea>
+    <textarea
+      matInput
+      data-testid="bearbeiten-freitext"
+      [formField]="bearbeitenForm.freitext"
+      rows="4"
+    ></textarea>
     <mat-hint align="end">{{ freitext.length }} / {{ freitextMaxLaenge }}</mat-hint>
   </mat-form-field>
 
@@ -47,8 +52,12 @@
         (change)="fotoErsetzen(kachel.ansicht, $event)"
       />
       <mat-menu #quelle="matMenu">
-        <button mat-menu-item type="button" (click)="kameraInput.click()"><mat-icon>photo_camera</mat-icon>Kamera</button>
-        <button mat-menu-item type="button" (click)="fotoInput.click()"><mat-icon>photo_library</mat-icon>Galerie</button>
+        <button mat-menu-item type="button" (click)="kameraInput.click()">
+          <mat-icon>photo_camera</mat-icon>Kamera
+        </button>
+        <button mat-menu-item type="button" (click)="fotoInput.click()">
+          <mat-icon>photo_library</mat-icon>Galerie
+        </button>
       </mat-menu>
       <button matButton="outlined" type="button" [matMenuTriggerFor]="quelle">
         <mat-icon>{{ dateiname(kachel.ansicht) ? 'check' : 'photo_camera' }}</mat-icon>
@@ -85,7 +94,9 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button matButton type="button" data-testid="bearbeiten-abbrechen" (click)="abbrechen()">Abbrechen</button>
+  <button matButton type="button" data-testid="bearbeiten-abbrechen" (click)="abbrechen()">
+    Abbrechen
+  </button>
   <button
     matButton="filled"
     type="button"

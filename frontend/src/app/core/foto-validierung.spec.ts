@@ -17,9 +17,13 @@ describe('uebernehmeFoto', () => {
     const canvas = document.createElement('canvas');
     canvas.width = 3000;
     canvas.height = 1500;
-    const png = await new Promise<Blob>((resolve) => canvas.toBlob((blob) => resolve(blob!), 'image/png'));
+    const png = await new Promise<Blob>((resolve) =>
+      canvas.toBlob((blob) => resolve(blob!), 'image/png'),
+    );
 
-    const { datei, meldung } = await uebernehmeFoto(new File([png], 'gross.png', { type: 'image/png' }));
+    const { datei, meldung } = await uebernehmeFoto(
+      new File([png], 'gross.png', { type: 'image/png' }),
+    );
 
     expect(meldung).toBeNull();
     expect(datei!.type).toBe('image/jpeg');
@@ -39,7 +43,9 @@ describe('uebernehmeFoto', () => {
   });
 
   it('still rejects a file that is not JPEG, PNG or WebP', async () => {
-    const { datei, meldung } = await uebernehmeFoto(new File(['x'], 'bild.gif', { type: 'image/gif' }));
+    const { datei, meldung } = await uebernehmeFoto(
+      new File(['x'], 'bild.gif', { type: 'image/gif' }),
+    );
 
     expect(datei).toBeNull();
     expect(meldung).toBe('Nur JPEG, PNG oder WebP erlaubt.');

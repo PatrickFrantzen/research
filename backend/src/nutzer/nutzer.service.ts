@@ -1,5 +1,10 @@
 import { randomUUID } from 'node:crypto';
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { erzeugePasswortSetzenToken } from '../auth/passwort-setzen-token.js';
 import { Mailer } from '../mailer/mailer.js';
@@ -61,13 +66,21 @@ export class NutzerService {
       where: { id },
       data: {
         passwortSetzenToken: hashedToken,
-        passwortSetzenTokenAblauf: new Date(Date.now() + ADMIN_PASSWORT_LINK_GUELTIGKEIT_MS),
+        passwortSetzenTokenAblauf: new Date(
+          Date.now() + ADMIN_PASSWORT_LINK_GUELTIGKEIT_MS,
+        ),
       },
     });
-    await this.mailer.sendPasswortSetzenLink(nutzer.email, `/passwort-setzen?token=${rawToken}`);
+    await this.mailer.sendPasswortSetzenLink(
+      nutzer.email,
+      `/passwort-setzen?token=${rawToken}`,
+    );
   }
 
-  async createNutzer(erstelltVonId: string, dto: CreateNutzerDto): Promise<NeuerNutzer> {
+  async createNutzer(
+    erstelltVonId: string,
+    dto: CreateNutzerDto,
+  ): Promise<NeuerNutzer> {
     const standortId = await this.standortIdAus(dto);
     // Platzhalter-Passwort: unbrauchbar, bis der neue Nutzer über den
     // Initial-Zugang sein eigenes Passwort setzt.
@@ -83,7 +96,9 @@ export class NutzerService {
         passwortHash: platzhalterPasswortHash,
         mussPasswortSetzen: true,
         passwortSetzenToken: hashedToken,
-        passwortSetzenTokenAblauf: new Date(Date.now() + INITIAL_ZUGANG_GUELTIGKEIT_MS),
+        passwortSetzenTokenAblauf: new Date(
+          Date.now() + INITIAL_ZUGANG_GUELTIGKEIT_MS,
+        ),
         erstelltVonId,
       },
     });
@@ -96,7 +111,9 @@ export class NutzerService {
       await this.mailer.sendEinladung(nutzer.email, passwortSetzenLink);
     } catch (error) {
       mailVersendet = false;
-      this.logger.warn(`Einladung an ${nutzer.email} konnte nicht versendet werden: ${String(error)}`);
+      this.logger.warn(
+        `Einladung an ${nutzer.email} konnte nicht versendet werden: ${String(error)}`,
+      );
     }
 
     return {
@@ -111,7 +128,9 @@ export class NutzerService {
   }
 
   async findEigeneDaten(id: string) {
-    const nutzer = await this.prisma.nutzer.findUniqueOrThrow({ where: { id } });
+    const nutzer = await this.prisma.nutzer.findUniqueOrThrow({
+      where: { id },
+    });
     return {
       id: nutzer.id,
       vorname: nutzer.vorname,
@@ -141,15 +160,23 @@ export class NutzerService {
   // Standort aus der Liste oder als Freitext. Freitext wird ohne Rücksicht auf
   // Groß-/Kleinschreibung einem vorhandenen Standort zugeordnet, sonst angelegt.
   // Bewusst ohne Schutz vor Missbrauch: nur Firmenpersonal nutzt die App.
-  private async standortIdAus(dto: { standortId?: string; neuerStandort?: string }): Promise<string> {
+  private async standortIdAus(dto: {
+    standortId?: string;
+    neuerStandort?: string;
+  }): Promise<string> {
     const name = dto.neuerStandort?.trim();
     if (!!dto.standortId === !!name) {
-      throw new BadRequestException('Bitte einen Standort aus der Liste wählen oder einen neuen eintragen.');
+      throw new BadRequestException(
+        'Bitte einen Standort aus der Liste wählen oder einen neuen eintragen.',
+      );
     }
     if (dto.standortId) return dto.standortId;
     const vorhanden = await this.prisma.standort.findFirst({
       where: { name: { equals: name!, mode: 'insensitive' } },
     });
-    return (vorhanden ?? (await this.prisma.standort.create({ data: { name: name! } }))).id;
+    return (
+      vorhanden ??
+      (await this.prisma.standort.create({ data: { name: name! } }))
+    ).id;
   }
 }

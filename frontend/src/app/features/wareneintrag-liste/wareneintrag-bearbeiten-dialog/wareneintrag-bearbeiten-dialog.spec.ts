@@ -45,7 +45,9 @@ describe('WareneintragBearbeitenDialog', () => {
   let dialogRef: jasmine.SpyObj<MatDialogRef<WareneintragBearbeitenDialog>>;
 
   beforeEach(async () => {
-    dialogRef = jasmine.createSpyObj<MatDialogRef<WareneintragBearbeitenDialog>>('MatDialogRef', ['close']);
+    dialogRef = jasmine.createSpyObj<MatDialogRef<WareneintragBearbeitenDialog>>('MatDialogRef', [
+      'close',
+    ]);
     await TestBed.configureTestingModule({
       imports: [WareneintragBearbeitenDialog],
       providers: [
@@ -71,24 +73,32 @@ describe('WareneintragBearbeitenDialog', () => {
   it('replaces the PDF: shows the chosen file name and sends it as dokument (Issue #103)', async () => {
     const fixture = createComponent();
     const element = fixture.nativeElement as HTMLElement;
-    expect((element.querySelector('[data-testid="bearbeiten-dokument"]') as HTMLInputElement).accept).toBe('application/pdf');
+    expect(
+      (element.querySelector('[data-testid="bearbeiten-dokument"]') as HTMLInputElement).accept,
+    ).toBe('application/pdf');
 
     asTestable(fixture.componentInstance).dokumentErsetzen(
-      fotoAuswahlEvent(new File(['%PDF-1.4'], 'neuer-lieferschein.pdf', { type: 'application/pdf' })),
+      fotoAuswahlEvent(
+        new File(['%PDF-1.4'], 'neuer-lieferschein.pdf', { type: 'application/pdf' }),
+      ),
     );
     fixture.detectChanges();
 
     expect(element.textContent).toContain('neuer-lieferschein.pdf');
     void fixture.componentInstance.speichern();
     const request = httpMock.expectOne('/api/v1/wareneintraege/wareneintrag-1');
-    expect(((request.request.body as FormData).get('dokument') as File).name).toBe('neuer-lieferschein.pdf');
+    expect(((request.request.body as FormData).get('dokument') as File).name).toBe(
+      'neuer-lieferschein.pdf',
+    );
     request.flush({});
   });
 
   it('rejects a replacement dokument that is not a PDF and does not send it (Issue #103)', async () => {
     const fixture = createComponent();
 
-    asTestable(fixture.componentInstance).dokumentErsetzen(fotoAuswahlEvent(new File(['x'], 'foto.jpg', { type: 'image/jpeg' })));
+    asTestable(fixture.componentInstance).dokumentErsetzen(
+      fotoAuswahlEvent(new File(['x'], 'foto.jpg', { type: 'image/jpeg' })),
+    );
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Dokument (PDF): Nur PDF erlaubt.');
@@ -102,10 +112,15 @@ describe('WareneintragBearbeitenDialog', () => {
     const fixture = createComponent();
     const component = asTestable(fixture.componentInstance);
 
-    await component.fotoErsetzen('fotoNah', fotoAuswahlEvent(new File(['gif'], 'neu.gif', { type: 'image/gif' })));
+    await component.fotoErsetzen(
+      'fotoNah',
+      fotoAuswahlEvent(new File(['gif'], 'neu.gif', { type: 'image/gif' })),
+    );
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('Nahansicht: Nur JPEG, PNG oder WebP erlaubt.');
+    expect(fixture.nativeElement.textContent).toContain(
+      'Nahansicht: Nur JPEG, PNG oder WebP erlaubt.',
+    );
     void fixture.componentInstance.speichern();
     const request = httpMock.expectOne('/api/v1/wareneintraege/wareneintrag-1');
     expect((request.request.body as FormData).get('fotoNah')).toBeNull();
@@ -121,18 +136,26 @@ describe('WareneintragBearbeitenDialog', () => {
       fotoAuswahlEvent(new File(['gif'], 'foto.gif', { type: 'image/gif' })),
     );
 
-    expect(melde).toHaveBeenCalledOnceWith(jasmine.stringContaining('Nahansicht: Nur JPEG, PNG oder WebP erlaubt.'));
+    expect(melde).toHaveBeenCalledOnceWith(
+      jasmine.stringContaining('Nahansicht: Nur JPEG, PNG oder WebP erlaubt.'),
+    );
   });
 
   it('lässt beim Ersetzen eines Fotos zwischen Kamera und Galerie wählen', async () => {
     const fixture = createComponent();
     const element = fixture.nativeElement as HTMLElement;
-    const kamera = element.querySelector('[data-testid="bearbeiten-kamera-fotoNah"]') as HTMLInputElement;
+    const kamera = element.querySelector(
+      '[data-testid="bearbeiten-kamera-fotoNah"]',
+    ) as HTMLInputElement;
     const kameraKlick = spyOn(kamera, 'click');
     expect(kamera.getAttribute('capture')).toBe('environment');
-    expect(element.querySelector('[data-testid="bearbeiten-foto-fotoNah"]')?.hasAttribute('capture')).toBe(false);
+    expect(
+      element.querySelector('[data-testid="bearbeiten-foto-fotoNah"]')?.hasAttribute('capture'),
+    ).toBe(false);
 
-    const ersetzen = Array.from(element.querySelectorAll('button')).find((b) => b.textContent?.includes('Nahansicht ersetzen'))!;
+    const ersetzen = Array.from(element.querySelectorAll('button')).find((b) =>
+      b.textContent?.includes('Nahansicht ersetzen'),
+    )!;
     ersetzen.click();
     fixture.detectChanges();
     await fixture.whenStable();
@@ -184,7 +207,9 @@ describe('WareneintragBearbeitenDialog', () => {
     fixture.detectChanges();
     httpMock
       .expectOne((req) => req.url === '/api/v1/avv-codes' && req.params.get('suche') === '20 03')
-      .flush([{ id: 'avv-2', code: '20 03 01', bezeichnung: 'Siedlungsabfälle', gefaehrlich: false }]);
+      .flush([
+        { id: 'avv-2', code: '20 03 01', bezeichnung: 'Siedlungsabfälle', gefaehrlich: false },
+      ]);
     tick();
     fixture.detectChanges();
 
@@ -197,9 +222,13 @@ describe('WareneintragBearbeitenDialog', () => {
     const fixture = createComponent();
     const component = asTestable(fixture.componentInstance);
 
-    const daten = (fixture.componentInstance as unknown as {
-      bearbeitungDaten: { update: (fn: (d: { freitext: string }) => { freitext: string }) => void };
-    }).bearbeitungDaten;
+    const daten = (
+      fixture.componentInstance as unknown as {
+        bearbeitungDaten: {
+          update: (fn: (d: { freitext: string }) => { freitext: string }) => void;
+        };
+      }
+    ).bearbeitungDaten;
     daten.update((d) => ({ ...d, freitext: 'a'.repeat(2001) }));
 
     expect(component.kannSpeichern).toBe(false);
@@ -213,13 +242,17 @@ describe('WareneintragBearbeitenDialog', () => {
     fixture.detectChanges();
     httpMock
       .expectOne((req) => req.url === '/api/v1/avv-codes' && req.params.get('suche') === '20 03')
-      .flush([{ id: 'avv-2', code: '20 03 01', bezeichnung: 'Siedlungsabfälle', gefaehrlich: false }]);
+      .flush([
+        { id: 'avv-2', code: '20 03 01', bezeichnung: 'Siedlungsabfälle', gefaehrlich: false },
+      ]);
     tick();
     fixture.componentInstance.onAvvCodeAusgewaehlt({ option: { value: 'avv-2' } } as never);
     const neuesFoto = new File(['foto'], 'neu.jpg', { type: 'image/jpeg' });
     // Natives Einlesen läuft außerhalb von fakeAsync, daher über die Zone-Promise.
     spyOn(neuesFoto, 'arrayBuffer').and.returnValue(Promise.resolve(new ArrayBuffer(4)));
-    spyOn(window, 'createImageBitmap').and.returnValue(Promise.reject(new DOMException('kein Bild', 'InvalidStateError')));
+    spyOn(window, 'createImageBitmap').and.returnValue(
+      Promise.reject(new DOMException('kein Bild', 'InvalidStateError')),
+    );
     void component.fotoErsetzen('fotoDetail', fotoAuswahlEvent(neuesFoto));
     tick();
 
@@ -247,12 +280,16 @@ describe('WareneintragBearbeitenDialog', () => {
     fixture.detectChanges();
     httpMock
       .expectOne((req) => req.url === '/api/v1/avv-codes' && req.params.get('suche') === '20 03')
-      .flush([{ id: 'avv-2', code: '20 03 01', bezeichnung: 'Siedlungsabfälle', gefaehrlich: false }]);
+      .flush([
+        { id: 'avv-2', code: '20 03 01', bezeichnung: 'Siedlungsabfälle', gefaehrlich: false },
+      ]);
     tick();
     fixture.componentInstance.onAvvCodeAusgewaehlt({ option: { value: 'avv-2' } } as never);
 
     void fixture.componentInstance.speichern();
-    httpMock.expectOne('/api/v1/wareneintraege/wareneintrag-1').flush('error', { status: 500, statusText: 'Server Error' });
+    httpMock
+      .expectOne('/api/v1/wareneintraege/wareneintrag-1')
+      .flush('error', { status: 500, statusText: 'Server Error' });
     tick();
 
     expect(component.fehler()).toBe('Wareneintrag konnte nicht gespeichert werden.');

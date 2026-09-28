@@ -1,4 +1,16 @@
-import { BadRequestException, Body, Controller, Get, Header, HttpCode, HttpStatus, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Header,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { AdminGuard } from '../auth/admin.guard.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import type { AuthenticatedRequest } from '../auth/jwt.strategy.js';
@@ -23,7 +35,9 @@ export class ProtokollController {
   @Header('Content-Type', 'text/plain; charset=utf-8')
   lese(@Param('art') art: string, @Param('datum') datum: string): string {
     if (!ARTEN.includes(art as ProtokollArt) || !DATUM.test(datum)) {
-      throw new BadRequestException('Unbekannte Log-Art oder ungültiges Datum.');
+      throw new BadRequestException(
+        'Unbekannte Log-Art oder ungültiges Datum.',
+      );
     }
     return this.protokoll.lese(art as ProtokollArt, datum) ?? '';
   }
@@ -32,7 +46,10 @@ export class ProtokollController {
   // Server sonst nie erreichen. Nur eingeloggt, gegen anonymes Vollschreiben.
   @Post('app-fehler')
   @HttpCode(HttpStatus.NO_CONTENT)
-  appFehler(@Req() request: AuthenticatedRequest, @Body() dto: AppFehlerDto): void {
+  appFehler(
+    @Req() request: AuthenticatedRequest,
+    @Body() dto: AppFehlerDto,
+  ): void {
     this.protokoll.fehler(['App', dto.seite, request.user.email, dto.meldung]);
   }
 }

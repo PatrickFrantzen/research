@@ -42,7 +42,11 @@ describe('MehrMenu', () => {
     const fixture = TestBed.createComponent(MehrMenu);
     fixture.detectChanges();
 
-    (fixture.nativeElement.querySelector('[data-testid="farbmodus-umschalten"]') as HTMLButtonElement).click();
+    (
+      fixture.nativeElement.querySelector(
+        '[data-testid="farbmodus-umschalten"]',
+      ) as HTMLButtonElement
+    ).click();
 
     expect(umschaltenSpy).toHaveBeenCalled();
   });

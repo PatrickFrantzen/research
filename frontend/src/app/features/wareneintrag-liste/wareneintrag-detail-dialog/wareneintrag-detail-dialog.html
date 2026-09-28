@@ -4,17 +4,31 @@
   @if (fotos.length) {
     <section class="galerie" aria-label="Fotos">
       <!-- Fokussierbar, damit die Spur auch per Tastatur erreichbar ist (AXE: scrollable-region-focusable). -->
-      <div #spur class="spur" tabindex="0" aria-label="Fotos, mit Pfeiltasten wechseln" (scroll)="onScroll()">
+      <div
+        #spur
+        class="spur"
+        tabindex="0"
+        aria-label="Fotos, mit Pfeiltasten wechseln"
+        (scroll)="onScroll()"
+      >
         @for (foto of fotos; track foto.label) {
           <img [src]="foto.url" [alt]="foto.label" />
         }
       </div>
       @if (fotos.length > 1) {
         <div class="steuerung">
-          <button matIconButton type="button" aria-label="Vorheriges Foto" [disabled]="position() === 0" (click)="zeige(position() - 1)">
+          <button
+            matIconButton
+            type="button"
+            aria-label="Vorheriges Foto"
+            [disabled]="position() === 0"
+            (click)="zeige(position() - 1)"
+          >
             <mat-icon>chevron_left</mat-icon>
           </button>
-          <span data-testid="galerie-position" aria-live="polite">{{ position() + 1 }} / {{ fotos.length }}</span>
+          <span data-testid="galerie-position" aria-live="polite"
+            >{{ position() + 1 }} / {{ fotos.length }}</span
+          >
           <button
             matIconButton
             type="button"
@@ -45,7 +59,13 @@
         <dt>Dokument</dt>
         <dd>
           <!-- Neuer Tab statt iframe: PDF bleibt auf der Files-Domain, keine CSP-Lockerung nötig. -->
-          <a matButton="outlined" data-testid="dokument-oeffnen" [href]="pdf" target="_blank" rel="noopener noreferrer">
+          <a
+            matButton="outlined"
+            data-testid="dokument-oeffnen"
+            [href]="pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <mat-icon>picture_as_pdf</mat-icon>
             PDF öffnen
           </a>
@@ -75,15 +95,31 @@
       }
       <div class="ki-aktionen">
         @if (analyse()) {
-          <button matButton="filled" type="button" data-testid="analyse-speichern" [disabled]="analyseLaeuft()" (click)="speichern()">
+          <button
+            matButton="filled"
+            type="button"
+            data-testid="analyse-speichern"
+            [disabled]="analyseLaeuft()"
+            (click)="speichern()"
+          >
             Speichern
           </button>
-          <button matButton="outlined" type="button" data-testid="analyse-wiederholen" [disabled]="analyseLaeuft()" (click)="analysieren()">
+          <button
+            matButton="outlined"
+            type="button"
+            data-testid="analyse-wiederholen"
+            [disabled]="analyseLaeuft()"
+            (click)="analysieren()"
+          >
             Wiederholen
           </button>
         } @else {
           <!-- Deaktivierte Buttons zeigen keinen Tooltip, daher am Wrapper. -->
-          <span [matTooltip]="fotos.length ? '' : 'Zum Analysieren braucht der Eintrag mindestens ein Foto.'">
+          <span
+            [matTooltip]="
+              fotos.length ? '' : 'Zum Analysieren braucht der Eintrag mindestens ein Foto.'
+            "
+          >
             <button
               matButton="tonal"
               type="button"
@@ -102,5 +138,7 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button matButton type="button" mat-dialog-close data-testid="detail-schliessen">Schließen</button>
+  <button matButton type="button" mat-dialog-close data-testid="detail-schliessen">
+    Schließen
+  </button>
 </mat-dialog-actions>

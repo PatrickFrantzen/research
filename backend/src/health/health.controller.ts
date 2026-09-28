@@ -21,6 +21,10 @@ export class HealthController {
   @UseGuards(JwtAuthGuard)
   async details(@Res() res: Response): Promise<void> {
     const result = await this.healthService.check();
-    res.status(result.status === 'ok' ? HttpStatus.OK : HttpStatus.SERVICE_UNAVAILABLE).json(result);
+    res
+      .status(
+        result.status === 'ok' ? HttpStatus.OK : HttpStatus.SERVICE_UNAVAILABLE,
+      )
+      .json(result);
   }
 }

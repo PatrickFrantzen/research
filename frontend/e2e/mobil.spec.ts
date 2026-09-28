@@ -21,9 +21,14 @@ for (const farbschema of ['light', 'dark'] as const) {
 test('Wareneintrag mit Foto erfassen und in der Liste wiederfinden', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('link', { name: 'Einträge anlegen' }).click();
-  await expect(page.getByRole('heading', { level: 1, name: 'Wareneintrag erfassen' })).toBeFocused();
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Wareneintrag erfassen' }),
+  ).toBeFocused();
 
-  await page.locator('input[type="file"]').first().setInputFiles({ name: 'fern.png', mimeType: 'image/png', buffer: TEST_PNG });
+  await page
+    .locator('input[type="file"]')
+    .first()
+    .setInputFiles({ name: 'fern.png', mimeType: 'image/png', buffer: TEST_PNG });
   await expect(page.getByRole('img', { name: 'Fernansicht' })).toBeVisible();
 
   await page.getByLabel('AVV-Code').fill(AVV_A.suche);
@@ -38,14 +43,19 @@ test('Wareneintrag mit Foto erfassen und in der Liste wiederfinden', async ({ pa
 
   const mobileNavigation = page.getByRole('navigation', { name: 'Mobile Navigation' });
   await mobileNavigation.getByRole('link', { name: 'Wareneinträge' }).click();
-  await expect(mobileNavigation.getByRole('link', { name: 'Wareneinträge' })).toHaveAttribute('aria-current', 'page');
+  await expect(mobileNavigation.getByRole('link', { name: 'Wareneinträge' })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
   await page.getByTestId('freitext-suche').fill('Mobil E2E mit Foto');
   await expect(page.getByTestId('trefferanzahl')).toHaveText('1 Wareneintrag');
 
   // Foto kommt per signierter URL aus dem Objektspeicher und lädt wirklich.
   const foto = page.getByRole('img', { name: new RegExp(`^Fernansicht – AVV ${AVV_A.code}`) });
   await expect(foto).toBeVisible();
-  await expect.poll(() => foto.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth)).toBe(1);
+  await expect
+    .poll(() => foto.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth))
+    .toBe(1);
 
   // Detail-Dialog (Issue #92) mobil als Vollbild, Galerie über den Daten.
   await foto.click();

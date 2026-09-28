@@ -11,7 +11,15 @@ import { MehrMenu } from './mehr-menu.js';
 
 @Component({
   selector: 'app-shell',
-  imports: [NgOptimizedImage, MatButtonModule, MatIconModule, MatToolbarModule, RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [
+    NgOptimizedImage,
+    MatButtonModule,
+    MatIconModule,
+    MatToolbarModule,
+    RouterLink,
+    RouterLinkActive,
+    RouterOutlet,
+  ],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
 })

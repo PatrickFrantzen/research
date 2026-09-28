@@ -8,7 +8,12 @@
       <mat-card-content class="formular">
         <mat-form-field appearance="outline">
           <mat-label>Neues Passwort</mat-label>
-          <input matInput type="password" [formField]="passwortForm.neuesPasswort" autocomplete="new-password" />
+          <input
+            matInput
+            type="password"
+            [formField]="passwortForm.neuesPasswort"
+            autocomplete="new-password"
+          />
           <mat-hint>Mindestens 12 Zeichen</mat-hint>
         </mat-form-field>
 
@@ -19,7 +24,11 @@
 
       <mat-card-actions align="end">
         <a matButton routerLink="/login">Zurück zum Login</a>
-        <button matButton="filled" type="submit" [disabled]="!passwortForm().valid() || wirdGeladen()">
+        <button
+          matButton="filled"
+          type="submit"
+          [disabled]="!passwortForm().valid() || wirdGeladen()"
+        >
           Passwort setzen
         </button>
       </mat-card-actions>

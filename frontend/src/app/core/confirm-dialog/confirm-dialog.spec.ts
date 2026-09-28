@@ -5,7 +5,12 @@ import { ConfirmDialog } from './confirm-dialog.js';
 describe('ConfirmDialog', () => {
   let dialogRef: jasmine.SpyObj<MatDialogRef<ConfirmDialog>>;
 
-  function setup(data: { titel: string; nachricht: string; bestaetigenLabel?: string; abbrechenLabel?: string }) {
+  function setup(data: {
+    titel: string;
+    nachricht: string;
+    bestaetigenLabel?: string;
+    abbrechenLabel?: string;
+  }) {
     dialogRef = jasmine.createSpyObj<MatDialogRef<ConfirmDialog>>('MatDialogRef', ['close']);
     return TestBed.configureTestingModule({
       imports: [ConfirmDialog],
@@ -17,7 +22,10 @@ describe('ConfirmDialog', () => {
   }
 
   it('shows the given title and message', async () => {
-    await setup({ titel: 'Wareneintrag löschen', nachricht: 'Möchten Sie "Bauschutt" wirklich löschen?' });
+    await setup({
+      titel: 'Wareneintrag löschen',
+      nachricht: 'Möchten Sie "Bauschutt" wirklich löschen?',
+    });
     const fixture = TestBed.createComponent(ConfirmDialog);
     fixture.detectChanges();
 
@@ -53,7 +61,12 @@ describe('ConfirmDialog', () => {
   });
 
   it('uses custom button labels when provided', async () => {
-    await setup({ titel: 'Titel', nachricht: 'Nachricht', bestaetigenLabel: 'Endgültig löschen', abbrechenLabel: 'Doch nicht' });
+    await setup({
+      titel: 'Titel',
+      nachricht: 'Nachricht',
+      bestaetigenLabel: 'Endgültig löschen',
+      abbrechenLabel: 'Doch nicht',
+    });
     const fixture = TestBed.createComponent(ConfirmDialog);
     fixture.detectChanges();
 

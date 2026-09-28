@@ -37,7 +37,8 @@ function erzeugeMailer(): Mailer {
         return {
           secret: env.auth.jwtSecret,
           signOptions: {
-            expiresIn: env.auth.jwtExpiresIn as `${number}${'s' | 'm' | 'h' | 'd'}`,
+            expiresIn: env.auth
+              .jwtExpiresIn as `${number}${'s' | 'm' | 'h' | 'd'}`,
             algorithm: 'HS256',
             // Muss zu den Optionen passen, die JwtStrategy beim Verifizieren
             // erzwingt (Issue #34).
@@ -49,7 +50,11 @@ function erzeugeMailer(): Mailer {
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, { provide: Mailer, useFactory: erzeugeMailer }],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    { provide: Mailer, useFactory: erzeugeMailer },
+  ],
   exports: [Mailer, passportModule],
 })
 export class AuthModule {}

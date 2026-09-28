@@ -12,9 +12,15 @@
         [formField]="filterForm.avvSucheAnzeige"
         (input)="onAvvSucheEingabe(avvSuche.value)"
       />
-      <mat-autocomplete #avvAuto="matAutocomplete" [displayWith]="leeresSuchfeld" (optionSelected)="onAvvCodeAusgewaehlt($event)">
+      <mat-autocomplete
+        #avvAuto="matAutocomplete"
+        [displayWith]="leeresSuchfeld"
+        (optionSelected)="onAvvCodeAusgewaehlt($event)"
+      >
         @for (avvCode of avvTrefferListe(); track avvCode.id) {
-          <mat-option [value]="avvCode.id">{{ avvCode.code }} – {{ avvCode.bezeichnung }}</mat-option>
+          <mat-option [value]="avvCode.id"
+            >{{ avvCode.code }} – {{ avvCode.bezeichnung }}</mat-option
+          >
         }
         @if (avvTreffer.status() === 'error') {
           <mat-option disabled>AVV-Codes konnten nicht geladen werden.</mat-option>
@@ -24,7 +30,13 @@
 
     <mat-form-field appearance="outline">
       <mat-label>Freitext durchsuchen</mat-label>
-      <input matInput #sucheInput data-testid="freitext-suche" [formField]="filterForm.suche" (input)="onSucheEingabe(sucheInput.value)" />
+      <input
+        matInput
+        #sucheInput
+        data-testid="freitext-suche"
+        [formField]="filterForm.suche"
+        (input)="onSucheEingabe(sucheInput.value)"
+      />
     </mat-form-field>
 
     <mat-form-field appearance="outline" data-testid="standort-filter">
@@ -42,25 +54,40 @@
     <div class="aktive-filter">
       <mat-chip-set aria-label="Aktive Filter">
         @if (avvFilterAnzeige(); as avv) {
-          <mat-chip data-testid="filter-avv" [title]="'AVV: ' + avv" (removed)="avvFilterEntfernen()">
+          <mat-chip
+            data-testid="filter-avv"
+            [title]="'AVV: ' + avv"
+            (removed)="avvFilterEntfernen()"
+          >
             AVV: {{ avv }}
-            <button matChipRemove aria-label="AVV-Filter entfernen"><mat-icon>cancel</mat-icon></button>
+            <button matChipRemove aria-label="AVV-Filter entfernen">
+              <mat-icon>cancel</mat-icon>
+            </button>
           </mat-chip>
         }
         @if (standortId()) {
           <mat-chip data-testid="filter-standort" (removed)="standortFilterEntfernen()">
             Standort: {{ standortFilterName() }}
-            <button matChipRemove aria-label="Standort-Filter entfernen"><mat-icon>cancel</mat-icon></button>
+            <button matChipRemove aria-label="Standort-Filter entfernen">
+              <mat-icon>cancel</mat-icon>
+            </button>
           </mat-chip>
         }
         @if (suche(); as begriff) {
           <mat-chip data-testid="filter-suche" (removed)="sucheEntfernen()">
             Freitext: {{ begriff }}
-            <button matChipRemove aria-label="Freitext-Filter entfernen"><mat-icon>cancel</mat-icon></button>
+            <button matChipRemove aria-label="Freitext-Filter entfernen">
+              <mat-icon>cancel</mat-icon>
+            </button>
           </mat-chip>
         }
       </mat-chip-set>
-      <button matButton type="button" data-testid="filter-zuruecksetzen" (click)="filterZuruecksetzen()">
+      <button
+        matButton
+        type="button"
+        data-testid="filter-zuruecksetzen"
+        (click)="filterZuruecksetzen()"
+      >
         Filter zurücksetzen
       </button>
     </div>
@@ -68,45 +95,86 @@
 
   @if (wareneintraege.hasValue()) {
     <p class="trefferanzahl" data-testid="trefferanzahl" role="status">
-      {{ wareneintraege.value().gesamt }} {{ wareneintraege.value().gesamt === 1 ? 'Wareneintrag' : 'Wareneinträge' }}
+      {{ wareneintraege.value().gesamt }}
+      {{ wareneintraege.value().gesamt === 1 ? 'Wareneintrag' : 'Wareneinträge' }}
     </p>
   }
 
-  <app-lade-zustand [ressource]="wareneintraege" meldung="Wareneinträge konnten nicht geladen werden." />
+  <app-lade-zustand
+    [ressource]="wareneintraege"
+    meldung="Wareneinträge konnten nicht geladen werden."
+  />
 
   <div class="karten">
     @if (wareneintraege.hasValue()) {
       @for (wareneintrag of wareneintraege.value().daten; track wareneintrag.id) {
         <!-- Klick auf die Karte öffnet die Details; Tastatur-Einstieg ist der Titel-Button (Issue #92). -->
-        <mat-card class="karte" data-testid="wareneintrag-karte" (click)="detailOeffnen(wareneintrag, 0)">
+        <mat-card
+          class="karte"
+          data-testid="wareneintrag-karte"
+          (click)="detailOeffnen(wareneintrag, 0)"
+        >
           <mat-card-header>
             <mat-card-title>
-              <button type="button" class="titel-button" data-testid="wareneintrag-details" (click)="$event.stopPropagation(); detailOeffnen(wareneintrag, 0)">
+              <button
+                type="button"
+                class="titel-button"
+                data-testid="wareneintrag-details"
+                (click)="$event.stopPropagation(); detailOeffnen(wareneintrag, 0)"
+              >
                 AVV-Code: {{ wareneintrag.avvCode.code }}
               </button>
             </mat-card-title>
             <mat-card-subtitle class="datum">
               {{ wareneintrag.erstelltAm | date: 'dd.MM.yyyy, HH:mm' }}
               @if (wareneintrag.dokumentUrl) {
-                <mat-icon class="pdf-hinweis" role="img" aria-hidden="false" aria-label="Mit PDF-Dokument" title="Mit PDF-Dokument">picture_as_pdf</mat-icon>
+                <mat-icon
+                  class="pdf-hinweis"
+                  role="img"
+                  aria-hidden="false"
+                  aria-label="Mit PDF-Dokument"
+                  title="Mit PDF-Dokument"
+                  >picture_as_pdf</mat-icon
+                >
               }
             </mat-card-subtitle>
           </mat-card-header>
           <mat-card-content>
             <div class="fotos">
               @for (foto of fotosVon(wareneintrag); track foto.label; let index = $index) {
-                <button type="button" class="foto-button" (click)="$event.stopPropagation(); detailOeffnen(wareneintrag, index)">
-                  <img [src]="foto.url" [alt]="foto.label + ' – AVV ' + wareneintrag.avvCode.code + ', ' + (wareneintrag.erstelltAm | date: 'dd.MM.yyyy')" />
+                <button
+                  type="button"
+                  class="foto-button"
+                  (click)="$event.stopPropagation(); detailOeffnen(wareneintrag, index)"
+                >
+                  <img
+                    [src]="foto.url"
+                    [alt]="
+                      foto.label +
+                      ' – AVV ' +
+                      wareneintrag.avvCode.code +
+                      ', ' +
+                      (wareneintrag.erstelltAm | date: 'dd.MM.yyyy')
+                    "
+                  />
                 </button>
               }
             </div>
             <p>{{ wareneintrag.freitext }}</p>
             <p>Standort: {{ wareneintrag.standort.name }}</p>
-            <p>Erfasst von: {{ wareneintrag.erfasstVon.vorname }} {{ wareneintrag.erfasstVon.nachname }}</p>
+            <p>
+              Erfasst von: {{ wareneintrag.erfasstVon.vorname }}
+              {{ wareneintrag.erfasstVon.nachname }}
+            </p>
           </mat-card-content>
           @if (istEigenerEintrag(wareneintrag)) {
-          <mat-card-actions align="end" (click)="$event.stopPropagation()">
-              <button matButton type="button" data-testid="wareneintrag-bearbeiten" (click)="bearbeitungOeffnen(wareneintrag)">
+            <mat-card-actions align="end" (click)="$event.stopPropagation()">
+              <button
+                matButton
+                type="button"
+                data-testid="wareneintrag-bearbeiten"
+                (click)="bearbeitungOeffnen(wareneintrag)"
+              >
                 Bearbeiten
               </button>
               <button

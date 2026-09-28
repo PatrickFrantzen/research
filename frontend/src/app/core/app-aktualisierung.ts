@@ -39,7 +39,9 @@ export class AppAktualisierung {
       if (this.document.visibilityState === 'visible') this.pruefe();
     };
     this.document.addEventListener('visibilitychange', beiRueckkehr);
-    this.destroyRef.onDestroy(() => this.document.removeEventListener('visibilitychange', beiRueckkehr));
+    this.destroyRef.onDestroy(() =>
+      this.document.removeEventListener('visibilitychange', beiRueckkehr),
+    );
   }
 
   private pruefe(): void {

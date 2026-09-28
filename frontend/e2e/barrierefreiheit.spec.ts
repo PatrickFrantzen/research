@@ -28,7 +28,9 @@ for (const farbschema of ['light', 'dark'] as const) {
     for (const seite of OEFFENTLICHE_SEITEN) {
       test(`${seite.pfad} ohne Session`, async ({ page }) => {
         await page.goto(seite.pfad);
-        await expect(page.getByRole('heading', { level: 1, name: seite.ueberschrift })).toBeVisible();
+        await expect(
+          page.getByRole('heading', { level: 1, name: seite.ueberschrift }),
+        ).toBeVisible();
         await pruefeBarrierefreiheit(page, `${seite.pfad}, ${farbschema}`);
       });
     }
@@ -39,7 +41,9 @@ for (const farbschema of ['light', 'dark'] as const) {
       for (const seite of GESCHUETZTE_SEITEN) {
         test(seite.pfad, async ({ page }) => {
           await page.goto(seite.pfad);
-          await expect(page.getByRole('heading', { level: 1, name: seite.ueberschrift })).toBeVisible();
+          await expect(
+            page.getByRole('heading', { level: 1, name: seite.ueberschrift }),
+          ).toBeVisible();
           await page.waitForLoadState('networkidle');
           await pruefeBarrierefreiheit(page, `${seite.pfad}, ${farbschema}`);
         });

@@ -24,7 +24,10 @@ export class HealthService implements OnModuleDestroy {
   });
 
   async check(): Promise<HealthStatus> {
-    const [database, objectStorage] = await Promise.all([this.checkDatabase(), this.checkObjectStorage()]);
+    const [database, objectStorage] = await Promise.all([
+      this.checkDatabase(),
+      this.checkObjectStorage(),
+    ]);
     return {
       status: database === 'ok' && objectStorage === 'ok' ? 'ok' : 'error',
       database,
@@ -43,7 +46,9 @@ export class HealthService implements OnModuleDestroy {
 
   private async checkObjectStorage(): Promise<'ok' | 'error'> {
     try {
-      await this.s3.send(new HeadBucketCommand({ Bucket: this.env.objectStorage.bucket }));
+      await this.s3.send(
+        new HeadBucketCommand({ Bucket: this.env.objectStorage.bucket }),
+      );
       return 'ok';
     } catch {
       return 'error';

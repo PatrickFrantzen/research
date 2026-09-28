@@ -59,12 +59,19 @@ describe('Admin-Bereich', () => {
     const prisma = {
       standort: {
         findFirst: async () => null,
-        create: async ({ data }: { data: { name: string } }) => ({ id: 'standort-neu', ...data }),
+        create: async ({ data }: { data: { name: string } }) => ({
+          id: 'standort-neu',
+          ...data,
+        }),
       },
       nutzer: {
-        findUnique: async ({ where }: { where: { id: string } }) => nutzer.find((n) => n.id === where.id) ?? null,
+        findUnique: async ({ where }: { where: { id: string } }) =>
+          nutzer.find((n) => n.id === where.id) ?? null,
         findMany: async () => nutzer,
-        create: async ({ data }: { data: Record<string, unknown> }) => ({ id: 'neu-1', ...data }),
+        create: async ({ data }: { data: Record<string, unknown> }) => ({
+          id: 'neu-1',
+          ...data,
+        }),
         update: async () => undefined,
       },
     };
@@ -74,7 +81,11 @@ describe('Admin-Bereich', () => {
         PassportModule.register({ defaultStrategy: 'jwt' }),
         JwtModule.register({
           secret: 'test-secret',
-          signOptions: { algorithm: 'HS256', issuer: 'test-issuer', audience: 'test-audience' },
+          signOptions: {
+            algorithm: 'HS256',
+            issuer: 'test-issuer',
+            audience: 'test-audience',
+          },
         }),
       ],
       controllers: [AuthController, NutzerController],
@@ -85,7 +96,10 @@ describe('Admin-Bereich', () => {
         { provide: PrismaService, useValue: prisma },
         {
           provide: Mailer,
-          useValue: { sendPasswortSetzenLink: async () => undefined, sendEinladung: async () => undefined },
+          useValue: {
+            sendPasswortSetzenLink: async () => undefined,
+            sendEinladung: async () => undefined,
+          },
         },
       ],
     }).compile();
@@ -93,7 +107,13 @@ describe('Admin-Bereich', () => {
     app = moduleRef.createNestApplication();
     app.use(cookieParser());
     app.setGlobalPrefix('api/v1');
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }));
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+      }),
+    );
     await app.init();
     jwt = moduleRef.get(JwtService);
   });
@@ -115,15 +135,21 @@ describe('Admin-Bereich', () => {
   };
 
   it('GET /auth/me verrät dem Frontend, ob der Nutzer Admin ist', async () => {
-    const admin = await request(app.getHttpServer()).get('/api/v1/auth/me').set('Cookie', await cookiesFuer('admin-1'));
-    const normal = await request(app.getHttpServer()).get('/api/v1/auth/me').set('Cookie', await cookiesFuer('nutzer-2'));
+    const admin = await request(app.getHttpServer())
+      .get('/api/v1/auth/me')
+      .set('Cookie', await cookiesFuer('admin-1'));
+    const normal = await request(app.getHttpServer())
+      .get('/api/v1/auth/me')
+      .set('Cookie', await cookiesFuer('nutzer-2'));
 
     expect(admin.body).toEqual({ id: 'admin-1', istAdmin: true });
     expect(normal.body).toEqual({ id: 'nutzer-2', istAdmin: false });
   });
 
   it('Admin sieht alle Nutzer ohne Passwort- oder Token-Felder', async () => {
-    const response = await request(app.getHttpServer()).get('/api/v1/nutzer').set('Cookie', await cookiesFuer('admin-1'));
+    const response = await request(app.getHttpServer())
+      .get('/api/v1/nutzer')
+      .set('Cookie', await cookiesFuer('admin-1'));
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual([
@@ -154,7 +180,9 @@ describe('Admin-Bereich', () => {
     const cookies = await cookiesFuer('nutzer-2');
     const server = app.getHttpServer();
 
-    const liste = await request(server).get('/api/v1/nutzer').set('Cookie', cookies);
+    const liste = await request(server)
+      .get('/api/v1/nutzer')
+      .set('Cookie', cookies);
     const anlegen = await request(server)
       .post('/api/v1/nutzer')
       .set('Cookie', cookies)
@@ -165,7 +193,9 @@ describe('Admin-Bereich', () => {
       .set('Cookie', cookies)
       .set('x-csrf-token', csrf);
 
-    expect([liste.status, anlegen.status, mail.status]).toEqual([403, 403, 403]);
+    expect([liste.status, anlegen.status, mail.status]).toEqual([
+      403, 403, 403,
+    ]);
   });
 
   it('Admin darf Nutzer anlegen und Passwort-Mails auslösen', async () => {
@@ -198,11 +228,19 @@ describe('Admin-Bereich', () => {
         .post('/api/v1/nutzer')
         .set('Cookie', cookies)
         .set('x-csrf-token', csrf)
-        .send({ vorname: 'Neu', nachname: 'Nutzer', email: 'neu@research.local', ...daten });
+        .send({
+          vorname: 'Neu',
+          nachname: 'Nutzer',
+          email: 'neu@research.local',
+          ...daten,
+        });
 
     const mitFreitext = await anlegen({ neuerStandort: 'Winsen' });
     const ohne = await anlegen({});
-    const beides = await anlegen({ standortId: neuerNutzer.standortId, neuerStandort: 'Winsen' });
+    const beides = await anlegen({
+      standortId: neuerNutzer.standortId,
+      neuerStandort: 'Winsen',
+    });
 
     expect(mitFreitext.status).toBe(201);
     expect(mitFreitext.body.standortId).toBe('standort-neu');

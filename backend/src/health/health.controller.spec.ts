@@ -25,7 +25,11 @@ describe('HealthController', () => {
   describe('details (GET /health/details, authentifiziert)', () => {
     it('returns the full dependency status for authenticated users', async () => {
       const healthService = {
-        check: vi.fn().mockResolvedValue({ status: 'ok', database: 'ok', objectStorage: 'ok' }),
+        check: vi.fn().mockResolvedValue({
+          status: 'ok',
+          database: 'ok',
+          objectStorage: 'ok',
+        }),
       };
       const controller = new HealthController(healthService as never);
       const res = buildRes();
@@ -33,12 +37,20 @@ describe('HealthController', () => {
       await controller.details(res as never);
 
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith({ status: 'ok', database: 'ok', objectStorage: 'ok' });
+      expect(res.json).toHaveBeenCalledWith({
+        status: 'ok',
+        database: 'ok',
+        objectStorage: 'ok',
+      });
     });
 
     it('returns 503 when a dependency is down', async () => {
       const healthService = {
-        check: vi.fn().mockResolvedValue({ status: 'error', database: 'error', objectStorage: 'ok' }),
+        check: vi.fn().mockResolvedValue({
+          status: 'error',
+          database: 'error',
+          objectStorage: 'ok',
+        }),
       };
       const controller = new HealthController(healthService as never);
       const res = buildRes();

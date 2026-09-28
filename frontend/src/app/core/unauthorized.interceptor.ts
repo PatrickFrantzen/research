@@ -31,5 +31,9 @@ export const unauthorizedInterceptor: HttpInterceptorFn = (req, next) => {
 
 function istAuthCleanupRequest(url: string): boolean {
   const pathname = new URL(url, window.location.origin).pathname;
-  return pathname === '/api/v1/auth/logout' || pathname === '/api/v1/auth/login' || pathname === '/api/v1/auth/me';
+  return (
+    pathname === '/api/v1/auth/logout' ||
+    pathname === '/api/v1/auth/login' ||
+    pathname === '/api/v1/auth/me'
+  );
 }

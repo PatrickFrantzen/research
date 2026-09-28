@@ -1,7 +1,10 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormField, form, maxLength, required } from '@angular/forms/signals';
-import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import {
+  MatAutocompleteModule,
+  MatAutocompleteSelectedEvent,
+} from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -13,7 +16,11 @@ import { AvvCodeApi } from '../../../core/avv-code-api.js';
 import { AppFehlerMelder } from '../../../core/app-fehler-melder.js';
 import { beschreibeFoto, pruefeDokument, uebernehmeFoto } from '../../../core/foto-validierung.js';
 import { extrahiereFehlermeldung } from '../../../core/http-fehler.js';
-import { FREITEXT_MAX_LAENGE, Wareneintrag, WareneintragApi } from '../../../core/wareneintrag-api.js';
+import {
+  FREITEXT_MAX_LAENGE,
+  Wareneintrag,
+  WareneintragApi,
+} from '../../../core/wareneintrag-api.js';
 import { FokusBeiAnzeige } from '../../../core/fokus-bei-anzeige.js';
 
 export interface WareneintragBearbeitenDialogDaten {
@@ -79,7 +86,11 @@ export class WareneintragBearbeitenDialog {
   // erfordert.
   private readonly avvCodeId = signal<string | null>(this.daten.wareneintrag.avvCode.id);
   protected readonly fotoKacheln = FOTO_KACHELN;
-  private readonly fotos = signal<Record<FotoAnsicht, File | null>>({ fotoFern: null, fotoNah: null, fotoDetail: null });
+  private readonly fotos = signal<Record<FotoAnsicht, File | null>>({
+    fotoFern: null,
+    fotoNah: null,
+    fotoDetail: null,
+  });
   // Neues PDF (Issue #103), ersetzt ein vorhandenes oder kommt neu hinzu.
   protected readonly dokument = signal<File | null>(null);
 
@@ -105,7 +116,9 @@ export class WareneintragBearbeitenDialog {
   });
 
   // value() wirft im Fehlerzustand – Template und Handler lesen nur hierüber.
-  protected readonly avvTrefferListe = computed(() => (this.avvTreffer.hasValue() ? this.avvTreffer.value() : []));
+  protected readonly avvTrefferListe = computed(() =>
+    this.avvTreffer.hasValue() ? this.avvTreffer.value() : [],
+  );
 
   protected speichernLaeuft = false;
   protected readonly fehler = signal<string | null>(null);
@@ -143,10 +156,13 @@ export class WareneintragBearbeitenDialog {
   async fotoErsetzen(ansicht: FotoAnsicht, event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const auswahl = input.files?.item(0) ?? null;
-    const { datei, meldung } = auswahl ? await uebernehmeFoto(auswahl) : { datei: null, meldung: null };
+    const { datei, meldung } = auswahl
+      ? await uebernehmeFoto(auswahl)
+      : { datei: null, meldung: null };
     const label = this.fotoKacheln.find((kachel) => kachel.ansicht === ansicht)?.label;
     this.fotoFehler.set(meldung ? `${label}: ${meldung}` : null);
-    if (meldung && auswahl) this.fehlerMelder.melde(`Foto abgelehnt: ${label}: ${meldung} ${beschreibeFoto(auswahl)}`);
+    if (meldung && auswahl)
+      this.fehlerMelder.melde(`Foto abgelehnt: ${label}: ${meldung} ${beschreibeFoto(auswahl)}`);
     this.fotos.update((fotos) => ({ ...fotos, [ansicht]: datei }));
   }
 
@@ -177,10 +193,14 @@ export class WareneintragBearbeitenDialog {
     if (dokument) formData.set('dokument', dokument);
 
     try {
-      await firstValueFrom(this.wareneintragApi.aktualisieren(this.daten.wareneintrag.id, formData));
+      await firstValueFrom(
+        this.wareneintragApi.aktualisieren(this.daten.wareneintrag.id, formData),
+      );
       this.dialogRef.close(true);
     } catch (error) {
-      this.fehler.set(extrahiereFehlermeldung(error, 'Wareneintrag konnte nicht gespeichert werden.'));
+      this.fehler.set(
+        extrahiereFehlermeldung(error, 'Wareneintrag konnte nicht gespeichert werden.'),
+      );
     } finally {
       this.speichernLaeuft = false;
     }

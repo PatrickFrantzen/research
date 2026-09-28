@@ -23,7 +23,9 @@ describe('Einstellungen', () => {
     const fixture = TestBed.createComponent(Einstellungen);
     fixture.detectChanges();
     httpMock.expectOne('/api/v1/standorte').flush([]);
-    httpMock.expectOne('/api/v1/nutzer/me').flush({ id: 'n', vorname: 'a', nachname: 'b', email: 'c@d.de', standortId: 's' });
+    httpMock
+      .expectOne('/api/v1/nutzer/me')
+      .flush({ id: 'n', vorname: 'a', nachname: 'b', email: 'c@d.de', standortId: 's' });
     fixture.detectChanges();
 
     // In Tests ist keine Build-Version gesetzt.
@@ -58,9 +60,12 @@ describe('Einstellungen', () => {
     const fixture = TestBed.createComponent(Einstellungen);
     fixture.detectChanges();
     httpMock.expectOne('/api/v1/standorte').flush([]);
-    httpMock
-      .expectOne('/api/v1/nutzer/me')
-      .flush({ vorname: 'Erika', nachname: 'Musterfrau', email: 'erika@research.local', standortId: 'standort-1' });
+    httpMock.expectOne('/api/v1/nutzer/me').flush({
+      vorname: 'Erika',
+      nachname: 'Musterfrau',
+      email: 'erika@research.local',
+      standortId: 'standort-1',
+    });
     await fixture.whenStable();
 
     const component = fixture.componentInstance;
@@ -71,8 +76,17 @@ describe('Einstellungen', () => {
     const submitPromise = component.submit();
     const request = httpMock.expectOne('/api/v1/nutzer/me');
     expect(request.request.method).toBe('PATCH');
-    expect(request.request.body).toEqual({ vorname: 'Erika', nachname: 'Neuername', standortId: 'standort-2' });
-    request.flush({ vorname: 'Erika', nachname: 'Neuername', email: 'erika@research.local', standortId: 'standort-2' });
+    expect(request.request.body).toEqual({
+      vorname: 'Erika',
+      nachname: 'Neuername',
+      standortId: 'standort-2',
+    });
+    request.flush({
+      vorname: 'Erika',
+      nachname: 'Neuername',
+      email: 'erika@research.local',
+      standortId: 'standort-2',
+    });
     await submitPromise;
 
     expect(openSpy).toHaveBeenCalledWith('Änderungen gespeichert.', undefined, jasmine.anything());
@@ -82,9 +96,12 @@ describe('Einstellungen', () => {
     const fixture = TestBed.createComponent(Einstellungen);
     fixture.detectChanges();
     httpMock.expectOne('/api/v1/standorte').flush([{ id: 'standort-1', name: 'Hauptsitz' }]);
-    httpMock
-      .expectOne('/api/v1/nutzer/me')
-      .flush({ vorname: 'Erika', nachname: 'M', email: 'erika@research.local', standortId: 'standort-1' });
+    httpMock.expectOne('/api/v1/nutzer/me').flush({
+      vorname: 'Erika',
+      nachname: 'M',
+      email: 'erika@research.local',
+      standortId: 'standort-1',
+    });
     await fixture.whenStable();
     fixture.detectChanges(); // Vorbefüllen aus den eigenen Daten abschließen
     const component = fixture.componentInstance;
@@ -96,8 +113,17 @@ describe('Einstellungen', () => {
 
     const submitPromise = component.submit();
     const request = httpMock.expectOne('/api/v1/nutzer/me');
-    expect(request.request.body).toEqual({ vorname: 'Erika', nachname: 'M', neuerStandort: 'Außenstelle Nord' });
-    request.flush({ vorname: 'Erika', nachname: 'M', email: 'erika@research.local', standortId: 'standort-neu' });
+    expect(request.request.body).toEqual({
+      vorname: 'Erika',
+      nachname: 'M',
+      neuerStandort: 'Außenstelle Nord',
+    });
+    request.flush({
+      vorname: 'Erika',
+      nachname: 'M',
+      email: 'erika@research.local',
+      standortId: 'standort-neu',
+    });
     await submitPromise;
     fixture.detectChanges();
     httpMock.expectOne('/api/v1/standorte').flush([
@@ -112,7 +138,9 @@ describe('Einstellungen', () => {
     const fixture = TestBed.createComponent(Einstellungen);
     fixture.detectChanges();
     httpMock.expectOne('/api/v1/standorte').flush([]);
-    httpMock.expectOne('/api/v1/nutzer/me').flush({ vorname: '', nachname: '', email: '', standortId: '' });
+    httpMock
+      .expectOne('/api/v1/nutzer/me')
+      .flush({ vorname: '', nachname: '', email: '', standortId: '' });
 
     const link = fixture.nativeElement.querySelector('.impressum-link') as HTMLAnchorElement | null;
     expect(link?.getAttribute('href')).toBe('/impressum');
@@ -121,16 +149,20 @@ describe('Einstellungen', () => {
   it('keeps the form locked until the own data and Standorte are loaded', async () => {
     const fixture = TestBed.createComponent(Einstellungen);
     fixture.detectChanges();
-    const speichern = () => fixture.nativeElement.querySelector('button[type="submit"]') as HTMLButtonElement;
+    const speichern = () =>
+      fixture.nativeElement.querySelector('button[type="submit"]') as HTMLButtonElement;
     const vorname = () => fixture.nativeElement.querySelector('input') as HTMLInputElement;
 
     expect(speichern().disabled).toBeTrue();
     expect(vorname().disabled).toBeTrue();
 
     httpMock.expectOne('/api/v1/standorte').flush([{ id: 'standort-1', name: 'Hauptsitz' }]);
-    httpMock
-      .expectOne('/api/v1/nutzer/me')
-      .flush({ vorname: 'Erika', nachname: 'Musterfrau', email: 'erika@research.local', standortId: 'standort-1' });
+    httpMock.expectOne('/api/v1/nutzer/me').flush({
+      vorname: 'Erika',
+      nachname: 'Musterfrau',
+      email: 'erika@research.local',
+      standortId: 'standort-1',
+    });
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -142,18 +174,27 @@ describe('Einstellungen', () => {
     const fixture = TestBed.createComponent(Einstellungen);
     fixture.detectChanges();
     httpMock.expectOne('/api/v1/standorte').flush([]);
-    httpMock.expectOne('/api/v1/nutzer/me').flush('Fehler', { status: 500, statusText: 'Server Error' });
+    httpMock
+      .expectOne('/api/v1/nutzer/me')
+      .flush('Fehler', { status: 500, statusText: 'Server Error' });
     await fixture.whenStable();
     fixture.detectChanges();
 
     const element = fixture.nativeElement as HTMLElement;
-    expect(element.querySelector('[role="alert"]')?.textContent).toContain('Deine Daten konnten nicht geladen werden.');
-    expect((element.querySelector('button[type="submit"]') as HTMLButtonElement).disabled).toBeTrue();
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain(
+      'Deine Daten konnten nicht geladen werden.',
+    );
+    expect(
+      (element.querySelector('button[type="submit"]') as HTMLButtonElement).disabled,
+    ).toBeTrue();
 
     (element.querySelector('[data-testid="erneut-laden"]') as HTMLButtonElement).click();
     fixture.detectChanges();
-    httpMock
-      .expectOne('/api/v1/nutzer/me')
-      .flush({ vorname: 'Erika', nachname: 'Musterfrau', email: 'erika@research.local', standortId: '' });
+    httpMock.expectOne('/api/v1/nutzer/me').flush({
+      vorname: 'Erika',
+      nachname: 'Musterfrau',
+      email: 'erika@research.local',
+      standortId: '',
+    });
   });
 });

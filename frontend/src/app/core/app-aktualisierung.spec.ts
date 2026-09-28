@@ -57,7 +57,8 @@ describe('AppAktualisierung', () => {
   const abwarten = () => new Promise((resolve) => setTimeout(resolve));
   // Die Snackbar wird nachgeladen (dynamischer Import), das dauert ein paar Ticks.
   async function warteBis(bedingung: () => boolean): Promise<void> {
-    for (let i = 0; i < 100 && !bedingung(); i++) await new Promise((resolve) => setTimeout(resolve, 10));
+    for (let i = 0; i < 100 && !bedingung(); i++)
+      await new Promise((resolve) => setTimeout(resolve, 10));
   }
 
   async function neueVersionBereit(): Promise<void> {

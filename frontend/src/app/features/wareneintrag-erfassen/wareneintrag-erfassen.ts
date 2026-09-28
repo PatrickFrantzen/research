@@ -1,7 +1,18 @@
-import { Component, DestroyRef, ElementRef, computed, inject, signal, viewChildren } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  computed,
+  inject,
+  signal,
+  viewChildren,
+} from '@angular/core';
 import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormField, form, maxLength, required } from '@angular/forms/signals';
-import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import {
+  MatAutocompleteModule,
+  MatAutocompleteSelectedEvent,
+} from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -61,7 +72,11 @@ export class WareneintragErfassen {
   private readonly snackBar = inject(MatSnackBar);
 
   protected readonly fotoKacheln = FOTO_KACHELN;
-  private readonly fotos: Record<FotoAnsicht, File | null> = { fotoFern: null, fotoNah: null, fotoDetail: null };
+  private readonly fotos: Record<FotoAnsicht, File | null> = {
+    fotoFern: null,
+    fotoNah: null,
+    fotoDetail: null,
+  };
   private readonly fotoVorschauUrls = signal<Record<FotoAnsicht, string | null>>({
     fotoFern: null,
     fotoNah: null,
@@ -89,7 +104,9 @@ export class WareneintragErfassen {
   });
 
   // value() wirft im Fehlerzustand – Template und Handler lesen nur hierüber.
-  protected readonly avvTrefferListe = computed(() => (this.avvTreffer.hasValue() ? this.avvTreffer.value() : []));
+  protected readonly avvTrefferListe = computed(() =>
+    this.avvTreffer.hasValue() ? this.avvTreffer.value() : [],
+  );
 
   get avvSucheAnzeige(): string {
     return this.wareneintragDaten().avvSucheAnzeige;
@@ -128,10 +145,13 @@ export class WareneintragErfassen {
   async onFotoAusgewaehlt(ansicht: FotoAnsicht, event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const auswahl = input.files?.[0] ?? null;
-    const { datei, meldung } = auswahl ? await uebernehmeFoto(auswahl) : { datei: null, meldung: null };
+    const { datei, meldung } = auswahl
+      ? await uebernehmeFoto(auswahl)
+      : { datei: null, meldung: null };
     const label = this.fotoKacheln.find((kachel) => kachel.ansicht === ansicht)?.label;
     this.fotoFehler.set(meldung ? `${label}: ${meldung}` : null);
-    if (meldung && auswahl) this.fehlerMelder.melde(`Foto abgelehnt: ${label}: ${meldung} ${beschreibeFoto(auswahl)}`);
+    if (meldung && auswahl)
+      this.fehlerMelder.melde(`Foto abgelehnt: ${label}: ${meldung} ${beschreibeFoto(auswahl)}`);
     this.fotos[ansicht] = datei;
     this.setzeFotoVorschau(ansicht, datei);
   }
@@ -148,7 +168,10 @@ export class WareneintragErfassen {
   private setzeFotoVorschau(ansicht: FotoAnsicht, datei: File | null): void {
     const alteUrl = this.fotoVorschauUrls()[ansicht];
     if (alteUrl) URL.revokeObjectURL(alteUrl);
-    this.fotoVorschauUrls.update((urls) => ({ ...urls, [ansicht]: datei ? URL.createObjectURL(datei) : null }));
+    this.fotoVorschauUrls.update((urls) => ({
+      ...urls,
+      [ansicht]: datei ? URL.createObjectURL(datei) : null,
+    }));
   }
 
   private fotoVorschauenFreigeben(): void {
@@ -205,7 +228,8 @@ export class WareneintragErfassen {
 
   weitererEintrag(): void {
     // Sonst löst die erneute Auswahl derselben Datei kein change aus (Issue #59).
-    for (const input of [...this.kameraInputs(), ...this.galerieInputs(), ...this.dokumentInputs()]) input.nativeElement.value = '';
+    for (const input of [...this.kameraInputs(), ...this.galerieInputs(), ...this.dokumentInputs()])
+      input.nativeElement.value = '';
     this.fotoFehler.set(null);
     this.fotos.fotoFern = null;
     this.fotos.fotoNah = null;

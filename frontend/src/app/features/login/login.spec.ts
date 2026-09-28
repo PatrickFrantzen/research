@@ -28,7 +28,11 @@ describe('Login', () => {
     authService.login.and.resolveTo({ mussPasswortSetzen: false });
     const fixture = TestBed.createComponent(Login);
     const component = fixture.componentInstance;
-    (component as unknown as { loginDaten: { set: (value: { email: string; passwort: string }) => void } }).loginDaten.set({
+    (
+      component as unknown as {
+        loginDaten: { set: (value: { email: string; passwort: string }) => void };
+      }
+    ).loginDaten.set({
       email: 'vorgesetzter@example.com',
       passwort: 'langes-geheimnis',
     });
@@ -43,7 +47,11 @@ describe('Login', () => {
     authService.login.and.resolveTo({ mussPasswortSetzen: false });
     const fixture = TestBed.createComponent(Login);
     const component = fixture.componentInstance;
-    (component as unknown as { loginDaten: { set: (value: { email: string; passwort: string }) => void } }).loginDaten.set({
+    (
+      component as unknown as {
+        loginDaten: { set: (value: { email: string; passwort: string }) => void };
+      }
+    ).loginDaten.set({
       email: 'vorgesetzter@example.com',
       passwort: 'geheim123',
     });
@@ -57,7 +65,11 @@ describe('Login', () => {
     authService.login.and.resolveTo({ mussPasswortSetzen: false });
     const fixture = TestBed.createComponent(Login);
     const component = fixture.componentInstance;
-    (component as unknown as { loginDaten: { set: (value: { email: string; passwort: string }) => void } }).loginDaten.set({
+    (
+      component as unknown as {
+        loginDaten: { set: (value: { email: string; passwort: string }) => void };
+      }
+    ).loginDaten.set({
       email: 'vorgesetzter@example.com',
       passwort: 'geheim123',
     });
@@ -84,7 +96,11 @@ describe('Login', () => {
     authService.login.and.resolveTo({ mussPasswortSetzen: true });
     const fixture = TestBed.createComponent(Login);
     const component = fixture.componentInstance;
-    (component as unknown as { loginDaten: { set: (value: { email: string; passwort: string }) => void } }).loginDaten.set({
+    (
+      component as unknown as {
+        loginDaten: { set: (value: { email: string; passwort: string }) => void };
+      }
+    ).loginDaten.set({
       email: 'vorgesetzter@example.com',
       passwort: 'langes-geheimnis',
     });
@@ -93,21 +109,29 @@ describe('Login', () => {
 
     expect(authService.logout).toHaveBeenCalled();
     expect(router.navigateByUrl).not.toHaveBeenCalled();
-    expect((component as unknown as { fehler: () => string | null }).fehler()).toContain('Passwort gesetzt werden');
+    expect((component as unknown as { fehler: () => string | null }).fehler()).toContain(
+      'Passwort gesetzt werden',
+    );
   });
 
   it('shows an error message when login fails', async () => {
     authService.login.and.rejectWith(new Error('invalid credentials'));
     const fixture = TestBed.createComponent(Login);
     const component = fixture.componentInstance;
-    (component as unknown as { loginDaten: { set: (value: { email: string; passwort: string }) => void } }).loginDaten.set({
+    (
+      component as unknown as {
+        loginDaten: { set: (value: { email: string; passwort: string }) => void };
+      }
+    ).loginDaten.set({
       email: 'vorgesetzter@example.com',
       passwort: 'langes-geheimnis',
     });
 
     await component.submit();
 
-    expect((component as unknown as { fehler: () => string | null }).fehler()).toBe('E-Mail oder Passwort ungültig.');
+    expect((component as unknown as { fehler: () => string | null }).fehler()).toBe(
+      'E-Mail oder Passwort ungültig.',
+    );
     expect(router.navigateByUrl).not.toHaveBeenCalled();
   });
 
@@ -125,8 +149,12 @@ describe('Login', () => {
     const fixture = TestBed.createComponent(Login);
     fixture.detectChanges();
 
-    const input = fixture.nativeElement.querySelector('[data-testid="login-passwort"]') as HTMLInputElement;
-    const toggle = fixture.nativeElement.querySelector('[data-testid="passwort-sichtbarkeit"]') as HTMLButtonElement;
+    const input = fixture.nativeElement.querySelector(
+      '[data-testid="login-passwort"]',
+    ) as HTMLInputElement;
+    const toggle = fixture.nativeElement.querySelector(
+      '[data-testid="passwort-sichtbarkeit"]',
+    ) as HTMLButtonElement;
 
     expect(input.type).toBe('password');
 

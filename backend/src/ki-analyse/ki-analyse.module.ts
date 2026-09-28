@@ -11,7 +11,10 @@ import { KI_REDIS, KiAnalyseService } from './ki-analyse.service.js';
   controllers: [KiAnalyseController],
   providers: [
     KiAnalyseService,
-    { provide: GeminiClient, useFactory: () => new GeminiClient(loadEnv().gemini) },
+    {
+      provide: GeminiClient,
+      useFactory: () => new GeminiClient(loadEnv().gemini),
+    },
     { provide: KI_REDIS, useFactory: () => new Redis(loadEnv().redis.url) },
   ],
 })

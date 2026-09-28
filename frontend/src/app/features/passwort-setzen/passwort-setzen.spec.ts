@@ -52,7 +52,11 @@ describe('PasswortSetzen', () => {
     await fixture.componentInstance.submit();
 
     expect(router.navigateByUrl).toHaveBeenCalledWith('/');
-    expect(snackBar).toHaveBeenCalledWith('Passwort gesetzt, du bist angemeldet.', 'OK', jasmine.anything());
+    expect(snackBar).toHaveBeenCalledWith(
+      'Passwort gesetzt, du bist angemeldet.',
+      'OK',
+      jasmine.anything(),
+    );
   });
 
   it('does not navigate when setting the password fails', async () => {
@@ -89,6 +93,9 @@ describe('PasswortSetzen', () => {
 
     TestBed.createComponent(PasswortSetzen);
 
-    expect(router.navigate).toHaveBeenCalledWith([], jasmine.objectContaining({ queryParams: {}, replaceUrl: true }));
+    expect(router.navigate).toHaveBeenCalledWith(
+      [],
+      jasmine.objectContaining({ queryParams: {}, replaceUrl: true }),
+    );
   });
 });

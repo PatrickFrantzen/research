@@ -27,10 +27,17 @@ describe('Security-Header (Issue #26)', () => {
         secretAccessKey: 'secret',
         bucket: 'bucket',
       },
-      auth: { jwtSecret: 'secret', jwtExpiresIn: '8h', jwtIssuer: 'test-issuer', jwtAudience: 'test-audience' },
+      auth: {
+        jwtSecret: 'secret',
+        jwtExpiresIn: '8h',
+        jwtIssuer: 'test-issuer',
+        jwtAudience: 'test-audience',
+      },
       redis: { url: 'redis://localhost:6379' },
     };
-    const moduleRef = await Test.createTestingModule({ controllers: [DummyController] }).compile();
+    const moduleRef = await Test.createTestingModule({
+      controllers: [DummyController],
+    }).compile();
     app = moduleRef.createNestApplication();
     app.use(konfiguriereSecurityHeaders(env));
     await app.init();
@@ -43,7 +50,9 @@ describe('Security-Header (Issue #26)', () => {
   it('sends a restrictive Content-Security-Policy on every response', async () => {
     const response = await request(app.getHttpServer()).get('/ping');
 
-    expect(response.headers['content-security-policy']).toContain("default-src 'self'");
+    expect(response.headers['content-security-policy']).toContain(
+      "default-src 'self'",
+    );
     expect(response.headers['x-content-type-options']).toBe('nosniff');
     expect(response.headers['referrer-policy']).toBe('no-referrer');
   });

@@ -1,4 +1,8 @@
-import { ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ExecutionContext,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import type { Request } from 'express';
 import { csrfIstGueltig } from './csrf.js';

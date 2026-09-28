@@ -47,7 +47,10 @@ describe('WareneintragListe', () => {
   // nicht der Dialoginhalt selbst (der ist in ConfirmDialog bzw.
   // WareneintragBearbeitenDialog eigenständig getestet).
   function dialogSchliesstMit<T>(ergebnis: T | undefined) {
-    spyOn(dialog, 'open').and.returnValue({ afterClosed: () => of(ergebnis) } as MatDialogRef<unknown, T>);
+    spyOn(dialog, 'open').and.returnValue({ afterClosed: () => of(ergebnis) } as MatDialogRef<
+      unknown,
+      T
+    >);
   }
 
   afterEach(() => httpMock.verify());
@@ -65,7 +68,9 @@ describe('WareneintragListe', () => {
 
       expect(element.querySelector('mat-progress-bar')).not.toBeNull();
       expect(element.querySelector('[data-testid="keine-eintraege"]')).toBeNull();
-      httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 0 });
+      httpMock
+        .expectOne((req) => req.url === '/api/v1/wareneintraege')
+        .flush({ daten: [], gesamt: 0 });
     });
 
     it('shows a request error as error with retry, never as an empty list', fakeAsync(() => {
@@ -76,13 +81,17 @@ describe('WareneintragListe', () => {
       tick();
       fixture.detectChanges();
 
-      expect(element.querySelector('[role="alert"]')?.textContent).toContain('Wareneinträge konnten nicht geladen werden.');
+      expect(element.querySelector('[role="alert"]')?.textContent).toContain(
+        'Wareneinträge konnten nicht geladen werden.',
+      );
       expect(element.querySelector('[data-testid="keine-eintraege"]')).toBeNull();
       expect(element.querySelector('mat-paginator')).toBeNull();
 
       (element.querySelector('[data-testid="erneut-laden"]') as HTMLButtonElement).click();
       fixture.detectChanges();
-      httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 0 });
+      httpMock
+        .expectOne((req) => req.url === '/api/v1/wareneintraege')
+        .flush({ daten: [], gesamt: 0 });
       tick();
       fixture.detectChanges();
 
@@ -93,7 +102,9 @@ describe('WareneintragListe', () => {
 
     it('keeps the last total in the paginator while the next page loads', fakeAsync(() => {
       const { fixture } = erstelleListe();
-      httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 45 });
+      httpMock
+        .expectOne((req) => req.url === '/api/v1/wareneintraege')
+        .flush({ daten: [], gesamt: 45 });
       tick();
       fixture.detectChanges();
 
@@ -101,7 +112,9 @@ describe('WareneintragListe', () => {
       fixture.detectChanges();
 
       expect((fixture.componentInstance as unknown as { gesamt: () => number }).gesamt()).toBe(45);
-      httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 45 });
+      httpMock
+        .expectOne((req) => req.url === '/api/v1/wareneintraege')
+        .flush({ daten: [], gesamt: 45 });
       tick();
     }));
   });
@@ -109,9 +122,9 @@ describe('WareneintragListe', () => {
   it('lists all Wareneintraege without a filter on load', () => {
     const fixture = TestBed.createComponent(WareneintragListe);
     fixture.detectChanges();
-    httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([
-      { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton', gefaehrlich: false },
-    ]);
+    httpMock
+      .expectOne((req) => req.url === '/api/v1/avv-codes')
+      .flush([{ id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton', gefaehrlich: false }]);
 
     const request = httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege');
     expect(request.request.params.get('seite')).toBe('0');
@@ -122,9 +135,9 @@ describe('WareneintragListe', () => {
   it('loads the selected page and reloads when the paginator advances', () => {
     const fixture = TestBed.createComponent(WareneintragListe);
     fixture.detectChanges();
-    httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([
-      { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton', gefaehrlich: false },
-    ]);
+    httpMock
+      .expectOne((req) => req.url === '/api/v1/avv-codes')
+      .flush([{ id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton', gefaehrlich: false }]);
 
     const ersteSeite = httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege');
     expect(ersteSeite.request.params.get('seite')).toBe('0');
@@ -143,14 +156,18 @@ describe('WareneintragListe', () => {
   it('returns to the first page when the free-text filter changes', fakeAsync(() => {
     const fixture = TestBed.createComponent(WareneintragListe);
     fixture.detectChanges();
-    httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([
-      { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton', gefaehrlich: false },
-    ]);
-    httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 41 });
+    httpMock
+      .expectOne((req) => req.url === '/api/v1/avv-codes')
+      .flush([{ id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton', gefaehrlich: false }]);
+    httpMock
+      .expectOne((req) => req.url === '/api/v1/wareneintraege')
+      .flush({ daten: [], gesamt: 41 });
 
     fixture.componentInstance.onSeitenwechsel({ pageIndex: 1, pageSize: 20 } as never);
     fixture.detectChanges();
-    httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 41 });
+    httpMock
+      .expectOne((req) => req.url === '/api/v1/wareneintraege')
+      .flush({ daten: [], gesamt: 41 });
 
     fixture.componentInstance.onSucheEingabe('Bauschutt');
     tick(300);
@@ -165,10 +182,12 @@ describe('WareneintragListe', () => {
   it('combines the avvCodeId filter with the free-text search', () => {
     const fixture = TestBed.createComponent(WareneintragListe);
     fixture.detectChanges();
-    httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([
-      { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton', gefaehrlich: false },
-    ]);
-    httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 0 });
+    httpMock
+      .expectOne((req) => req.url === '/api/v1/avv-codes')
+      .flush([{ id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton', gefaehrlich: false }]);
+    httpMock
+      .expectOne((req) => req.url === '/api/v1/wareneintraege')
+      .flush({ daten: [], gesamt: 0 });
 
     fixture.componentInstance.avvCodeId.set('avv-1');
     fixture.componentInstance.suche.set('Bauschutt');
@@ -187,7 +206,9 @@ describe('WareneintragListe', () => {
       httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([]);
       const element = fixture.nativeElement as HTMLElement;
       const anzahlVorher = element.querySelector('[data-testid="trefferanzahl"]');
-      httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt });
+      httpMock
+        .expectOne((req) => req.url === '/api/v1/wareneintraege')
+        .flush({ daten: [], gesamt });
       tick();
       fixture.detectChanges();
       return { anzahlVorher, anzahl: element.querySelector('[data-testid="trefferanzahl"]') };
@@ -209,34 +230,42 @@ describe('WareneintragListe', () => {
     const fixture = TestBed.createComponent(WareneintragListe);
     fixture.detectChanges();
     httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([]);
-    httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({
-      daten: [
-        {
-          id: 'wareneintrag-1',
-          fotoFernUrl: '/fern.jpg',
-          fotoNahUrl: null,
-          fotoDetailUrl: '/detail.jpg',
-          dokumentUrl: null,
-          freitext: 'test',
-          erstelltAm: '2026-09-19T20:08:00',
-          avvCode: { code: '17 01 01' },
-          standort: { id: 'standort-1', name: 'Hauptsitz' },
-          erfasstVon: { id: 'nutzer-2', vorname: 'Max', nachname: 'Mustermann' },
-        },
-      ],
-      gesamt: 1,
-    });
+    httpMock
+      .expectOne((req) => req.url === '/api/v1/wareneintraege')
+      .flush({
+        daten: [
+          {
+            id: 'wareneintrag-1',
+            fotoFernUrl: '/fern.jpg',
+            fotoNahUrl: null,
+            fotoDetailUrl: '/detail.jpg',
+            dokumentUrl: null,
+            freitext: 'test',
+            erstelltAm: '2026-09-19T20:08:00',
+            avvCode: { code: '17 01 01' },
+            standort: { id: 'standort-1', name: 'Hauptsitz' },
+            erfasstVon: { id: 'nutzer-2', vorname: 'Max', nachname: 'Mustermann' },
+          },
+        ],
+        gesamt: 1,
+      });
     tick();
     fixture.detectChanges();
 
-    const alts = Array.from(fixture.nativeElement.querySelectorAll('.fotos img') as NodeListOf<HTMLImageElement>).map(
-      (img) => img.alt,
-    );
-    expect(alts).toEqual(['Fernansicht – AVV 17 01 01, 19.09.2026', 'Detailansicht – AVV 17 01 01, 19.09.2026']);
+    const alts = Array.from(
+      fixture.nativeElement.querySelectorAll('.fotos img') as NodeListOf<HTMLImageElement>,
+    ).map((img) => img.alt);
+    expect(alts).toEqual([
+      'Fernansicht – AVV 17 01 01, 19.09.2026',
+      'Detailansicht – AVV 17 01 01, 19.09.2026',
+    ]);
   }));
 
   describe('sichtbare Filter (Issue #61)', () => {
-    function waehleAvvCode(fixture: ReturnType<typeof TestBed.createComponent<WareneintragListe>>, id: string) {
+    function waehleAvvCode(
+      fixture: ReturnType<typeof TestBed.createComponent<WareneintragListe>>,
+      id: string,
+    ) {
       fixture.componentInstance.onAvvCodeAusgewaehlt({ option: { value: id } } as never);
       fixture.detectChanges();
       tick();
@@ -246,23 +275,33 @@ describe('WareneintragListe', () => {
     it('shows the chosen AVV-Code as a removable chip and frees the search field for another choice', fakeAsync(() => {
       const fixture = TestBed.createComponent(WareneintragListe);
       fixture.detectChanges();
-      httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([
-        { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton', gefaehrlich: false },
-      ]);
-      httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 0 });
+      httpMock
+        .expectOne((req) => req.url === '/api/v1/avv-codes')
+        .flush([{ id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton', gefaehrlich: false }]);
+      httpMock
+        .expectOne((req) => req.url === '/api/v1/wareneintraege')
+        .flush({ daten: [], gesamt: 0 });
       tick();
       fixture.detectChanges();
       const element = fixture.nativeElement as HTMLElement;
 
       waehleAvvCode(fixture, 'avv-1');
       httpMock
-        .expectOne((req) => req.url === '/api/v1/wareneintraege' && req.params.get('avvCodeId') === 'avv-1')
+        .expectOne(
+          (req) => req.url === '/api/v1/wareneintraege' && req.params.get('avvCodeId') === 'avv-1',
+        )
         .flush({ daten: [], gesamt: 0 });
 
-      expect(element.querySelector('[data-testid="filter-avv"]')?.textContent).toContain('17 01 01 – Beton');
-      expect((element.querySelector('[data-testid="avv-suche"]') as HTMLInputElement).value).toBe('');
+      expect(element.querySelector('[data-testid="filter-avv"]')?.textContent).toContain(
+        '17 01 01 – Beton',
+      );
+      expect((element.querySelector('[data-testid="avv-suche"]') as HTMLInputElement).value).toBe(
+        '',
+      );
 
-      (element.querySelector('[data-testid="filter-avv"] [matChipRemove]') as HTMLButtonElement).click();
+      (
+        element.querySelector('[data-testid="filter-avv"] [matChipRemove]') as HTMLButtonElement
+      ).click();
       fixture.detectChanges();
       tick();
       fixture.detectChanges();
@@ -276,13 +315,17 @@ describe('WareneintragListe', () => {
     it('leaves the search field empty after picking a suggestion from the autocomplete', fakeAsync(() => {
       const fixture = TestBed.createComponent(WareneintragListe);
       fixture.detectChanges();
-      httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([
-        { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton', gefaehrlich: false },
-      ]);
-      httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 0 });
+      httpMock
+        .expectOne((req) => req.url === '/api/v1/avv-codes')
+        .flush([{ id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton', gefaehrlich: false }]);
+      httpMock
+        .expectOne((req) => req.url === '/api/v1/wareneintraege')
+        .flush({ daten: [], gesamt: 0 });
       tick();
       fixture.detectChanges();
-      const input = fixture.nativeElement.querySelector('[data-testid="avv-suche"]') as HTMLInputElement;
+      const input = fixture.nativeElement.querySelector(
+        '[data-testid="avv-suche"]',
+      ) as HTMLInputElement;
 
       input.dispatchEvent(new Event('focusin'));
       fixture.detectChanges();
@@ -292,7 +335,9 @@ describe('WareneintragListe', () => {
       tick();
       fixture.detectChanges();
 
-      httpMock.expectOne((req) => req.params.get('avvCodeId') === 'avv-1').flush({ daten: [], gesamt: 0 });
+      httpMock
+        .expectOne((req) => req.params.get('avvCodeId') === 'avv-1')
+        .flush({ daten: [], gesamt: 0 });
       expect(input.value).toBe('');
       expect(fixture.nativeElement.querySelector('[data-testid="filter-avv"]')).not.toBeNull();
     }));
@@ -301,15 +346,23 @@ describe('WareneintragListe', () => {
       const fixture = TestBed.createComponent(WareneintragListe);
       fixture.detectChanges();
       httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([]);
-      httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 0 });
+      httpMock
+        .expectOne((req) => req.url === '/api/v1/wareneintraege')
+        .flush({ daten: [], gesamt: 0 });
       tick();
       fixture.detectChanges();
       const element = fixture.nativeElement as HTMLElement;
 
-      (element.querySelector('[data-testid="standort-filter"] .mat-mdc-select-trigger') as HTMLElement).click();
+      (
+        element.querySelector(
+          '[data-testid="standort-filter"] .mat-mdc-select-trigger',
+        ) as HTMLElement
+      ).click();
       fixture.detectChanges();
       tick();
-      const option = Array.from(document.querySelectorAll('mat-option')).find((o) => o.textContent?.includes('Lager Nord'));
+      const option = Array.from(document.querySelectorAll('mat-option')).find((o) =>
+        o.textContent?.includes('Lager Nord'),
+      );
       (option as HTMLElement).click();
       fixture.detectChanges();
       tick();
@@ -321,9 +374,15 @@ describe('WareneintragListe', () => {
       request.flush({ daten: [], gesamt: 0 });
       tick();
       fixture.detectChanges();
-      expect(element.querySelector('[data-testid="filter-standort"]')?.textContent).toContain('Lager Nord');
+      expect(element.querySelector('[data-testid="filter-standort"]')?.textContent).toContain(
+        'Lager Nord',
+      );
 
-      (element.querySelector('[data-testid="filter-standort"] [matChipRemove]') as HTMLButtonElement).click();
+      (
+        element.querySelector(
+          '[data-testid="filter-standort"] [matChipRemove]',
+        ) as HTMLButtonElement
+      ).click();
       fixture.detectChanges();
       tick();
       fixture.detectChanges();
@@ -336,22 +395,30 @@ describe('WareneintragListe', () => {
     function listeMitFiltern() {
       const fixture = TestBed.createComponent(WareneintragListe);
       fixture.detectChanges();
-      httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([
-        { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton', gefaehrlich: false },
-      ]);
-      httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 0 });
+      httpMock
+        .expectOne((req) => req.url === '/api/v1/avv-codes')
+        .flush([{ id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton', gefaehrlich: false }]);
+      httpMock
+        .expectOne((req) => req.url === '/api/v1/wareneintraege')
+        .flush({ daten: [], gesamt: 0 });
       tick();
       fixture.detectChanges();
       waehleAvvCode(fixture, 'avv-1');
-      httpMock.expectOne((req) => req.params.get('avvCodeId') === 'avv-1').flush({ daten: [], gesamt: 0 });
+      httpMock
+        .expectOne((req) => req.params.get('avvCodeId') === 'avv-1')
+        .flush({ daten: [], gesamt: 0 });
       fixture.componentInstance.onStandortGewaehlt('standort-2');
       fixture.detectChanges();
       tick();
-      httpMock.expectOne((req) => req.params.get('standortId') === 'standort-2').flush({ daten: [], gesamt: 0 });
+      httpMock
+        .expectOne((req) => req.params.get('standortId') === 'standort-2')
+        .flush({ daten: [], gesamt: 0 });
       fixture.componentInstance.onSucheEingabe('Bauschutt');
       tick(300);
       fixture.detectChanges();
-      httpMock.expectOne((req) => req.params.get('suche') === 'Bauschutt').flush({ daten: [], gesamt: 0 });
+      httpMock
+        .expectOne((req) => req.params.get('suche') === 'Bauschutt')
+        .flush({ daten: [], gesamt: 0 });
       tick();
       fixture.detectChanges();
       return { fixture, element: fixture.nativeElement as HTMLElement };
@@ -360,8 +427,12 @@ describe('WareneintragListe', () => {
     it('shows the free-text search as a removable chip as well', fakeAsync(() => {
       const { fixture, element } = listeMitFiltern();
 
-      expect(element.querySelector('[data-testid="filter-suche"]')?.textContent).toContain('Bauschutt');
-      (element.querySelector('[data-testid="filter-suche"] [matChipRemove]') as HTMLButtonElement).click();
+      expect(element.querySelector('[data-testid="filter-suche"]')?.textContent).toContain(
+        'Bauschutt',
+      );
+      (
+        element.querySelector('[data-testid="filter-suche"] [matChipRemove]') as HTMLButtonElement
+      ).click();
       fixture.detectChanges();
       tick(300);
       fixture.detectChanges();
@@ -390,7 +461,9 @@ describe('WareneintragListe', () => {
       tick();
       fixture.detectChanges();
       expect(element.querySelector('.aktive-filter')).toBeNull();
-      expect((element.querySelector('[data-testid="freitext-suche"]') as HTMLInputElement).value).toBe('');
+      expect(
+        (element.querySelector('[data-testid="freitext-suche"]') as HTMLInputElement).value,
+      ).toBe('');
     }));
   });
 
@@ -400,20 +473,23 @@ describe('WareneintragListe', () => {
     httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([]);
     httpMock
       .expectOne((req) => req.url === '/api/v1/wareneintraege')
-      .flush({ daten: [
-        {
-          id: 'wareneintrag-1',
-          fotoFernUrl: '/foto.jpg',
-          fotoNahUrl: null,
-          fotoDetailUrl: null,
-          dokumentUrl: null,
-          freitext: 'test',
-          erstelltAm: '2026-09-19T18:08:00.000Z',
-          avvCode: { code: '17 01 01' },
-          standort: { id: 'standort-1', name: 'Hauptsitz' },
-          erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
-        },
-      ], gesamt: 1 });
+      .flush({
+        daten: [
+          {
+            id: 'wareneintrag-1',
+            fotoFernUrl: '/foto.jpg',
+            fotoNahUrl: null,
+            fotoDetailUrl: null,
+            dokumentUrl: null,
+            freitext: 'test',
+            erstelltAm: '2026-09-19T18:08:00.000Z',
+            avvCode: { code: '17 01 01' },
+            standort: { id: 'standort-1', name: 'Hauptsitz' },
+            erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
+          },
+        ],
+        gesamt: 1,
+      });
     tick();
     fixture.detectChanges();
 
@@ -441,7 +517,10 @@ describe('WareneintragListe', () => {
     });
     httpMock
       .expectOne((req) => req.url === '/api/v1/wareneintraege')
-      .flush({ daten: [eintrag('mit-pdf', 'https://files/pdf'), eintrag('ohne-pdf', null)], gesamt: 2 });
+      .flush({
+        daten: [eintrag('mit-pdf', 'https://files/pdf'), eintrag('ohne-pdf', null)],
+        gesamt: 2,
+      });
     tick();
     fixture.detectChanges();
 
@@ -454,35 +533,37 @@ describe('WareneintragListe', () => {
     const fixture = TestBed.createComponent(WareneintragListe);
     fixture.detectChanges();
     httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([]);
-    httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({
-      daten: [
-        {
-          id: 'eigener-wareneintrag',
-          fotoFernUrl: null,
-          fotoNahUrl: null,
-          fotoDetailUrl: null,
-          dokumentUrl: null,
-          freitext: 'eigener',
-          erstelltAm: '2026-09-19T18:08:00.000Z',
-          avvCode: { code: '17 01 01' },
-          standort: { id: 'standort-1', name: 'Hauptsitz' },
-          erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
-        },
-        {
-          id: 'fremder-wareneintrag',
-          fotoFernUrl: null,
-          fotoNahUrl: null,
-          fotoDetailUrl: null,
-          dokumentUrl: null,
-          freitext: 'fremder',
-          erstelltAm: '2026-09-19T18:08:00.000Z',
-          avvCode: { code: '17 01 01' },
-          standort: { id: 'standort-1', name: 'Hauptsitz' },
-          erfasstVon: { id: 'nutzer-2', vorname: 'Max', nachname: 'Mustermann' },
-        },
-      ],
-      gesamt: 2,
-    });
+    httpMock
+      .expectOne((req) => req.url === '/api/v1/wareneintraege')
+      .flush({
+        daten: [
+          {
+            id: 'eigener-wareneintrag',
+            fotoFernUrl: null,
+            fotoNahUrl: null,
+            fotoDetailUrl: null,
+            dokumentUrl: null,
+            freitext: 'eigener',
+            erstelltAm: '2026-09-19T18:08:00.000Z',
+            avvCode: { code: '17 01 01' },
+            standort: { id: 'standort-1', name: 'Hauptsitz' },
+            erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
+          },
+          {
+            id: 'fremder-wareneintrag',
+            fotoFernUrl: null,
+            fotoNahUrl: null,
+            fotoDetailUrl: null,
+            dokumentUrl: null,
+            freitext: 'fremder',
+            erstelltAm: '2026-09-19T18:08:00.000Z',
+            avvCode: { code: '17 01 01' },
+            standort: { id: 'standort-1', name: 'Hauptsitz' },
+            erfasstVon: { id: 'nutzer-2', vorname: 'Max', nachname: 'Mustermann' },
+          },
+        ],
+        gesamt: 2,
+      });
     tick();
     fixture.detectChanges();
 
@@ -499,20 +580,23 @@ describe('WareneintragListe', () => {
     httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([]);
     httpMock
       .expectOne((req) => req.url === '/api/v1/wareneintraege')
-      .flush({ daten: [
-        {
-          id: 'wareneintrag-1',
-          fotoFernUrl: '/foto.jpg',
-          fotoNahUrl: null,
-          fotoDetailUrl: null,
-          dokumentUrl: null,
-          freitext: 'test',
-          erstelltAm: '2026-09-19T20:08:00',
-          avvCode: { code: '17 01 01' },
-          standort: { id: 'standort-1', name: 'Hauptsitz' },
-          erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
-        },
-      ], gesamt: 1 });
+      .flush({
+        daten: [
+          {
+            id: 'wareneintrag-1',
+            fotoFernUrl: '/foto.jpg',
+            fotoNahUrl: null,
+            fotoDetailUrl: null,
+            dokumentUrl: null,
+            freitext: 'test',
+            erstelltAm: '2026-09-19T20:08:00',
+            avvCode: { code: '17 01 01' },
+            standort: { id: 'standort-1', name: 'Hauptsitz' },
+            erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
+          },
+        ],
+        gesamt: 1,
+      });
     tick();
     fixture.detectChanges();
 
@@ -522,41 +606,52 @@ describe('WareneintragListe', () => {
 
   describe('Detail-Dialog (Issue #92)', () => {
     function listeMitEintrag(fotos: { fotoFernUrl: string | null; fotoNahUrl: string | null }) {
-      spyOn(dialog, 'open').and.returnValue({ afterClosed: () => of(undefined) } as MatDialogRef<unknown>);
+      spyOn(dialog, 'open').and.returnValue({
+        afterClosed: () => of(undefined),
+      } as MatDialogRef<unknown>);
       const fixture = TestBed.createComponent(WareneintragListe);
       fixture.detectChanges();
       httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([]);
-      httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({
-        daten: [
-          {
-            id: 'wareneintrag-1',
-            ...fotos,
-            fotoDetailUrl: null,
-            dokumentUrl: null,
-            freitext: 'Text',
-            erstelltAm: '2026-09-19T20:08:00',
-            avvCode: { code: '17 01 01' },
-            standort: { id: 'standort-1', name: 'Hauptsitz' },
-            erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
-          },
-        ],
-        gesamt: 1,
-      });
+      httpMock
+        .expectOne((req) => req.url === '/api/v1/wareneintraege')
+        .flush({
+          daten: [
+            {
+              id: 'wareneintrag-1',
+              ...fotos,
+              fotoDetailUrl: null,
+              dokumentUrl: null,
+              freitext: 'Text',
+              erstelltAm: '2026-09-19T20:08:00',
+              avvCode: { code: '17 01 01' },
+              standort: { id: 'standort-1', name: 'Hauptsitz' },
+              erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
+            },
+          ],
+          gesamt: 1,
+        });
       tick();
       fixture.detectChanges();
       const element = fixture.nativeElement as HTMLElement;
-      const startFotos = () => (dialog.open as jasmine.Spy).calls.allArgs().map((args) => args[1].data.startFoto);
+      const startFotos = () =>
+        (dialog.open as jasmine.Spy).calls.allArgs().map((args) => args[1].data.startFoto);
       return { element, startFotos };
     }
 
     it('opens at the first foto when the card is clicked', fakeAsync(() => {
-      const { element, startFotos } = listeMitEintrag({ fotoFernUrl: '/fern.jpg', fotoNahUrl: '/nah.jpg' });
+      const { element, startFotos } = listeMitEintrag({
+        fotoFernUrl: '/fern.jpg',
+        fotoNahUrl: '/nah.jpg',
+      });
       (element.querySelector('[data-testid="wareneintrag-karte"] p') as HTMLElement).click();
       expect(startFotos()).toEqual([0]);
     }));
 
     it('opens exactly once at foto N when foto N is clicked', fakeAsync(() => {
-      const { element, startFotos } = listeMitEintrag({ fotoFernUrl: '/fern.jpg', fotoNahUrl: '/nah.jpg' });
+      const { element, startFotos } = listeMitEintrag({
+        fotoFernUrl: '/fern.jpg',
+        fotoNahUrl: '/nah.jpg',
+      });
       (element.querySelectorAll('.foto-button')[1] as HTMLButtonElement).click();
       expect(startFotos()).toEqual([1]);
     }));
@@ -569,7 +664,9 @@ describe('WareneintragListe', () => {
 
     it('does not open the details when Bearbeiten or Löschen is clicked', fakeAsync(() => {
       const { element } = listeMitEintrag({ fotoFernUrl: null, fotoNahUrl: null });
-      (element.querySelector('[data-testid="wareneintrag-bearbeiten"]') as HTMLButtonElement).click();
+      (
+        element.querySelector('[data-testid="wareneintrag-bearbeiten"]') as HTMLButtonElement
+      ).click();
       (element.querySelector('[data-testid="wareneintrag-loeschen"]') as HTMLButtonElement).click();
       const geoeffnet = (dialog.open as jasmine.Spy).calls.allArgs().map((args) => args[0].name);
       expect(geoeffnet).not.toContain('WareneintragDetailDialog');
@@ -594,7 +691,9 @@ describe('WareneintragListe', () => {
       standort: { id: 'standort-1', name: 'Hauptsitz' },
       erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
     };
-    httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [wareneintrag], gesamt: 1 });
+    httpMock
+      .expectOne((req) => req.url === '/api/v1/wareneintraege')
+      .flush({ daten: [wareneintrag], gesamt: 1 });
     tick();
     fixture.detectChanges();
 
@@ -605,7 +704,9 @@ describe('WareneintragListe', () => {
     expect(data.wareneintrag).toEqual(wareneintrag);
     tick();
     fixture.detectChanges();
-    httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 0 });
+    httpMock
+      .expectOne((req) => req.url === '/api/v1/wareneintraege')
+      .flush({ daten: [], gesamt: 0 });
   }));
 
   it('does not reload the list when the edit dialog is cancelled', fakeAsync(() => {
@@ -613,7 +714,9 @@ describe('WareneintragListe', () => {
     const fixture = TestBed.createComponent(WareneintragListe);
     fixture.detectChanges();
     httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([]);
-    httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 0 });
+    httpMock
+      .expectOne((req) => req.url === '/api/v1/wareneintraege')
+      .flush({ daten: [], gesamt: 0 });
     tick();
     fixture.detectChanges();
 
@@ -653,7 +756,9 @@ describe('WareneintragListe', () => {
       standort: { id: 'standort-1', name: 'Hauptsitz' },
       erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
     };
-    httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [wareneintrag], gesamt: 1 });
+    httpMock
+      .expectOne((req) => req.url === '/api/v1/wareneintraege')
+      .flush({ daten: [wareneintrag], gesamt: 1 });
     tick();
     fixture.detectChanges();
 
@@ -666,7 +771,9 @@ describe('WareneintragListe', () => {
     request.flush({});
     tick();
     fixture.detectChanges();
-    httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 0 });
+    httpMock
+      .expectOne((req) => req.url === '/api/v1/wareneintraege')
+      .flush({ daten: [], gesamt: 0 });
   }));
 
   it('announces a failed delete (e.g. 403) instead of failing silently', fakeAsync(() => {
@@ -675,7 +782,9 @@ describe('WareneintragListe', () => {
     const fixture = TestBed.createComponent(WareneintragListe);
     fixture.detectChanges();
     httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([]);
-    httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 0 });
+    httpMock
+      .expectOne((req) => req.url === '/api/v1/wareneintraege')
+      .flush({ daten: [], gesamt: 0 });
     tick();
     fixture.detectChanges();
 
@@ -690,7 +799,11 @@ describe('WareneintragListe', () => {
       .flush({ message: 'Verboten' }, { status: 403, statusText: 'Forbidden' });
     tick();
 
-    expect(snackBar).toHaveBeenCalledWith('Keine Berechtigung für diese Aktion.', 'OK', jasmine.objectContaining({ politeness: 'assertive' }));
+    expect(snackBar).toHaveBeenCalledWith(
+      'Keine Berechtigung für diese Aktion.',
+      'OK',
+      jasmine.objectContaining({ politeness: 'assertive' }),
+    );
     httpMock.expectNone((req) => req.url === '/api/v1/wareneintraege');
   }));
 
@@ -699,7 +812,9 @@ describe('WareneintragListe', () => {
     const fixture = TestBed.createComponent(WareneintragListe);
     fixture.detectChanges();
     httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([]);
-    httpMock.expectOne((req) => req.url === '/api/v1/wareneintraege').flush({ daten: [], gesamt: 0 });
+    httpMock
+      .expectOne((req) => req.url === '/api/v1/wareneintraege')
+      .flush({ daten: [], gesamt: 0 });
     tick();
     fixture.detectChanges();
 

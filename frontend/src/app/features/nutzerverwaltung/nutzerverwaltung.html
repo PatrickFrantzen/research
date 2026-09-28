@@ -17,9 +17,19 @@
       <mat-list>
         @for (n of nutzerListe(); track n.id) {
           <mat-list-item lines="3">
-            <span matListItemTitle>{{ n.vorname }} {{ n.nachname }}@if (n.istAdmin) { (Admin)}</span>
+            <span matListItemTitle
+              >{{ n.vorname }} {{ n.nachname }}
+              @if (n.istAdmin) {
+                (Admin)
+              }
+            </span>
             <span matListItemLine>{{ n.email }}</span>
-            <span matListItemLine>{{ n.standort }}@if (n.einladungOffen) { · Einladung offen}</span>
+            <span matListItemLine
+              >{{ n.standort }}
+              @if (n.einladungOffen) {
+                · Einladung offen
+              }
+            </span>
             <button
               matButton
               matListItemMeta

@@ -56,7 +56,13 @@ export async function pruefeBarrierefreiheit(page: Page, kontext: string): Promi
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])
     .analyze();
   const beschreibung = ergebnis.violations
-    .map((v) => `[${v.impact}] ${v.id}: ${v.help}\n  ${v.nodes.map((n) => n.target.join(' ')).join('\n  ')}`)
+    .map(
+      (v) =>
+        `[${v.impact}] ${v.id}: ${v.help}\n  ${v.nodes.map((n) => n.target.join(' ')).join('\n  ')}`,
+    )
     .join('\n');
-  expect(ergebnis.violations.map((v) => v.id), `AXE-Verstöße (${kontext}):\n${beschreibung}`).toEqual([]);
+  expect(
+    ergebnis.violations.map((v) => v.id),
+    `AXE-Verstöße (${kontext}):\n${beschreibung}`,
+  ).toEqual([]);
 }

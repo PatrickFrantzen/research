@@ -1,5 +1,11 @@
 import { randomUUID } from 'node:crypto';
-import { DeleteObjectCommand, GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  HeadObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Injectable } from '@nestjs/common';
 import { loadEnv } from '../config/env.js';
@@ -53,25 +59,44 @@ export class ObjectStorageService {
 
   // Für die KI-Analyse: Foto samt gespeichertem Content-Type ins Backend holen.
   async ladeFoto(key: string): Promise<{ daten: Buffer; mimeType: string }> {
-    const antwort = await this.s3.send(new GetObjectCommand({ Bucket: this.env.objectStorage.bucket, Key: key }));
-    const daten = Buffer.from((await antwort.Body?.transformToByteArray()) ?? []);
+    const antwort = await this.s3.send(
+      new GetObjectCommand({ Bucket: this.env.objectStorage.bucket, Key: key }),
+    );
+    const daten = Buffer.from(
+      (await antwort.Body?.transformToByteArray()) ?? [],
+    );
     return { daten, mimeType: antwort.ContentType ?? 'image/jpeg' };
   }
 
   // Größe in Bytes aus den Metadaten, ohne das Foto herunterzuladen.
   async fotoGroesse(key: string): Promise<number> {
-    const antwort = await this.s3.send(new HeadObjectCommand({ Bucket: this.env.objectStorage.bucket, Key: key }));
+    const antwort = await this.s3.send(
+      new HeadObjectCommand({
+        Bucket: this.env.objectStorage.bucket,
+        Key: key,
+      }),
+    );
     return antwort.ContentLength ?? 0;
   }
 
   async deleteFoto(key: string): Promise<void> {
-    await this.s3.send(new DeleteObjectCommand({ Bucket: this.env.objectStorage.bucket, Key: key }));
+    await this.s3.send(
+      new DeleteObjectCommand({
+        Bucket: this.env.objectStorage.bucket,
+        Key: key,
+      }),
+    );
   }
 
   // Liefert eine zeitlich begrenzt gültige GET-URL für den gegebenen Key,
   // statt den Bucket öffentlich lesbar zu machen (Issue #45).
   async getSignedUrl(key: string): Promise<string> {
-    const command = new GetObjectCommand({ Bucket: this.env.objectStorage.bucket, Key: key });
-    return getSignedUrl(this.s3Public, command, { expiresIn: SIGNIERTE_URL_GUELTIGKEIT_SEKUNDEN });
+    const command = new GetObjectCommand({
+      Bucket: this.env.objectStorage.bucket,
+      Key: key,
+    });
+    return getSignedUrl(this.s3Public, command, {
+      expiresIn: SIGNIERTE_URL_GUELTIGKEIT_SEKUNDEN,
+    });
   }
 }

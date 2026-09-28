@@ -26,10 +26,16 @@ describe('NutzerApi', () => {
       standortId: 'standort-1',
     });
 
-    api.aktualisiereEigeneDaten({ vorname: 'Erika', nachname: 'Neu', standortId: 'standort-2' }).subscribe();
+    api
+      .aktualisiereEigeneDaten({ vorname: 'Erika', nachname: 'Neu', standortId: 'standort-2' })
+      .subscribe();
     const request = httpMock.expectOne('/api/v1/nutzer/me');
     expect(request.request.method).toBe('PATCH');
-    expect(request.request.body).toEqual({ vorname: 'Erika', nachname: 'Neu', standortId: 'standort-2' });
+    expect(request.request.body).toEqual({
+      vorname: 'Erika',
+      nachname: 'Neu',
+      standortId: 'standort-2',
+    });
     request.flush({});
   });
 });

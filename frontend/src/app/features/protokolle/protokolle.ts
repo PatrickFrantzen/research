@@ -13,7 +13,15 @@ type Art = 'aktivitaet' | 'fehler';
 
 @Component({
   selector: 'app-protokolle',
-  imports: [LadeZustand, MatButtonModule, MatCardModule, MatFormFieldModule, MatIconModule, MatSelectModule, RouterLink],
+  imports: [
+    LadeZustand,
+    MatButtonModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatSelectModule,
+    RouterLink,
+  ],
   templateUrl: './protokolle.html',
   styleUrl: './protokolle.scss',
 })
@@ -23,7 +31,9 @@ export class Protokolle {
   protected readonly tage = rxResource({
     stream: () => this.http.get<{ tage: string[] }>('/api/v1/protokoll'),
   });
-  protected readonly tagListe = computed(() => (this.tage.hasValue() ? this.tage.value().tage : []));
+  protected readonly tagListe = computed(() =>
+    this.tage.hasValue() ? this.tage.value().tage : [],
+  );
   protected readonly tag = linkedSignal(() => this.tagListe()[0] ?? null);
   protected readonly art = signal<Art>('aktivitaet');
 

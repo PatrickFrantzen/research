@@ -1,4 +1,13 @@
-import { Controller, Get, HttpCode, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Put,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import type { AuthenticatedRequest } from '../auth/jwt.strategy.js';
 import { Aktivitaet } from '../protokoll/aktivitaet.decorator.js';
