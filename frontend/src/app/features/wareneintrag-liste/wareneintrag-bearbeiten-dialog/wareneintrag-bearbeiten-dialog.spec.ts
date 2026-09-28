@@ -1,8 +1,9 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { provideRouter } from '@angular/router';
+import { of } from 'rxjs';
 import { Wareneintrag } from '../../../core/wareneintrag-api.js';
 import { AppFehlerMelder } from '../../../core/app-fehler-melder.js';
 import { WareneintragBearbeitenDialog } from './wareneintrag-bearbeiten-dialog.js';
@@ -12,7 +13,7 @@ const WARENEINTRAG: Wareneintrag = {
   fotoFernUrl: '/foto.jpg',
   fotoNahUrl: null,
   fotoDetailUrl: null,
-  dokumentUrl: null,
+  dokumentUrl: '/lieferschein.pdf',
   freitext: 'alter Text',
   erstelltAm: '2026-09-19T20:08:00',
   avvCode: { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' },
@@ -26,6 +27,10 @@ interface TestableDialog {
   fehler: () => string | null;
   fotoErsetzen: (ansicht: 'fotoFern' | 'fotoNah' | 'fotoDetail', event: Event) => Promise<void>;
   dokumentErsetzen: (event: Event) => void;
+  dateiLoeschen: (
+    datei: 'fotoFern' | 'fotoNah' | 'fotoDetail' | 'dokument',
+    label: string,
+  ) => Promise<void>;
 }
 
 function asTestable(component: WareneintragBearbeitenDialog): TestableDialog {
@@ -154,7 +159,7 @@ describe('WareneintragBearbeitenDialog', () => {
     ).toBe(false);
 
     const ersetzen = Array.from(element.querySelectorAll('button')).find((b) =>
-      b.textContent?.includes('Nahansicht ersetzen'),
+      b.textContent?.includes('Nahansicht hinzufügen'),
     )!;
     ersetzen.click();
     fixture.detectChanges();
@@ -257,6 +262,8 @@ describe('WareneintragBearbeitenDialog', () => {
     tick();
 
     void fixture.componentInstance.speichern();
+    httpMock.expectOne('/api/v1/wareneintraege/wareneintrag-1/ki-analyse').flush(null);
+    tick();
 
     const request = httpMock.expectOne('/api/v1/wareneintraege/wareneintrag-1');
     expect(request.request.method).toBe('PATCH');
@@ -266,6 +273,8 @@ describe('WareneintragBearbeitenDialog', () => {
     expect(body.get('fotoFern')).toBeNull();
     expect(body.get('fotoNah')).toBeNull();
     expect((body.get('fotoDetail') as File).name).toBe('neu.jpg');
+    // Keine gespeicherte Analyse: keine Rückfrage, nichts zu löschen.
+    expect(body.get('analyseLoeschen')).toBeNull();
     request.flush({});
     tick();
 
@@ -295,4 +304,178 @@ describe('WareneintragBearbeitenDialog', () => {
     expect(component.fehler()).toBe('Wareneintrag konnte nicht gespeichert werden.');
     expect(dialogRef.close).not.toHaveBeenCalled();
   }));
+
+  describe('Fotos und PDF löschen (Issue #104)', () => {
+    const GESPEICHERTE_ANALYSE = {
+      ergebnis: {},
+      analysiertVon: { vorname: 'Erika', nachname: 'Musterfrau' },
+      analysiertAm: '2026-09-20T10:00:00',
+    };
+
+    // Beantwortet die geöffneten Rückfragen der Reihe nach.
+    function antworte(...antworten: (boolean | undefined)[]) {
+      return spyOn(MatDialog.prototype, 'open').and.callFake(
+        () => ({ afterClosed: () => of(antworten.shift()) }) as never,
+      );
+    }
+
+    function knopf(element: HTMLElement, testId: string) {
+      return element.querySelector(`[data-testid="${testId}"]`) as HTMLButtonElement | null;
+    }
+
+    it('offers a delete button only for files the Wareneintrag has', () => {
+      const element = createComponent().nativeElement as HTMLElement;
+
+      expect(knopf(element, 'bearbeiten-loeschen-fotoFern')).not.toBeNull();
+      expect(knopf(element, 'bearbeiten-loeschen-dokument')).not.toBeNull();
+      expect(knopf(element, 'bearbeiten-loeschen-fotoNah')).toBeNull();
+      expect(knopf(element, 'bearbeiten-loeschen-fotoDetail')).toBeNull();
+    });
+
+    it('deletes a photo right after confirmation and shows it as gone, without a KI-Analyse question when there is none', fakeAsync(() => {
+      const fixture = createComponent();
+      const open = antworte(true);
+      knopf(fixture.nativeElement, 'bearbeiten-loeschen-fotoFern')!.click();
+      tick();
+
+      expect(open.calls.first().args[1]?.data).toEqual(
+        jasmine.objectContaining({ titel: 'Fernansicht löschen?' }),
+      );
+      httpMock.expectOne('/api/v1/wareneintraege/wareneintrag-1/ki-analyse').flush(null);
+      tick();
+      const request = httpMock.expectOne(
+        (req) => req.url === '/api/v1/wareneintraege/wareneintrag-1/dateien/fotoFern',
+      );
+      expect(request.request.method).toBe('DELETE');
+      expect(request.request.params.has('analyseLoeschen')).toBeFalse();
+      request.flush({});
+      tick();
+      fixture.detectChanges();
+
+      expect(open).toHaveBeenCalledTimes(1);
+      const element = fixture.nativeElement as HTMLElement;
+      expect(knopf(element, 'bearbeiten-loeschen-fotoFern')).toBeNull();
+      expect(element.textContent).toContain('Fernansicht hinzufügen');
+      expect(knopf(element, 'bearbeiten-status')!.textContent).toContain('Fernansicht gelöscht.');
+    }));
+
+    it('deletes nothing when the confirmation is cancelled', fakeAsync(() => {
+      const fixture = createComponent();
+      antworte(undefined);
+
+      void asTestable(fixture.componentInstance).dateiLoeschen('fotoFern', 'Fernansicht');
+      tick();
+
+      httpMock.expectNone((req) => req.url.includes('/dateien/'));
+    }));
+
+    for (const [antwort, analyseLoeschen] of [
+      [true, 'true'],
+      [undefined, null],
+    ] as const) {
+      it(`asks whether to delete the saved KI-Analyse too, answer ${antwort ? 'Ja' : 'Nein'}`, fakeAsync(() => {
+        const fixture = createComponent();
+        const open = antworte(true, antwort);
+
+        void asTestable(fixture.componentInstance).dateiLoeschen('fotoFern', 'Fernansicht');
+        tick();
+        httpMock
+          .expectOne('/api/v1/wareneintraege/wareneintrag-1/ki-analyse')
+          .flush(GESPEICHERTE_ANALYSE);
+        tick();
+
+        expect(open.calls.mostRecent().args[1]?.data).toEqual(
+          jasmine.objectContaining({ titel: 'KI-Analyse ebenfalls löschen?' }),
+        );
+        const request = httpMock.expectOne((req) => req.url.endsWith('/dateien/fotoFern'));
+        expect(request.request.params.get('analyseLoeschen')).toBe(analyseLoeschen);
+        request.flush({});
+      }));
+    }
+
+    it('deletes the PDF without asking about the KI-Analyse', fakeAsync(() => {
+      const fixture = createComponent();
+      const open = antworte(true);
+
+      void asTestable(fixture.componentInstance).dateiLoeschen('dokument', 'Dokument (PDF)');
+      tick();
+
+      httpMock.expectOne((req) => req.url.endsWith('/dateien/dokument')).flush({});
+      expect(open).toHaveBeenCalledTimes(1);
+    }));
+
+    it('shows an error and keeps the file when deleting fails', fakeAsync(() => {
+      const fixture = createComponent();
+      antworte(true);
+
+      void asTestable(fixture.componentInstance).dateiLoeschen('dokument', 'Dokument (PDF)');
+      tick();
+      httpMock
+        .expectOne((req) => req.url.endsWith('/dateien/dokument'))
+        .flush('error', { status: 500, statusText: 'Server Error' });
+      tick();
+      fixture.detectChanges();
+
+      expect(asTestable(fixture.componentInstance).fehler()).toBe(
+        'Dokument (PDF) konnte nicht gelöscht werden.',
+      );
+      expect(knopf(fixture.nativeElement, 'bearbeiten-loeschen-dokument')).not.toBeNull();
+    }));
+
+    it('does not ask again on save when a photo was already deleted in this dialog', fakeAsync(() => {
+      const fixture = createComponent();
+      const open = antworte(true, undefined);
+      void asTestable(fixture.componentInstance).dateiLoeschen('fotoFern', 'Fernansicht');
+      tick();
+      httpMock
+        .expectOne('/api/v1/wareneintraege/wareneintrag-1/ki-analyse')
+        .flush(GESPEICHERTE_ANALYSE);
+      tick();
+      httpMock.expectOne((req) => req.url.endsWith('/dateien/fotoFern')).flush({});
+      tick();
+      const neuesFoto = new File(['foto'], 'neu.jpg', { type: 'image/jpeg' });
+      spyOn(neuesFoto, 'arrayBuffer').and.returnValue(Promise.resolve(new ArrayBuffer(4)));
+      spyOn(window, 'createImageBitmap').and.returnValue(
+        Promise.reject(new DOMException('kein Bild', 'InvalidStateError')),
+      );
+      void asTestable(fixture.componentInstance).fotoErsetzen(
+        'fotoFern',
+        fotoAuswahlEvent(neuesFoto),
+      );
+      tick();
+
+      void fixture.componentInstance.speichern();
+      tick();
+
+      const body = httpMock.expectOne('/api/v1/wareneintraege/wareneintrag-1').request
+        .body as FormData;
+      expect(body.get('analyseLoeschen')).toBeNull();
+      expect(open).toHaveBeenCalledTimes(2);
+    }));
+
+    it('asks about the KI-Analyse on save when a new photo was chosen', fakeAsync(() => {
+      const fixture = createComponent();
+      antworte(true);
+      const neuesFoto = new File(['foto'], 'neu.jpg', { type: 'image/jpeg' });
+      spyOn(neuesFoto, 'arrayBuffer').and.returnValue(Promise.resolve(new ArrayBuffer(4)));
+      spyOn(window, 'createImageBitmap').and.returnValue(
+        Promise.reject(new DOMException('kein Bild', 'InvalidStateError')),
+      );
+      void asTestable(fixture.componentInstance).fotoErsetzen(
+        'fotoFern',
+        fotoAuswahlEvent(neuesFoto),
+      );
+      tick();
+
+      void fixture.componentInstance.speichern();
+      httpMock
+        .expectOne('/api/v1/wareneintraege/wareneintrag-1/ki-analyse')
+        .flush(GESPEICHERTE_ANALYSE);
+      tick();
+
+      const body = httpMock.expectOne('/api/v1/wareneintraege/wareneintrag-1').request
+        .body as FormData;
+      expect(body.get('analyseLoeschen')).toBe('true');
+    }));
+  });
 });

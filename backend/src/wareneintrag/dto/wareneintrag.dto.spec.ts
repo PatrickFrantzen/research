@@ -23,3 +23,28 @@ describe.each([
     expect(await validateFreitext('a'.repeat(2001))).not.toHaveLength(0);
   });
 });
+
+// analyseLoeschen kommt als Multipart-Textfeld (Issue #104).
+describe('UpdateWareneintragDto analyseLoeschen', () => {
+  function parse(analyseLoeschen: string) {
+    return plainToInstance(UpdateWareneintragDto, {
+      avvCodeId: AVV_CODE_ID,
+      freitext: 'x',
+      analyseLoeschen,
+    });
+  }
+
+  it.each([
+    ['true', true],
+    ['false', false],
+  ])('reads %s as a boolean', async (wert, erwartet) => {
+    const dto = parse(wert);
+
+    expect(await validate(dto)).toHaveLength(0);
+    expect(dto.analyseLoeschen).toBe(erwartet);
+  });
+
+  it('rejects a non boolean analyseLoeschen', async () => {
+    expect(await validate(parse('ja'))).not.toHaveLength(0);
+  });
+});

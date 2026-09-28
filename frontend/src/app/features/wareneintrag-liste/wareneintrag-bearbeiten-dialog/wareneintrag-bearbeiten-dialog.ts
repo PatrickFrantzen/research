@@ -6,14 +6,20 @@ import {
   MatAutocompleteSelectedEvent,
 } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialog,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
-import { debounceTime, distinctUntilChanged, firstValueFrom, Subject } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, firstValueFrom, of, Subject } from 'rxjs';
 import { AvvCodeApi } from '../../../core/avv-code-api.js';
 import { AppFehlerMelder } from '../../../core/app-fehler-melder.js';
+import { ConfirmDialog } from '../../../core/confirm-dialog/confirm-dialog.js';
 import { beschreibeFoto, pruefeDokument, uebernehmeFoto } from '../../../core/foto-validierung.js';
 import { extrahiereFehlermeldung } from '../../../core/http-fehler.js';
 import {
@@ -30,6 +36,8 @@ export interface WareneintragBearbeitenDialogDaten {
 // Die drei Ansichten sind optional – wie beim Erfassen ersetzt der Nutzer
 // nur, was er neu fotografieren möchte (0 bis 3), siehe CONTEXT.md.
 type FotoAnsicht = 'fotoFern' | 'fotoNah' | 'fotoDetail';
+// Einzeln löschbare Dateien (Issue #104), wie ENTFERNBARE_DATEIEN im Backend.
+type Datei = FotoAnsicht | 'dokument';
 
 interface FotoKachel {
   ansicht: FotoAnsicht;
@@ -69,6 +77,13 @@ const AVV_SUCHE_DEBOUNCE_MS = 300;
       gap: 8px;
     }
 
+    .datei-zeile {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
     .dateiname {
       font: var(--mat-sys-body-small);
       color: var(--mat-sys-on-surface-variant);
@@ -79,6 +94,7 @@ export class WareneintragBearbeitenDialog {
   private readonly avvCodeApi = inject(AvvCodeApi);
   private readonly wareneintragApi = inject(WareneintragApi);
   private readonly dialogRef = inject(MatDialogRef<WareneintragBearbeitenDialog>);
+  private readonly dialog = inject(MatDialog);
   protected readonly daten = inject<WareneintragBearbeitenDialogDaten>(MAT_DIALOG_DATA);
 
   // Vorbelegt mit dem aktuell zugewiesenen AVV-Code (Issue #66), damit
@@ -93,6 +109,18 @@ export class WareneintragBearbeitenDialog {
   });
   // Neues PDF (Issue #103), ersetzt ein vorhandenes oder kommt neu hinzu.
   protected readonly dokument = signal<File | null>(null);
+  // Welche Dateien der Eintrag hat; sofortiges Löschen (Issue #104) nimmt
+  // sie hier heraus, danach lässt sich direkt eine neue auswählen.
+  private readonly vorhandeneDateien = signal<Record<Datei, boolean>>({
+    fotoFern: this.daten.wareneintrag.fotoFernUrl !== null,
+    fotoNah: this.daten.wareneintrag.fotoNahUrl !== null,
+    fotoDetail: this.daten.wareneintrag.fotoDetailUrl !== null,
+    dokument: this.daten.wareneintrag.dokumentUrl !== null,
+  });
+  protected readonly statusMeldung = signal('');
+  // Wurde ein Foto gelöscht, ist die Frage zur KI-Analyse für diesen Dialog
+  // beantwortet; ein danach eingesetztes Foto fragt nicht erneut.
+  private analyseEntschieden = false;
 
   protected readonly bearbeitungDaten = signal({
     avvSucheAnzeige: `${this.daten.wareneintrag.avvCode.code} – ${this.daten.wareneintrag.avvCode.bezeichnung}`,
@@ -173,6 +201,66 @@ export class WareneintragBearbeitenDialog {
     this.dokument.set(meldung ? null : auswahl);
   }
 
+  protected vorhanden(datei: Datei): boolean {
+    return this.vorhandeneDateien()[datei];
+  }
+
+  async dateiLoeschen(datei: Datei, label: string): Promise<void> {
+    const bestaetigt = await firstValueFrom(
+      this.dialog
+        .open(ConfirmDialog, {
+          data: {
+            titel: `${label} löschen?`,
+            nachricht: `${label} wird sofort gelöscht, auch wenn Sie den Dialog danach abbrechen.`,
+            bestaetigenLabel: 'Löschen',
+          },
+        })
+        .afterClosed(),
+    );
+    if (!bestaetigt) return;
+    // Das PDF wird nicht analysiert (Issue #103), nur Fotos betreffen die Analyse.
+    const analyseLoeschen = datei !== 'dokument' && (await this.frageAnalyseLoeschen());
+    this.fehler.set(null);
+    try {
+      await firstValueFrom(
+        this.wareneintragApi.dateiLoeschen(this.daten.wareneintrag.id, datei, analyseLoeschen),
+      );
+      this.vorhandeneDateien.update((dateien) => ({ ...dateien, [datei]: false }));
+      if (datei !== 'dokument') this.analyseEntschieden = true;
+      this.statusMeldung.set(`${label} gelöscht.`);
+    } catch (error) {
+      this.fehler.set(extrahiereFehlermeldung(error, `${label} konnte nicht gelöscht werden.`));
+    }
+  }
+
+  // Die Analyse gilt für alle Fotos zusammen (ADR-0008). Ändern sich Fotos,
+  // entscheidet der Nutzer, ob sie bleibt (Issue #104), ohne Analyse keine Frage. Scheitert das Laden,
+  // wird trotzdem gefragt, statt eine veraltete Analyse still zu behalten.
+  private async frageAnalyseLoeschen(): Promise<boolean> {
+    const analyse = await firstValueFrom(
+      this.wareneintragApi
+        .gespeicherteAnalyse(this.daten.wareneintrag.id)
+        .pipe(catchError(() => of(undefined))),
+    );
+    if (analyse === null) return false;
+    const antwort = await firstValueFrom(
+      this.dialog
+        .open(ConfirmDialog, {
+          // Nur Ja oder Nein, kein versehentliches Schließen per Escape.
+          disableClose: true,
+          data: {
+            titel: 'KI-Analyse ebenfalls löschen?',
+            nachricht:
+              'Die gespeicherte KI-Analyse beruht auf den bisherigen Fotos und passt nach der Änderung eventuell nicht mehr.',
+            bestaetigenLabel: 'Ja',
+            abbrechenLabel: 'Nein',
+          },
+        })
+        .afterClosed(),
+    );
+    return antwort === true;
+  }
+
   protected dateiname(ansicht: FotoAnsicht): string | null {
     return this.fotos()[ansicht]?.name ?? null;
   }
@@ -193,6 +281,9 @@ export class WareneintragBearbeitenDialog {
     if (dokument) formData.set('dokument', dokument);
 
     try {
+      const neueFotos = this.fotoKacheln.some(({ ansicht }) => this.fotos()[ansicht]);
+      if (neueFotos && !this.analyseEntschieden && (await this.frageAnalyseLoeschen()))
+        formData.set('analyseLoeschen', 'true');
       await firstValueFrom(
         this.wareneintragApi.aktualisieren(this.daten.wareneintrag.id, formData),
       );

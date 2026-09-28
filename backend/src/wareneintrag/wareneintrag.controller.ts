@@ -28,6 +28,10 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { Aktivitaet } from '../protokoll/aktivitaet.decorator.js';
 import type { AuthenticatedRequest } from '../auth/jwt.strategy.js';
 import { CreateWareneintragDto } from './dto/create-wareneintrag.dto.js';
+import {
+  EntferneDateiParams,
+  EntferneDateiQuery,
+} from './dto/entferne-datei.dto.js';
 import { UpdateWareneintragDto } from './dto/update-wareneintrag.dto.js';
 import {
   WareneintragDateien,
@@ -217,6 +221,22 @@ export class WareneintragController {
       request.user.id,
       dto,
       await extrahiereUndValidiereDateien(dateien),
+    );
+  }
+
+  // Einzelnes Foto oder PDF sofort löschen (Issue #104).
+  @Delete(':id/dateien/:feld')
+  @Aktivitaet('Datei am Wareneintrag gelöscht')
+  async entferneDatei(
+    @Req() request: AuthenticatedRequest,
+    @Param() { id, feld }: EntferneDateiParams,
+    @Query() { analyseLoeschen }: EntferneDateiQuery,
+  ) {
+    return this.wareneintragService.entferneDatei(
+      id,
+      request.user.id,
+      feld,
+      analyseLoeschen,
     );
   }
 

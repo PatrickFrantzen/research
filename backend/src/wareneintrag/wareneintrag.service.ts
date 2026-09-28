@@ -4,6 +4,7 @@ import { Prisma } from '../generated/prisma/client.js';
 import { ObjectStorageService } from '../object-storage/object-storage.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateWareneintragDto } from './dto/create-wareneintrag.dto.js';
+import type { EntfernbareDatei } from './dto/entferne-datei.dto.js';
 import { UpdateWareneintragDto } from './dto/update-wareneintrag.dto.js';
 
 export interface WareneintragDateien {
@@ -222,19 +223,10 @@ export class WareneintragService {
         this.ersetzeFoto(bestehend.dokumentUrl, fotos.dokument),
       ]);
 
-    // Andere Fotos, andere Grundlage: die gespeicherte KI-Analyse passt nicht
-    // mehr und wird gelöscht, ein falsches Ergebnis ist schlimmer als keins
-    // (Issue #96). Vor dem Update, damit ein späterer Fehler sie nicht stehen
-    // lässt. Freitext, AVV-Code und PDF (wird nicht analysiert, Issue #103)
-    // lassen sie unberührt.
-    const fotosGeaendert =
-      fotoFernUrl !== bestehend.fotoFernUrl ||
-      fotoNahUrl !== bestehend.fotoNahUrl ||
-      fotoDetailUrl !== bestehend.fotoDetailUrl;
-    if (fotosGeaendert)
-      await this.prisma.wareneintragAnalyse.deleteMany({
-        where: { wareneintragId: id },
-      });
+    // Ob die KI-Analyse nach neuen Fotos noch passt, entscheidet der Nutzer
+    // per Rückfrage (Issue #104, löst das automatische Löschen aus #96 ab).
+    // Vor dem Update, damit ein späterer Fehler sie nicht stehen lässt.
+    if (dto.analyseLoeschen) await this.loescheAnalyse(id);
 
     return this.prisma.wareneintrag.update({
       where: { id },
@@ -246,6 +238,31 @@ export class WareneintragService {
         fotoDetailUrl,
         dokumentUrl,
       },
+    });
+  }
+
+  // Einzelne Datei sofort löschen, aus dem Bearbeiten-Dialog heraus (Issue #104).
+  async entferneDatei(
+    id: string,
+    nutzerId: string,
+    feld: EntfernbareDatei,
+    analyseLoeschen = false,
+  ) {
+    const bestehend = await this.pruefeBesitz(id, nutzerId);
+    if (analyseLoeschen) await this.loescheAnalyse(id);
+    const aktualisiert = await this.prisma.wareneintrag.update({
+      where: { id },
+      data: { [`${feld}Url`]: null },
+    });
+    // Erst nach dem Update, damit der Eintrag nie auf ein fehlendes Objekt zeigt.
+    const key = bestehend[`${feld}Url`];
+    if (key) await this.objectStorage.deleteFoto(key);
+    return aktualisiert;
+  }
+
+  private loescheAnalyse(wareneintragId: string) {
+    return this.prisma.wareneintragAnalyse.deleteMany({
+      where: { wareneintragId },
     });
   }
 

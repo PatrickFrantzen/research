@@ -57,12 +57,26 @@ describe('Wareneintrag-Foto-Upload: Härtung', () => {
             nutzer: {
               findUniqueOrThrow: async () => ({ standortId: 'standort-1' }),
             },
-            wareneintrag: { create: async (args: unknown) => args },
+            wareneintrag: {
+              create: async (args: unknown) => args,
+              findUniqueOrThrow: async () => ({
+                erfasstVonId: 'nutzer-1',
+                fotoFernUrl: 'wareneintraege/fern',
+                fotoNahUrl: null,
+                fotoDetailUrl: null,
+                dokumentUrl: 'wareneintraege/pdf',
+              }),
+              update: async (args: unknown) => args,
+            },
+            wareneintragAnalyse: { deleteMany: async () => ({ count: 1 }) },
           },
         },
         {
           provide: ObjectStorageService,
-          useValue: { uploadFoto: async () => 'wareneintraege/foto-1' },
+          useValue: {
+            uploadFoto: async () => 'wareneintraege/foto-1',
+            deleteFoto: async () => undefined,
+          },
         },
       ],
     })
@@ -209,6 +223,43 @@ describe('Wareneintrag-Foto-Upload: Härtung', () => {
         filename: 'foto.pdf',
         contentType: 'image/png',
       });
+
+    expect(response.status).toBe(400);
+  });
+
+  // Alle Textfelder des Bearbeiten-Dialogs plus vier Dateien müssen unter
+  // den Multer-Grenzen (fields, parts) bleiben (Issue #104).
+  it('accepts an update with analyseLoeschen and all four files', async () => {
+    const png = { filename: 'foto.png', contentType: 'image/png' };
+    const response = await request(app.getHttpServer())
+      .patch('/wareneintraege/wareneintrag-1')
+      .field('avvCodeId', 'f8a3632d-6b2c-4843-b223-85a711b4a9a7')
+      .field('freitext', 'Testeintrag')
+      .field('analyseLoeschen', 'true')
+      .attach('fotoFern', PNG_BYTES, png)
+      .attach('fotoNah', PNG_BYTES, png)
+      .attach('fotoDetail', PNG_BYTES, png)
+      .attach('dokument', PDF_BYTES, {
+        filename: 'lieferschein.pdf',
+        contentType: 'application/pdf',
+      });
+
+    expect(response.status).toBe(200);
+  });
+
+  it('deletes a single file via DELETE /wareneintraege/:id/dateien/:feld', async () => {
+    const response = await request(app.getHttpServer()).delete(
+      '/wareneintraege/wareneintrag-1/dateien/dokument?analyseLoeschen=true',
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body.data).toEqual({ dokumentUrl: null });
+  });
+
+  it('rejects deleting a field that is not a file', async () => {
+    const response = await request(app.getHttpServer()).delete(
+      '/wareneintraege/wareneintrag-1/dateien/erfasstVonId',
+    );
 
     expect(response.status).toBe(400);
   });

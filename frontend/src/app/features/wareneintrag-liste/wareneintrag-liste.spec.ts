@@ -709,7 +709,7 @@ describe('WareneintragListe', () => {
       .flush({ daten: [], gesamt: 0 });
   }));
 
-  it('does not reload the list when the edit dialog is cancelled', fakeAsync(() => {
+  it('reloads the list even when the edit dialog is cancelled', fakeAsync(() => {
     dialogSchliesstMit(undefined);
     const fixture = TestBed.createComponent(WareneintragListe);
     fixture.detectChanges();
@@ -735,7 +735,10 @@ describe('WareneintragListe', () => {
     tick();
     fixture.detectChanges();
 
-    httpMock.expectNone((req) => req.url === '/api/v1/wareneintraege');
+    // Der Dialog löscht Dateien sofort, daher auch nach Abbrechen neu laden (Issue #104).
+    httpMock
+      .expectOne((req) => req.url === '/api/v1/wareneintraege')
+      .flush({ daten: [], gesamt: 0 });
     expect().nothing();
   }));
 

@@ -59,10 +59,22 @@
           <mat-icon>photo_library</mat-icon>Galerie
         </button>
       </mat-menu>
-      <button matButton="outlined" type="button" [matMenuTriggerFor]="quelle">
-        <mat-icon>{{ dateiname(kachel.ansicht) ? 'check' : 'photo_camera' }}</mat-icon>
-        {{ kachel.label }} ersetzen
-      </button>
+      <div class="datei-zeile">
+        <button matButton="outlined" type="button" [matMenuTriggerFor]="quelle">
+          <mat-icon>{{ dateiname(kachel.ansicht) ? 'check' : 'photo_camera' }}</mat-icon>
+          {{ kachel.label }} {{ vorhanden(kachel.ansicht) ? 'ersetzen' : 'hinzufügen' }}
+        </button>
+        @if (vorhanden(kachel.ansicht)) {
+          <button
+            matButton
+            type="button"
+            [attr.data-testid]="'bearbeiten-loeschen-' + kachel.ansicht"
+            (click)="dateiLoeschen(kachel.ansicht, kachel.label)"
+          >
+            <mat-icon>delete</mat-icon>{{ kachel.label }} löschen
+          </button>
+        }
+      </div>
       @if (dateiname(kachel.ansicht); as name) {
         <span class="dateiname">{{ name }}</span>
       }
@@ -75,14 +87,28 @@
       accept="application/pdf"
       (change)="dokumentErsetzen($event)"
     />
-    <button matButton="outlined" type="button" (click)="dokumentInput.click()">
-      <mat-icon>{{ dokument() ? 'check' : 'picture_as_pdf' }}</mat-icon>
-      Dokument (PDF) {{ daten.wareneintrag.dokumentUrl ? 'ersetzen' : 'hinzufügen' }}
-    </button>
+    <div class="datei-zeile">
+      <button matButton="outlined" type="button" (click)="dokumentInput.click()">
+        <mat-icon>{{ dokument() ? 'check' : 'picture_as_pdf' }}</mat-icon>
+        Dokument (PDF) {{ vorhanden('dokument') ? 'ersetzen' : 'hinzufügen' }}
+      </button>
+      @if (vorhanden('dokument')) {
+        <button
+          matButton
+          type="button"
+          data-testid="bearbeiten-loeschen-dokument"
+          (click)="dateiLoeschen('dokument', 'Dokument (PDF)')"
+        >
+          <mat-icon>delete</mat-icon>Dokument (PDF) löschen
+        </button>
+      }
+    </div>
     @if (dokument(); as pdf) {
       <span class="dateiname">{{ pdf.name }}</span>
     }
   </div>
+
+  <p class="dateiname" role="status" data-testid="bearbeiten-status">{{ statusMeldung() }}</p>
 
   @if (fotoFehler(); as meldung) {
     <p class="fehler" role="alert">{{ meldung }}</p>

@@ -125,7 +125,7 @@ test('eigenen Wareneintrag nach Bestätigung löschen', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1, name: 'Wareneinträge' })).toBeFocused();
 });
 
-test('PDF-Dokument anlegen, in Liste und Details sehen, im Bearbeiten-Dialog ersetzen (Issue #103)', async ({
+test('PDF-Dokument anlegen, in Liste und Details sehen, ersetzen und löschen (Issues #103, #104)', async ({
   page,
 }) => {
   const pdf = (name: string) => ({
@@ -166,6 +166,18 @@ test('PDF-Dokument anlegen, in Liste und Details sehen, im Bearbeiten-Dialog ers
   await bearbeiten.getByTestId('bearbeiten-speichern').click();
   await expect(bearbeiten).toBeHidden();
   await expect(page.getByRole('img', { name: 'Mit PDF-Dokument' })).toBeVisible();
+
+  // PDF löschen wirkt sofort, ohne Rückfrage zur KI-Analyse (Issue #104).
+  await page.getByTestId('wareneintrag-bearbeiten').click();
+  await bearbeiten.getByTestId('bearbeiten-loeschen-dokument').click();
+  await page
+    .getByRole('dialog', { name: 'Dokument (PDF) löschen?' })
+    .getByTestId('confirm-dialog-bestaetigen')
+    .click();
+  await expect(bearbeiten).toContainText('Dokument (PDF) hinzufügen');
+  await page.keyboard.press('Escape');
+  await expect(bearbeiten).toBeHidden();
+  await expect(page.getByRole('img', { name: 'Mit PDF-Dokument' })).toHaveCount(0);
 });
 
 test('Detail-Dialog mit Bildergalerie öffnen (Issue #92)', async ({ page }) => {
@@ -205,7 +217,7 @@ test('Detail-Dialog mit Bildergalerie öffnen (Issue #92)', async ({ page }) => 
   await expect(page.getByRole('dialog', { name: 'Wareneintrag bearbeiten' })).toBeVisible();
 });
 
-test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen (Issues #93 bis #96)', async ({
+test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen (Issues #93 bis #96, #104)', async ({
   page,
 }) => {
   // Gemini ist im E2E-Stack der lokale Stub (e2e/gemini-stub.mjs), der
@@ -290,12 +302,36 @@ test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen 
   await expect(dialog.getByTestId('analysiert-von')).toBeVisible();
   await schliessen();
 
-  // ... ein ersetztes Foto löscht sie.
+  // Issue #104: Foto ersetzen fragt nach, "Nein" behält die Analyse ...
+  const rueckfrage = page.getByRole('dialog', { name: 'KI-Analyse ebenfalls löschen?' });
   await page.getByTestId('wareneintrag-bearbeiten').click();
   await bearbeiten
     .getByTestId('bearbeiten-foto-fotoFern')
     .setInputFiles({ name: 'neu.png', mimeType: 'image/png', buffer: TEST_PNG });
   await bearbeiten.getByTestId('bearbeiten-speichern').click();
+  await pruefeBarrierefreiheit(page, 'Rückfrage KI-Analyse');
+  await rueckfrage.getByTestId('confirm-dialog-abbrechen').click();
+  await expect(bearbeiten).toBeHidden();
+  await oeffnen();
+  await expect(dialog.getByTestId('analysiert-von')).toBeVisible();
+  await schliessen();
+
+  // ... Foto löschen wirkt sofort, "Ja" entfernt auch die Analyse. Danach
+  // ließe sich direkt ein neues Foto wählen, hier wird abgebrochen.
+  await page.getByTestId('wareneintrag-bearbeiten').click();
+  // Fokus auf dem Titel, die AVV-Vorschläge bleiben zu und verdecken nichts.
+  await expect(bearbeiten.getByRole('heading', { name: 'Wareneintrag bearbeiten' })).toBeFocused();
+  await bearbeiten.getByTestId('bearbeiten-loeschen-fotoFern').click();
+  await page
+    .getByRole('dialog', { name: 'Fernansicht löschen?' })
+    .getByTestId('confirm-dialog-bestaetigen')
+    .click();
+  await rueckfrage.getByTestId('confirm-dialog-bestaetigen').click();
+  await expect(bearbeiten.getByTestId('bearbeiten-status')).toHaveText('Fernansicht gelöscht.');
+  await expect(bearbeiten).toContainText('Fernansicht hinzufügen');
+  await expect(bearbeiten.getByTestId('bearbeiten-loeschen-fotoFern')).toHaveCount(0);
+  await pruefeBarrierefreiheit(page, 'Bearbeiten-Dialog nach dem Löschen');
+  await bearbeiten.getByTestId('bearbeiten-abbrechen').click();
   await expect(bearbeiten).toBeHidden();
   await oeffnen();
   await expect(dialog.getByTestId('nicht-analysiert')).toHaveText('Noch nicht analysiert.');

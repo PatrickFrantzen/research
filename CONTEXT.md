@@ -74,4 +74,6 @@ Messung. Jeder Nutzer kann sie für jeden Wareneintrag mit Foto anstoßen und
 bekommt zuerst eine Vorschau, die er speichern oder wiederholen kann. Pro
 Wareneintrag gibt es höchstens eine gespeicherte KI-Analyse, jedes Speichern
 überschreibt sie (siehe [ADR-0008](docs/adr/0008-ki-analyse-ueber-gemini.md)).
+Löscht oder ersetzt der Ersteller Fotos, entscheidet er per Rückfrage, ob die
+gespeicherte KI-Analyse bleibt; das PDF spielt dafür keine Rolle.
 _Avoid_: Bilderkennung, Auswertung, Gutachten

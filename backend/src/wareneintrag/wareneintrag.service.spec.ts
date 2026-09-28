@@ -651,13 +651,9 @@ describe('WareneintragService', () => {
       );
 
       expect(objectStorage.deleteFoto).toHaveBeenCalledOnce();
-      // Foto ersetzt: gespeicherte KI-Analyse wird gelöscht, vor dem Update (Issue #96).
-      expect(prisma.wareneintragAnalyse.deleteMany).toHaveBeenCalledWith({
-        where: { wareneintragId: 'wareneintrag-1' },
-      });
-      expect(
-        prisma.wareneintragAnalyse.deleteMany.mock.invocationCallOrder[0],
-      ).toBeLessThan(prisma.wareneintrag.update.mock.invocationCallOrder[0]);
+      // Ersetzen allein lässt die KI-Analyse stehen, der Nutzer entscheidet per
+      // analyseLoeschen (Issue #104 löst das automatische Löschen aus #96 ab).
+      expect(prisma.wareneintragAnalyse.deleteMany).not.toHaveBeenCalled();
       expect(objectStorage.deleteFoto).toHaveBeenCalledWith(
         'wareneintraege/alt',
       );
@@ -723,6 +719,52 @@ describe('WareneintragService', () => {
       });
     });
 
+    function updateMocks() {
+      const prisma = {
+        wareneintrag: {
+          findUniqueOrThrow: vi.fn().mockResolvedValue({
+            id: 'wareneintrag-1',
+            erfasstVonId: 'nutzer-1',
+            fotoFernUrl: 'wareneintraege/fern',
+            fotoNahUrl: 'wareneintraege/nah',
+            fotoDetailUrl: null,
+            dokumentUrl: 'wareneintraege/pdf',
+          }),
+          update: vi.fn().mockResolvedValue({ id: 'wareneintrag-1' }),
+        },
+        wareneintragAnalyse: {
+          deleteMany: vi.fn().mockResolvedValue({ count: 1 }),
+        },
+      };
+      const objectStorage = {
+        uploadFoto: vi.fn(),
+        deleteFoto: vi.fn().mockResolvedValue(undefined),
+      };
+      const service = new WareneintragService(
+        prisma as never,
+        objectStorage as never,
+      );
+      return { prisma, objectStorage, service };
+    }
+
+    it('deletes the KI-Analyse before the update when analyseLoeschen is set', async () => {
+      const { prisma, service } = updateMocks();
+
+      await service.update(
+        'wareneintrag-1',
+        'nutzer-1',
+        { avvCodeId: 'avv-1', freitext: 'x', analyseLoeschen: true },
+        {},
+      );
+
+      expect(prisma.wareneintragAnalyse.deleteMany).toHaveBeenCalledWith({
+        where: { wareneintragId: 'wareneintrag-1' },
+      });
+      expect(
+        prisma.wareneintragAnalyse.deleteMany.mock.invocationCallOrder[0],
+      ).toBeLessThan(prisma.wareneintrag.update.mock.invocationCallOrder[0]!);
+    });
+
     it('rejects when the acting user did not create the Wareneintrag', async () => {
       const prisma = {
         wareneintrag: {
@@ -742,6 +784,102 @@ describe('WareneintragService', () => {
           {},
         ),
       ).rejects.toBeInstanceOf(ForbiddenException);
+    });
+  });
+
+  // Sofortiges Löschen einer einzelnen Datei im Bearbeiten-Dialog (Issue #104).
+  describe('entferneDatei', () => {
+    function mocks() {
+      const prisma = {
+        wareneintrag: {
+          findUniqueOrThrow: vi.fn().mockResolvedValue({
+            id: 'wareneintrag-1',
+            erfasstVonId: 'nutzer-1',
+            fotoFernUrl: 'wareneintraege/fern',
+            fotoNahUrl: null,
+            fotoDetailUrl: null,
+            dokumentUrl: 'wareneintraege/pdf',
+          }),
+          update: vi.fn().mockResolvedValue({ id: 'wareneintrag-1' }),
+        },
+        wareneintragAnalyse: {
+          deleteMany: vi.fn().mockResolvedValue({ count: 1 }),
+        },
+      };
+      const objectStorage = {
+        deleteFoto: vi.fn().mockResolvedValue(undefined),
+      };
+      const service = new WareneintragService(
+        prisma as never,
+        objectStorage as never,
+      );
+      return { prisma, objectStorage, service };
+    }
+
+    it('clears the reference first, then deletes the object, keeping the KI-Analyse', async () => {
+      const { prisma, objectStorage, service } = mocks();
+
+      await service.entferneDatei('wareneintrag-1', 'nutzer-1', 'fotoFern');
+
+      expect(prisma.wareneintrag.update).toHaveBeenCalledWith({
+        where: { id: 'wareneintrag-1' },
+        data: { fotoFernUrl: null },
+      });
+      expect(objectStorage.deleteFoto).toHaveBeenCalledExactlyOnceWith(
+        'wareneintraege/fern',
+      );
+      // Scheitert das Update, zeigt der Eintrag nicht auf ein gelöschtes Objekt.
+      expect(
+        prisma.wareneintrag.update.mock.invocationCallOrder[0],
+      ).toBeLessThan(objectStorage.deleteFoto.mock.invocationCallOrder[0]!);
+      expect(prisma.wareneintragAnalyse.deleteMany).not.toHaveBeenCalled();
+    });
+
+    it('deletes the KI-Analyse too when analyseLoeschen is set', async () => {
+      const { prisma, service } = mocks();
+
+      await service.entferneDatei(
+        'wareneintrag-1',
+        'nutzer-1',
+        'fotoFern',
+        true,
+      );
+
+      expect(prisma.wareneintragAnalyse.deleteMany).toHaveBeenCalledWith({
+        where: { wareneintragId: 'wareneintrag-1' },
+      });
+    });
+
+    it('deletes the PDF', async () => {
+      const { prisma, objectStorage, service } = mocks();
+
+      await service.entferneDatei('wareneintrag-1', 'nutzer-1', 'dokument');
+
+      expect(prisma.wareneintrag.update).toHaveBeenCalledWith({
+        where: { id: 'wareneintrag-1' },
+        data: { dokumentUrl: null },
+      });
+      expect(objectStorage.deleteFoto).toHaveBeenCalledExactlyOnceWith(
+        'wareneintraege/pdf',
+      );
+    });
+
+    it('does nothing in the object storage when the field holds no file', async () => {
+      const { objectStorage, service } = mocks();
+
+      await service.entferneDatei('wareneintrag-1', 'nutzer-1', 'fotoNah');
+
+      expect(objectStorage.deleteFoto).not.toHaveBeenCalled();
+    });
+
+    it('rejects when the acting user did not create the Wareneintrag', async () => {
+      const { prisma, objectStorage, service } = mocks();
+
+      await expect(
+        service.entferneDatei('wareneintrag-1', 'anderer-nutzer', 'fotoFern'),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+      expect(prisma.wareneintrag.update).not.toHaveBeenCalled();
+      expect(objectStorage.deleteFoto).not.toHaveBeenCalled();
     });
   });
 
