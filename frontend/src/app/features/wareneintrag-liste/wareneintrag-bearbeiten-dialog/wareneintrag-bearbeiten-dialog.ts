@@ -118,6 +118,9 @@ export class WareneintragBearbeitenDialog {
     dokument: this.daten.wareneintrag.dokumentUrl !== null,
   });
   protected readonly statusMeldung = signal('');
+  // Wurde ein Foto gelöscht, ist die Frage zur KI-Analyse für diesen Dialog
+  // beantwortet; ein danach eingesetztes Foto fragt nicht erneut.
+  private analyseEntschieden = false;
 
   protected readonly bearbeitungDaten = signal({
     avvSucheAnzeige: `${this.daten.wareneintrag.avvCode.code} – ${this.daten.wareneintrag.avvCode.bezeichnung}`,
@@ -223,6 +226,7 @@ export class WareneintragBearbeitenDialog {
         this.wareneintragApi.dateiLoeschen(this.daten.wareneintrag.id, datei, analyseLoeschen),
       );
       this.vorhandeneDateien.update((dateien) => ({ ...dateien, [datei]: false }));
+      if (datei !== 'dokument') this.analyseEntschieden = true;
       this.statusMeldung.set(`${label} gelöscht.`);
     } catch (error) {
       this.fehler.set(extrahiereFehlermeldung(error, `${label} konnte nicht gelöscht werden.`));
@@ -278,7 +282,8 @@ export class WareneintragBearbeitenDialog {
 
     try {
       const neueFotos = this.fotoKacheln.some(({ ansicht }) => this.fotos()[ansicht]);
-      if (neueFotos && (await this.frageAnalyseLoeschen())) formData.set('analyseLoeschen', 'true');
+      if (neueFotos && !this.analyseEntschieden && (await this.frageAnalyseLoeschen()))
+        formData.set('analyseLoeschen', 'true');
       await firstValueFrom(
         this.wareneintragApi.aktualisieren(this.daten.wareneintrag.id, formData),
       );

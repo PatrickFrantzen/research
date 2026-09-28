@@ -422,6 +422,37 @@ describe('WareneintragBearbeitenDialog', () => {
       expect(knopf(fixture.nativeElement, 'bearbeiten-loeschen-dokument')).not.toBeNull();
     }));
 
+    it('does not ask again on save when a photo was already deleted in this dialog', fakeAsync(() => {
+      const fixture = createComponent();
+      const open = antworte(true, undefined);
+      void asTestable(fixture.componentInstance).dateiLoeschen('fotoFern', 'Fernansicht');
+      tick();
+      httpMock
+        .expectOne('/api/v1/wareneintraege/wareneintrag-1/ki-analyse')
+        .flush(GESPEICHERTE_ANALYSE);
+      tick();
+      httpMock.expectOne((req) => req.url.endsWith('/dateien/fotoFern')).flush({});
+      tick();
+      const neuesFoto = new File(['foto'], 'neu.jpg', { type: 'image/jpeg' });
+      spyOn(neuesFoto, 'arrayBuffer').and.returnValue(Promise.resolve(new ArrayBuffer(4)));
+      spyOn(window, 'createImageBitmap').and.returnValue(
+        Promise.reject(new DOMException('kein Bild', 'InvalidStateError')),
+      );
+      void asTestable(fixture.componentInstance).fotoErsetzen(
+        'fotoFern',
+        fotoAuswahlEvent(neuesFoto),
+      );
+      tick();
+
+      void fixture.componentInstance.speichern();
+      tick();
+
+      const body = httpMock.expectOne('/api/v1/wareneintraege/wareneintrag-1').request
+        .body as FormData;
+      expect(body.get('analyseLoeschen')).toBeNull();
+      expect(open).toHaveBeenCalledTimes(2);
+    }));
+
     it('asks about the KI-Analyse on save when a new photo was chosen', fakeAsync(() => {
       const fixture = createComponent();
       antworte(true);
