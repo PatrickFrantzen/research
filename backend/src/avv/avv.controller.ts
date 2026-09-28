@@ -10,7 +10,11 @@ const SUCHERGEBNIS_LIMIT = 50;
 // Nur diese AVV-Kapitel kommen im Betrieb vor. Die übrigen Codes bleiben in
 // der DB, damit ältere Wareneinträge weiter anzeigbar sind.
 const ERLAUBTE_KAPITEL = ['15', '16', '17', '19', '20'];
-const NUR_ERLAUBTE_KAPITEL = { OR: ERLAUBTE_KAPITEL.map((kapitel) => ({ code: { startsWith: `${kapitel} ` } })) };
+const NUR_ERLAUBTE_KAPITEL = {
+  OR: ERLAUBTE_KAPITEL.map((kapitel) => ({
+    code: { startsWith: `${kapitel} ` },
+  })),
+};
 
 @Controller('avv-codes')
 @UseGuards(JwtAuthGuard)
@@ -28,7 +32,12 @@ export class AvvController {
                 {
                   OR: [
                     { code: { contains: suche, mode: 'insensitive' as const } },
-                    { bezeichnung: { contains: suche, mode: 'insensitive' as const } },
+                    {
+                      bezeichnung: {
+                        contains: suche,
+                        mode: 'insensitive' as const,
+                      },
+                    },
                   ],
                 },
               ]

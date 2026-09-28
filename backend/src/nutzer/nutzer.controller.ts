@@ -1,4 +1,15 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { AdminGuard } from '../auth/admin.guard.js';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { Aktivitaet } from '../protokoll/aktivitaet.decorator.js';
@@ -21,7 +32,10 @@ export class NutzerController {
   @Post()
   @UseGuards(AdminGuard)
   @Aktivitaet('Nutzer angelegt')
-  async createNutzer(@Req() request: AuthenticatedRequest, @Body() dto: CreateNutzerDto) {
+  async createNutzer(
+    @Req() request: AuthenticatedRequest,
+    @Body() dto: CreateNutzerDto,
+  ) {
     return this.nutzerService.createNutzer(request.user.id, dto);
   }
 
@@ -39,7 +53,10 @@ export class NutzerController {
   }
 
   @Patch('me')
-  async updateMe(@Req() request: AuthenticatedRequest, @Body() dto: UpdateEigeneDatenDto) {
+  async updateMe(
+    @Req() request: AuthenticatedRequest,
+    @Body() dto: UpdateEigeneDatenDto,
+  ) {
     return this.nutzerService.updateEigeneDaten(request.user.id, dto);
   }
 }

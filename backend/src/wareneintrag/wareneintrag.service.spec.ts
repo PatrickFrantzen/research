@@ -9,13 +9,23 @@ describe('WareneintragService', () => {
       const prisma = {
         wareneintrag: {
           findMany: vi.fn().mockResolvedValue([
-            { id: 'wareneintrag-21', fotoFernUrl: 'wareneintraege/foto-21', fotoNahUrl: null, fotoDetailUrl: null },
+            {
+              id: 'wareneintrag-21',
+              fotoFernUrl: 'wareneintraege/foto-21',
+              fotoNahUrl: null,
+              fotoDetailUrl: null,
+            },
           ]),
           count: vi.fn().mockResolvedValue(41),
         },
       };
-      const objectStorage = { getSignedUrl: vi.fn().mockResolvedValue('https://minio.local/foto-21') };
-      const service = new WareneintragService(prisma as never, objectStorage as never);
+      const objectStorage = {
+        getSignedUrl: vi.fn().mockResolvedValue('https://minio.local/foto-21'),
+      };
+      const service = new WareneintragService(
+        prisma as never,
+        objectStorage as never,
+      );
 
       const ergebnis = await service.findAll({ seite: 1, proSeite: 20 });
 
@@ -30,7 +40,9 @@ describe('WareneintragService', () => {
         skip: 20,
         take: 20,
       });
-      expect(prisma.wareneintrag.count).toHaveBeenCalledWith({ where: undefined });
+      expect(prisma.wareneintrag.count).toHaveBeenCalledWith({
+        where: undefined,
+      });
       expect(ergebnis).toEqual({
         daten: [
           {
@@ -46,7 +58,12 @@ describe('WareneintragService', () => {
     });
 
     it('lists all Wareneintraege when no filter is given', async () => {
-      const prisma = { wareneintrag: { findMany: vi.fn().mockResolvedValue([]), count: vi.fn().mockResolvedValue(0) } };
+      const prisma = {
+        wareneintrag: {
+          findMany: vi.fn().mockResolvedValue([]),
+          count: vi.fn().mockResolvedValue(0),
+        },
+      };
       const service = new WareneintragService(prisma as never, {} as never);
 
       await service.findAll({});
@@ -67,14 +84,22 @@ describe('WareneintragService', () => {
     it('leaves photo fields null when no photo was uploaded for that view, instead of signing a URL', async () => {
       const prisma = {
         wareneintrag: {
-          findMany: vi
-            .fn()
-            .mockResolvedValue([{ id: 'wareneintrag-1', fotoFernUrl: null, fotoNahUrl: null, fotoDetailUrl: null }]),
+          findMany: vi.fn().mockResolvedValue([
+            {
+              id: 'wareneintrag-1',
+              fotoFernUrl: null,
+              fotoNahUrl: null,
+              fotoDetailUrl: null,
+            },
+          ]),
           count: vi.fn().mockResolvedValue(1),
         },
       };
       const objectStorage = { getSignedUrl: vi.fn() };
-      const service = new WareneintragService(prisma as never, objectStorage as never);
+      const service = new WareneintragService(
+        prisma as never,
+        objectStorage as never,
+      );
 
       const ergebnis = await service.findAll({});
 
@@ -98,19 +123,34 @@ describe('WareneintragService', () => {
                 fotoFernUrl: 'wareneintraege/foto-1',
                 fotoNahUrl: null,
                 fotoDetailUrl: null,
-                ...(args.include ? { avvCode: { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' } } : {}),
+                ...(args.include
+                  ? {
+                      avvCode: {
+                        id: 'avv-1',
+                        code: '17 01 01',
+                        bezeichnung: 'Beton',
+                      },
+                    }
+                  : {}),
               },
             ]),
           ),
           count: vi.fn().mockResolvedValue(1),
         },
       };
-      const objectStorage = { getSignedUrl: vi.fn().mockResolvedValue('https://minio.local/foto-1') };
-      const service = new WareneintragService(prisma as never, objectStorage as never);
+      const objectStorage = {
+        getSignedUrl: vi.fn().mockResolvedValue('https://minio.local/foto-1'),
+      };
+      const service = new WareneintragService(
+        prisma as never,
+        objectStorage as never,
+      );
 
       const ergebnis = await service.findAll({});
 
-      expect(ergebnis.daten[0]).toMatchObject({ avvCode: { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' } });
+      expect(ergebnis.daten[0]).toMatchObject({
+        avvCode: { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' },
+      });
     });
 
     it('replaces the stored object-storage key with a time-limited, retrievable URL – Issue #45', async () => {
@@ -128,12 +168,21 @@ describe('WareneintragService', () => {
           count: vi.fn().mockResolvedValue(1),
         },
       };
-      const objectStorage = { getSignedUrl: vi.fn().mockResolvedValue('https://minio.local/signed-foto-1') };
-      const service = new WareneintragService(prisma as never, objectStorage as never);
+      const objectStorage = {
+        getSignedUrl: vi
+          .fn()
+          .mockResolvedValue('https://minio.local/signed-foto-1'),
+      };
+      const service = new WareneintragService(
+        prisma as never,
+        objectStorage as never,
+      );
 
       const ergebnis = await service.findAll({});
 
-      expect(objectStorage.getSignedUrl).toHaveBeenCalledWith('wareneintraege/foto-1');
+      expect(objectStorage.getSignedUrl).toHaveBeenCalledWith(
+        'wareneintraege/foto-1',
+      );
       expect(ergebnis).toEqual({
         daten: [
           {
@@ -153,21 +202,41 @@ describe('WareneintragService', () => {
       const prisma = {
         wareneintrag: {
           findMany: vi.fn().mockResolvedValue([
-            { id: 'w-1', fotoFernUrl: null, fotoNahUrl: null, fotoDetailUrl: null, dokumentUrl: 'wareneintraege/pdf-1' },
+            {
+              id: 'w-1',
+              fotoFernUrl: null,
+              fotoNahUrl: null,
+              fotoDetailUrl: null,
+              dokumentUrl: 'wareneintraege/pdf-1',
+            },
           ]),
           count: vi.fn().mockResolvedValue(1),
         },
       };
-      const objectStorage = { getSignedUrl: vi.fn(async (key: string) => `https://minio.local/${key}`) };
-      const service = new WareneintragService(prisma as never, objectStorage as never);
+      const objectStorage = {
+        getSignedUrl: vi.fn(
+          async (key: string) => `https://minio.local/${key}`,
+        ),
+      };
+      const service = new WareneintragService(
+        prisma as never,
+        objectStorage as never,
+      );
 
       const { daten } = await service.findAll({});
 
-      expect(daten[0]!.dokumentUrl).toBe('https://minio.local/wareneintraege/pdf-1');
+      expect(daten[0]!.dokumentUrl).toBe(
+        'https://minio.local/wareneintraege/pdf-1',
+      );
     });
 
     it('filters by avvCodeId when given', async () => {
-      const prisma = { wareneintrag: { findMany: vi.fn().mockResolvedValue([]), count: vi.fn().mockResolvedValue(0) } };
+      const prisma = {
+        wareneintrag: {
+          findMany: vi.fn().mockResolvedValue([]),
+          count: vi.fn().mockResolvedValue(0),
+        },
+      };
       const service = new WareneintragService(prisma as never, {} as never);
 
       await service.findAll({ avvCodeId: 'avv-1' });
@@ -186,15 +255,24 @@ describe('WareneintragService', () => {
     });
 
     it('filters by standortId when given, combined with avvCodeId', async () => {
-      const prisma = { wareneintrag: { findMany: vi.fn().mockResolvedValue([]), count: vi.fn().mockResolvedValue(0) } };
+      const prisma = {
+        wareneintrag: {
+          findMany: vi.fn().mockResolvedValue([]),
+          count: vi.fn().mockResolvedValue(0),
+        },
+      };
       const service = new WareneintragService(prisma as never, {} as never);
 
       await service.findAll({ avvCodeId: 'avv-1', standortId: 'standort-2' });
 
       expect(prisma.wareneintrag.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({ where: { avvCodeId: 'avv-1', standortId: 'standort-2' } }),
+        expect.objectContaining({
+          where: { avvCodeId: 'avv-1', standortId: 'standort-2' },
+        }),
       );
-      expect(prisma.wareneintrag.count).toHaveBeenCalledWith({ where: { avvCodeId: 'avv-1', standortId: 'standort-2' } });
+      expect(prisma.wareneintrag.count).toHaveBeenCalledWith({
+        where: { avvCodeId: 'avv-1', standortId: 'standort-2' },
+      });
     });
 
     it('uses the tsvector full-text index instead of LIKE when a search term is given', async () => {
@@ -222,25 +300,35 @@ describe('WareneintragService', () => {
 
     it('finds a Wareneintrag when the search term is only the beginning of a word', async () => {
       const prisma = {
-        $queryRaw: vi.fn().mockImplementation((strings: TemplateStringsArray, ...values: unknown[]) => {
-          const sql = strings.join('?');
-          const usesPrefixSearch = sql.includes("to_tsquery('german'") && values.includes('tes:*');
-          return usesPrefixSearch
-            ? [
-                {
-                  id: 'wareneintrag-1',
-                  fotoFernUrl: 'wareneintraege/foto-1',
-                  fotoNahUrl: null,
-                  fotoDetailUrl: null,
-                  freitext: 'test',
-                  gesamt: 1n,
-                },
-              ]
-            : [];
-        }),
+        $queryRaw: vi
+          .fn()
+          .mockImplementation(
+            (strings: TemplateStringsArray, ...values: unknown[]) => {
+              const sql = strings.join('?');
+              const usesPrefixSearch =
+                sql.includes("to_tsquery('german'") && values.includes('tes:*');
+              return usesPrefixSearch
+                ? [
+                    {
+                      id: 'wareneintrag-1',
+                      fotoFernUrl: 'wareneintraege/foto-1',
+                      fotoNahUrl: null,
+                      fotoDetailUrl: null,
+                      freitext: 'test',
+                      gesamt: 1n,
+                    },
+                  ]
+                : [];
+            },
+          ),
       };
-      const objectStorage = { getSignedUrl: vi.fn().mockResolvedValue('https://minio.local/foto-1') };
-      const service = new WareneintragService(prisma as never, objectStorage as never);
+      const objectStorage = {
+        getSignedUrl: vi.fn().mockResolvedValue('https://minio.local/foto-1'),
+      };
+      const service = new WareneintragService(
+        prisma as never,
+        objectStorage as never,
+      );
 
       const ergebnis = await service.findAll({ suche: 'tes' });
 
@@ -268,9 +356,9 @@ describe('WareneintragService', () => {
       expect(prisma.$queryRaw).toHaveBeenCalledTimes(1);
       const [strings, ...values] = prisma.$queryRaw.mock.calls[0];
       const sql = strings.join('?');
-      const nestedFragment = values.find((value: unknown) => value instanceof Prisma.Sql) as
-        | InstanceType<typeof Prisma.Sql>
-        | undefined;
+      const nestedFragment = values.find(
+        (value: unknown) => value instanceof Prisma.Sql,
+      ) as InstanceType<typeof Prisma.Sql> | undefined;
       expect(sql).toContain('freitext_tsv');
       expect(nestedFragment?.sql).toContain('avv_code_id');
       expect(values).toContain('Bauschutt');
@@ -284,26 +372,41 @@ describe('WareneintragService', () => {
       await service.findAll({ standortId: 'standort-2', suche: 'Bauschutt' });
 
       const [, ...values] = prisma.$queryRaw.mock.calls[0];
-      const fragmente = values.filter((value: unknown) => value instanceof Prisma.Sql) as InstanceType<typeof Prisma.Sql>[];
-      const standortFragment = fragmente.find((fragment) => fragment.sql.includes('standort_id'));
+      const fragmente = values.filter(
+        (value: unknown) => value instanceof Prisma.Sql,
+      ) as InstanceType<typeof Prisma.Sql>[];
+      const standortFragment = fragmente.find((fragment) =>
+        fragment.sql.includes('standort_id'),
+      );
       expect(standortFragment?.values).toEqual(['standort-2']);
       expect(values).toContain('Bauschutt');
     });
   });
 
   // Kleinstes PDF, das `file-type` als application/pdf erkennt.
-  const PDF_BYTES = Buffer.from(['%PDF-1.4', '1 0 obj<<>>endobj', 'trailer<<>>', '%%EOF', ''].join(String.fromCharCode(10)));
+  const PDF_BYTES = Buffer.from(
+    ['%PDF-1.4', '1 0 obj<<>>endobj', 'trailer<<>>', '%%EOF', ''].join(
+      String.fromCharCode(10),
+    ),
+  );
   // Minimaler gültiger PNG-Header, den `file-type` als image/png erkennt.
   const PNG_BYTES = Buffer.from([
-    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00,
-    0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06, 0x00, 0x00, 0x00, 0x1f, 0x15, 0xc4, 0x89,
+    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
+    0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+    0x08, 0x06, 0x00, 0x00, 0x00, 0x1f, 0x15, 0xc4, 0x89,
   ]);
 
   describe('create', () => {
     it('creates a Wareneintrag with all three fotos and the current Nutzer-Standort as snapshot', async () => {
       const prisma = {
-        nutzer: { findUniqueOrThrow: vi.fn().mockResolvedValue({ id: 'nutzer-1', standortId: 'standort-1' }) },
-        wareneintrag: { create: vi.fn().mockResolvedValue({ id: 'wareneintrag-1' }) },
+        nutzer: {
+          findUniqueOrThrow: vi
+            .fn()
+            .mockResolvedValue({ id: 'nutzer-1', standortId: 'standort-1' }),
+        },
+        wareneintrag: {
+          create: vi.fn().mockResolvedValue({ id: 'wareneintrag-1' }),
+        },
       };
       const objectStorage = {
         uploadFoto: vi
@@ -312,16 +415,32 @@ describe('WareneintragService', () => {
           .mockResolvedValueOnce('wareneintraege/nah')
           .mockResolvedValueOnce('wareneintraege/detail'),
       };
-      const service = new WareneintragService(prisma as never, objectStorage as never);
+      const service = new WareneintragService(
+        prisma as never,
+        objectStorage as never,
+      );
 
-      const fotoFern = { buffer: Buffer.from('fern'), mimetype: 'image/jpeg' } as Express.Multer.File;
-      const fotoNah = { buffer: Buffer.from('nah'), mimetype: 'image/jpeg' } as Express.Multer.File;
-      const fotoDetail = { buffer: Buffer.from('detail'), mimetype: 'image/jpeg' } as Express.Multer.File;
-      await service.create('nutzer-1', { avvCodeId: 'avv-1', freitext: 'Bauschutt am Eingang' }, {
-        fotoFern,
-        fotoNah,
-        fotoDetail,
-      });
+      const fotoFern = {
+        buffer: Buffer.from('fern'),
+        mimetype: 'image/jpeg',
+      } as Express.Multer.File;
+      const fotoNah = {
+        buffer: Buffer.from('nah'),
+        mimetype: 'image/jpeg',
+      } as Express.Multer.File;
+      const fotoDetail = {
+        buffer: Buffer.from('detail'),
+        mimetype: 'image/jpeg',
+      } as Express.Multer.File;
+      await service.create(
+        'nutzer-1',
+        { avvCodeId: 'avv-1', freitext: 'Bauschutt am Eingang' },
+        {
+          fotoFern,
+          fotoNah,
+          fotoDetail,
+        },
+      );
 
       expect(objectStorage.uploadFoto).toHaveBeenCalledTimes(3);
       expect(prisma.wareneintrag.create).toHaveBeenCalledWith({
@@ -339,13 +458,26 @@ describe('WareneintragService', () => {
 
     it('creates a Wareneintrag with no fotos at all, since photos are optional', async () => {
       const prisma = {
-        nutzer: { findUniqueOrThrow: vi.fn().mockResolvedValue({ id: 'nutzer-1', standortId: 'standort-1' }) },
-        wareneintrag: { create: vi.fn().mockResolvedValue({ id: 'wareneintrag-1' }) },
+        nutzer: {
+          findUniqueOrThrow: vi
+            .fn()
+            .mockResolvedValue({ id: 'nutzer-1', standortId: 'standort-1' }),
+        },
+        wareneintrag: {
+          create: vi.fn().mockResolvedValue({ id: 'wareneintrag-1' }),
+        },
       };
       const objectStorage = { uploadFoto: vi.fn() };
-      const service = new WareneintragService(prisma as never, objectStorage as never);
+      const service = new WareneintragService(
+        prisma as never,
+        objectStorage as never,
+      );
 
-      await service.create('nutzer-1', { avvCodeId: 'avv-1', freitext: 'Bauschutt am Eingang' }, {});
+      await service.create(
+        'nutzer-1',
+        { avvCodeId: 'avv-1', freitext: 'Bauschutt am Eingang' },
+        {},
+      );
 
       expect(objectStorage.uploadFoto).not.toHaveBeenCalled();
       expect(prisma.wareneintrag.create).toHaveBeenCalledWith({
@@ -363,34 +495,78 @@ describe('WareneintragService', () => {
 
     it('uploads with the actually detected image type, not the client-declared (possibly spoofed) mimetype', async () => {
       const prisma = {
-        nutzer: { findUniqueOrThrow: vi.fn().mockResolvedValue({ id: 'nutzer-1', standortId: 'standort-1' }) },
-        wareneintrag: { create: vi.fn().mockResolvedValue({ id: 'wareneintrag-1' }) },
+        nutzer: {
+          findUniqueOrThrow: vi
+            .fn()
+            .mockResolvedValue({ id: 'nutzer-1', standortId: 'standort-1' }),
+        },
+        wareneintrag: {
+          create: vi.fn().mockResolvedValue({ id: 'wareneintrag-1' }),
+        },
       };
-      const objectStorage = { uploadFoto: vi.fn().mockResolvedValue('wareneintraege/foto-1') };
-      const service = new WareneintragService(prisma as never, objectStorage as never);
+      const objectStorage = {
+        uploadFoto: vi.fn().mockResolvedValue('wareneintraege/foto-1'),
+      };
+      const service = new WareneintragService(
+        prisma as never,
+        objectStorage as never,
+      );
 
       // Client behauptet text/html, die Bytes sind aber ein echtes PNG.
-      const fotoFern = { buffer: PNG_BYTES, mimetype: 'text/html' } as Express.Multer.File;
-      await service.create('nutzer-1', { avvCodeId: 'avv-1', freitext: 'Bauschutt am Eingang' }, { fotoFern });
+      const fotoFern = {
+        buffer: PNG_BYTES,
+        mimetype: 'text/html',
+      } as Express.Multer.File;
+      await service.create(
+        'nutzer-1',
+        { avvCodeId: 'avv-1', freitext: 'Bauschutt am Eingang' },
+        { fotoFern },
+      );
 
-      expect(objectStorage.uploadFoto).toHaveBeenCalledWith(fotoFern.buffer, 'image/png');
+      expect(objectStorage.uploadFoto).toHaveBeenCalledWith(
+        fotoFern.buffer,
+        'image/png',
+      );
     });
   });
 
   describe('create with dokument', () => {
     it('stores the PDF as application/pdf, whatever the client declared', async () => {
       const prisma = {
-        nutzer: { findUniqueOrThrow: vi.fn().mockResolvedValue({ id: 'nutzer-1', standortId: 'standort-1' }) },
-        wareneintrag: { create: vi.fn().mockResolvedValue({ id: 'wareneintrag-1' }) },
+        nutzer: {
+          findUniqueOrThrow: vi
+            .fn()
+            .mockResolvedValue({ id: 'nutzer-1', standortId: 'standort-1' }),
+        },
+        wareneintrag: {
+          create: vi.fn().mockResolvedValue({ id: 'wareneintrag-1' }),
+        },
       };
-      const objectStorage = { uploadFoto: vi.fn().mockResolvedValue('wareneintraege/pdf-1') };
-      const service = new WareneintragService(prisma as never, objectStorage as never);
-      const dokument = { buffer: PDF_BYTES, mimetype: 'text/html' } as Express.Multer.File;
+      const objectStorage = {
+        uploadFoto: vi.fn().mockResolvedValue('wareneintraege/pdf-1'),
+      };
+      const service = new WareneintragService(
+        prisma as never,
+        objectStorage as never,
+      );
+      const dokument = {
+        buffer: PDF_BYTES,
+        mimetype: 'text/html',
+      } as Express.Multer.File;
 
-      await service.create('nutzer-1', { avvCodeId: 'avv-1', freitext: 'Mit Lieferschein' }, { dokument });
+      await service.create(
+        'nutzer-1',
+        { avvCodeId: 'avv-1', freitext: 'Mit Lieferschein' },
+        { dokument },
+      );
 
-      expect(objectStorage.uploadFoto).toHaveBeenCalledWith(PDF_BYTES, 'application/pdf');
-      expect(prisma.wareneintrag.create.mock.calls[0]![0].data.dokumentUrl).toBe('wareneintraege/pdf-1');
+      expect(objectStorage.uploadFoto).toHaveBeenCalledWith(
+        PDF_BYTES,
+        'application/pdf',
+      );
+      expect(
+        prisma.wareneintrag.create.mock.calls[0]![0].data.dokumentUrl,
+      ).toBe('wareneintraege/pdf-1');
     });
   });
 
@@ -410,9 +586,17 @@ describe('WareneintragService', () => {
         wareneintragAnalyse: { deleteMany: vi.fn() },
       };
       const objectStorage = { uploadFoto: vi.fn(), deleteFoto: vi.fn() };
-      const service = new WareneintragService(prisma as never, objectStorage as never);
+      const service = new WareneintragService(
+        prisma as never,
+        objectStorage as never,
+      );
 
-      await service.update('wareneintrag-1', 'nutzer-1', { avvCodeId: 'avv-2', freitext: 'Aktualisierter Text' }, {});
+      await service.update(
+        'wareneintrag-1',
+        'nutzer-1',
+        { avvCodeId: 'avv-2', freitext: 'Aktualisierter Text' },
+        {},
+      );
 
       expect(objectStorage.uploadFoto).not.toHaveBeenCalled();
       expect(objectStorage.deleteFoto).not.toHaveBeenCalled();
@@ -442,14 +626,22 @@ describe('WareneintragService', () => {
           }),
           update: vi.fn().mockResolvedValue({ id: 'wareneintrag-1' }),
         },
-        wareneintragAnalyse: { deleteMany: vi.fn().mockResolvedValue({ count: 1 }) },
+        wareneintragAnalyse: {
+          deleteMany: vi.fn().mockResolvedValue({ count: 1 }),
+        },
       };
       const objectStorage = {
         uploadFoto: vi.fn().mockResolvedValue('wareneintraege/neu'),
         deleteFoto: vi.fn().mockResolvedValue(undefined),
       };
-      const service = new WareneintragService(prisma as never, objectStorage as never);
-      const fotoFern = { buffer: Buffer.from('neu'), mimetype: 'image/png' } as Express.Multer.File;
+      const service = new WareneintragService(
+        prisma as never,
+        objectStorage as never,
+      );
+      const fotoFern = {
+        buffer: Buffer.from('neu'),
+        mimetype: 'image/png',
+      } as Express.Multer.File;
 
       await service.update(
         'wareneintrag-1',
@@ -460,13 +652,20 @@ describe('WareneintragService', () => {
 
       expect(objectStorage.deleteFoto).toHaveBeenCalledOnce();
       // Foto ersetzt: gespeicherte KI-Analyse wird gelöscht, vor dem Update (Issue #96).
-      expect(prisma.wareneintragAnalyse.deleteMany).toHaveBeenCalledWith({ where: { wareneintragId: 'wareneintrag-1' } });
-      expect(prisma.wareneintragAnalyse.deleteMany.mock.invocationCallOrder[0]).toBeLessThan(
-        prisma.wareneintrag.update.mock.invocationCallOrder[0],
+      expect(prisma.wareneintragAnalyse.deleteMany).toHaveBeenCalledWith({
+        where: { wareneintragId: 'wareneintrag-1' },
+      });
+      expect(
+        prisma.wareneintragAnalyse.deleteMany.mock.invocationCallOrder[0],
+      ).toBeLessThan(prisma.wareneintrag.update.mock.invocationCallOrder[0]);
+      expect(objectStorage.deleteFoto).toHaveBeenCalledWith(
+        'wareneintraege/alt',
       );
-      expect(objectStorage.deleteFoto).toHaveBeenCalledWith('wareneintraege/alt');
       expect(objectStorage.uploadFoto).toHaveBeenCalledOnce();
-      expect(objectStorage.uploadFoto).toHaveBeenCalledWith(fotoFern.buffer, 'image/png');
+      expect(objectStorage.uploadFoto).toHaveBeenCalledWith(
+        fotoFern.buffer,
+        'image/png',
+      );
       expect(prisma.wareneintrag.update).toHaveBeenCalledWith({
         where: { id: 'wareneintrag-1' },
         data: {
@@ -498,12 +697,25 @@ describe('WareneintragService', () => {
         uploadFoto: vi.fn().mockResolvedValue('wareneintraege/pdf-neu'),
         deleteFoto: vi.fn().mockResolvedValue(undefined),
       };
-      const service = new WareneintragService(prisma as never, objectStorage as never);
-      const dokument = { buffer: PDF_BYTES, mimetype: 'application/pdf' } as Express.Multer.File;
+      const service = new WareneintragService(
+        prisma as never,
+        objectStorage as never,
+      );
+      const dokument = {
+        buffer: PDF_BYTES,
+        mimetype: 'application/pdf',
+      } as Express.Multer.File;
 
-      await service.update('wareneintrag-1', 'nutzer-1', { avvCodeId: 'avv-1', freitext: 'x' }, { dokument });
+      await service.update(
+        'wareneintrag-1',
+        'nutzer-1',
+        { avvCodeId: 'avv-1', freitext: 'x' },
+        { dokument },
+      );
 
-      expect(objectStorage.deleteFoto).toHaveBeenCalledExactlyOnceWith('wareneintraege/pdf-alt');
+      expect(objectStorage.deleteFoto).toHaveBeenCalledExactlyOnceWith(
+        'wareneintraege/pdf-alt',
+      );
       expect(prisma.wareneintragAnalyse.deleteMany).not.toHaveBeenCalled();
       expect(prisma.wareneintrag.update.mock.calls[0]![0].data).toMatchObject({
         fotoFernUrl: 'wareneintraege/fern',
@@ -514,13 +726,21 @@ describe('WareneintragService', () => {
     it('rejects when the acting user did not create the Wareneintrag', async () => {
       const prisma = {
         wareneintrag: {
-          findUniqueOrThrow: vi.fn().mockResolvedValue({ id: 'wareneintrag-1', erfasstVonId: 'nutzer-1' }),
+          findUniqueOrThrow: vi.fn().mockResolvedValue({
+            id: 'wareneintrag-1',
+            erfasstVonId: 'nutzer-1',
+          }),
         },
       };
       const service = new WareneintragService(prisma as never, {} as never);
 
       await expect(
-        service.update('wareneintrag-1', 'anderer-nutzer', { avvCodeId: 'avv-2', freitext: 'x' }, {}),
+        service.update(
+          'wareneintrag-1',
+          'anderer-nutzer',
+          { avvCodeId: 'avv-2', freitext: 'x' },
+          {},
+        ),
       ).rejects.toBeInstanceOf(ForbiddenException);
     });
   });
@@ -540,27 +760,45 @@ describe('WareneintragService', () => {
           delete: vi.fn().mockResolvedValue({ id: 'wareneintrag-1' }),
         },
       };
-      const objectStorage = { deleteFoto: vi.fn().mockResolvedValue(undefined) };
-      const service = new WareneintragService(prisma as never, objectStorage as never);
+      const objectStorage = {
+        deleteFoto: vi.fn().mockResolvedValue(undefined),
+      };
+      const service = new WareneintragService(
+        prisma as never,
+        objectStorage as never,
+      );
 
       await service.remove('wareneintrag-1', 'nutzer-1');
 
-      expect(objectStorage.deleteFoto).toHaveBeenCalledWith('wareneintraege/fern');
-      expect(objectStorage.deleteFoto).toHaveBeenCalledWith('wareneintraege/nah');
-      expect(objectStorage.deleteFoto).toHaveBeenCalledWith('wareneintraege/pdf');
+      expect(objectStorage.deleteFoto).toHaveBeenCalledWith(
+        'wareneintraege/fern',
+      );
+      expect(objectStorage.deleteFoto).toHaveBeenCalledWith(
+        'wareneintraege/nah',
+      );
+      expect(objectStorage.deleteFoto).toHaveBeenCalledWith(
+        'wareneintraege/pdf',
+      );
       expect(objectStorage.deleteFoto).toHaveBeenCalledTimes(3);
-      expect(prisma.wareneintrag.delete).toHaveBeenCalledWith({ where: { id: 'wareneintrag-1' } });
+      expect(prisma.wareneintrag.delete).toHaveBeenCalledWith({
+        where: { id: 'wareneintrag-1' },
+      });
     });
 
     it('rejects when the acting user did not create the Wareneintrag', async () => {
       const prisma = {
         wareneintrag: {
-          findUniqueOrThrow: vi.fn().mockResolvedValue({ id: 'wareneintrag-1', erfasstVonId: 'nutzer-1' }),
+          findUniqueOrThrow: vi.fn().mockResolvedValue({
+            id: 'wareneintrag-1',
+            erfasstVonId: 'nutzer-1',
+          }),
         },
       };
       const service = new WareneintragService(prisma as never, {} as never);
 
-      await expect(service.remove('wareneintrag-1', 'anderer-nutzer')).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(
+        service.remove('wareneintrag-1', 'anderer-nutzer'),
+      ).rejects.toBeInstanceOf(ForbiddenException);
     });
   });
 });

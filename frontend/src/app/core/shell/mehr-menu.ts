@@ -23,9 +23,18 @@ import { ThemeService } from '../theme.service.js';
       </a>
     </mat-nav-list>
     <mat-action-list>
-      <button mat-list-item type="button" data-testid="farbmodus-umschalten" (click)="themeService.umschalten()">
-        <mat-icon matListItemIcon>{{ themeService.modus() === 'dunkel' ? 'light_mode' : 'dark_mode' }}</mat-icon>
-        <span matListItemTitle>{{ themeService.modus() === 'dunkel' ? 'Helles Design' : 'Dunkles Design' }}</span>
+      <button
+        mat-list-item
+        type="button"
+        data-testid="farbmodus-umschalten"
+        (click)="themeService.umschalten()"
+      >
+        <mat-icon matListItemIcon>{{
+          themeService.modus() === 'dunkel' ? 'light_mode' : 'dark_mode'
+        }}</mat-icon>
+        <span matListItemTitle>{{
+          themeService.modus() === 'dunkel' ? 'Helles Design' : 'Dunkles Design'
+        }}</span>
       </button>
       <button mat-list-item type="button" (click)="logout()">
         <mat-icon matListItemIcon>logout</mat-icon>

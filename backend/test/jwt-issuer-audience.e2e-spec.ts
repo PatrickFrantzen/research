@@ -50,10 +50,19 @@ describe('JWT Issuer/Audience-Prüfung (Issue #34)', () => {
     const moduleRef = await Test.createTestingModule({
       imports: [
         PassportModule.register({ defaultStrategy: 'jwt' }),
-        JwtModule.register({ secret: JWT_SECRET, signOptions: { algorithm: 'HS256' } }),
+        JwtModule.register({
+          secret: JWT_SECRET,
+          signOptions: { algorithm: 'HS256' },
+        }),
       ],
       controllers: [DummyController],
-      providers: [JwtStrategy, { provide: PrismaService, useValue: { nutzer: { findUnique: async () => nutzer } } }],
+      providers: [
+        JwtStrategy,
+        {
+          provide: PrismaService,
+          useValue: { nutzer: { findUnique: async () => nutzer } },
+        },
+      ],
     }).compile();
 
     app = moduleRef.createNestApplication();
@@ -65,7 +74,9 @@ describe('JWT Issuer/Audience-Prüfung (Issue #34)', () => {
     await app.close();
   });
 
-  function token(overrides: { issuer?: string; audience?: string } = {}): string {
+  function token(
+    overrides: { issuer?: string; audience?: string } = {},
+  ): string {
     return jwt.sign({ sub: nutzer.id }, JWT_SECRET, {
       algorithm: 'HS256',
       issuer: overrides.issuer ?? JWT_ISSUER,
@@ -76,7 +87,10 @@ describe('JWT Issuer/Audience-Prüfung (Issue #34)', () => {
   it('rejects a token with an unexpected issuer', async () => {
     const response = await request(app.getHttpServer())
       .get('/dummy/geschuetzt')
-      .set('Cookie', `${ACCESS_TOKEN_COOKIE}=${token({ issuer: 'fremder-issuer' })}`);
+      .set(
+        'Cookie',
+        `${ACCESS_TOKEN_COOKIE}=${token({ issuer: 'fremder-issuer' })}`,
+      );
 
     expect(response.status).toBe(401);
   });
@@ -84,7 +98,10 @@ describe('JWT Issuer/Audience-Prüfung (Issue #34)', () => {
   it('rejects a token with an unexpected audience', async () => {
     const response = await request(app.getHttpServer())
       .get('/dummy/geschuetzt')
-      .set('Cookie', `${ACCESS_TOKEN_COOKIE}=${token({ audience: 'fremde-audience' })}`);
+      .set(
+        'Cookie',
+        `${ACCESS_TOKEN_COOKIE}=${token({ audience: 'fremde-audience' })}`,
+      );
 
     expect(response.status).toBe(401);
   });
@@ -141,7 +158,9 @@ describe('Login über das reale AuthModule stellt vom eigenen JwtStrategy akzept
       .send({ email: nutzer.email, passwort: 'geheim1234567' });
     const cookies = login.headers['set-cookie'] as unknown as string[];
 
-    const response = await request(app.getHttpServer()).get('/dummy/geschuetzt').set('Cookie', cookies);
+    const response = await request(app.getHttpServer())
+      .get('/dummy/geschuetzt')
+      .set('Cookie', cookies);
 
     expect(response.status).toBe(200);
   });

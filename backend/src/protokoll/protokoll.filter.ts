@@ -9,7 +9,9 @@ function grund(exception: unknown): string {
     const antwort = exception.getResponse();
     if (typeof antwort === 'string') return antwort;
     const message = (antwort as { message?: unknown }).message;
-    return Array.isArray(message) ? message.join('; ') : String(message ?? exception.message);
+    return Array.isArray(message)
+      ? message.join('; ')
+      : String(message ?? exception.message);
   }
   return `Unerwarteter Fehler: ${exception instanceof Error ? exception.message : String(exception)}`;
 }
@@ -34,14 +36,19 @@ export class ProtokollFilter extends BaseExceptionFilter {
   }
 
   private protokolliere(exception: unknown, host: ArgumentsHost): void {
-    const request = host.switchToHttp().getRequest<Request & { user?: AuthenticatedUser }>();
-    const status = exception instanceof HttpException ? exception.getStatus() : 500;
+    const request = host
+      .switchToHttp()
+      .getRequest<Request & { user?: AuthenticatedUser }>();
+    const status =
+      exception instanceof HttpException ? exception.getStatus() : 500;
     const pfad = request.originalUrl.split('?')[0];
     // Die App fragt beim Start ohne Login immer /auth/me ab: erwartet, kein Fehler.
     if (status === 401 && pfad.endsWith('/auth/me')) return;
     const felder = [String(status), `${request.method} ${pfad}`];
     if (pfad.endsWith('/auth/login')) {
-      const email = String((request.body as { email?: unknown } | undefined)?.email ?? '-').slice(0, 200);
+      const email = String(
+        (request.body as { email?: unknown } | undefined)?.email ?? '-',
+      ).slice(0, 200);
       felder.push(`versucht: ${email}`, grund(exception), `IP ${request.ip}`);
     } else {
       felder.push(request.user?.email ?? '-', grund(exception));

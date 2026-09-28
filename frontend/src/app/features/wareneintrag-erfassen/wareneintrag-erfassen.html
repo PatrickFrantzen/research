@@ -90,9 +90,14 @@
             [formField]="wareneintragForm.avvSucheAnzeige"
             (input)="onAvvSucheEingabe(avvSuche.value)"
           />
-          <mat-autocomplete #avvAuto="matAutocomplete" (optionSelected)="onAvvCodeAusgewaehlt($event)">
+          <mat-autocomplete
+            #avvAuto="matAutocomplete"
+            (optionSelected)="onAvvCodeAusgewaehlt($event)"
+          >
             @for (avvCode of avvTrefferListe(); track avvCode.id) {
-              <mat-option [value]="avvCode.id">{{ avvCode.code }} – {{ avvCode.bezeichnung }}</mat-option>
+              <mat-option [value]="avvCode.id"
+                >{{ avvCode.code }} – {{ avvCode.bezeichnung }}</mat-option
+              >
             }
             @if (avvTreffer.status() === 'error') {
               <mat-option disabled>AVV-Codes konnten nicht geladen werden.</mat-option>
@@ -113,7 +118,9 @@
 
       <mat-card-actions align="end">
         <a matButton routerLink="/">Abbrechen</a>
-        <button matButton="filled" type="submit" [disabled]="!kannAbsenden || wirdGeladen()">Absenden</button>
+        <button matButton="filled" type="submit" [disabled]="!kannAbsenden || wirdGeladen()">
+          Absenden
+        </button>
       </mat-card-actions>
     </form>
   </mat-card>

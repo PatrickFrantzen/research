@@ -1,8 +1,19 @@
 import { DatePipe } from '@angular/common';
-import { Component, ElementRef, computed, inject, linkedSignal, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  computed,
+  inject,
+  linkedSignal,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormField, form } from '@angular/forms/signals';
-import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import {
+  MatAutocompleteModule,
+  MatAutocompleteSelectedEvent,
+} from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
@@ -23,7 +34,10 @@ import { DeutscherPaginatorIntl } from '../../core/paginator-intl.js';
 import { StandortApi } from '../../core/standort-api.js';
 import { Wareneintrag, WareneintragApi } from '../../core/wareneintrag-api.js';
 import { WareneintragBearbeitenDialog } from './wareneintrag-bearbeiten-dialog/wareneintrag-bearbeiten-dialog.js';
-import { fotosVon, WareneintragDetailDialog } from './wareneintrag-detail-dialog/wareneintrag-detail-dialog.js';
+import {
+  fotosVon,
+  WareneintragDetailDialog,
+} from './wareneintrag-detail-dialog/wareneintrag-detail-dialog.js';
 
 // Verzögerung, bevor Filteränderungen die Liste neu laden – analog zur
 // AVV-Suche in wareneintrag-erfassen.
@@ -108,13 +122,17 @@ export class WareneintragListe {
   protected readonly standorte = rxResource({
     stream: () => this.standortApi.liste(),
   });
-  protected readonly standortListe = computed(() => (this.standorte.hasValue() ? this.standorte.value() : []));
+  protected readonly standortListe = computed(() =>
+    this.standorte.hasValue() ? this.standorte.value() : [],
+  );
   protected readonly standortFilterName = computed(
     () => this.standortListe().find((standort) => standort.id === this.standortId())?.name ?? null,
   );
 
   // value() wirft im Fehlerzustand – Template und Handler lesen nur hierüber.
-  protected readonly avvTrefferListe = computed(() => (this.avvTreffer.hasValue() ? this.avvTreffer.value() : []));
+  protected readonly avvTrefferListe = computed(() =>
+    this.avvTreffer.hasValue() ? this.avvTreffer.value() : [],
+  );
 
   // Letzte bekannte Gesamtzahl bleibt beim Blättern/Filtern stehen, bis die
   // neue Seite da ist – sonst springt der Paginator kurz auf „0 von 0“.
@@ -241,10 +259,14 @@ export class WareneintragListe {
       this.seitentitel().nativeElement.focus();
       this.snackBar.open('Wareneintrag wurde gelöscht.', undefined, { duration: 3000 });
     } catch (error) {
-      this.snackBar.open(extrahiereFehlermeldung(error, 'Wareneintrag konnte nicht gelöscht werden.'), 'OK', {
-        duration: 8000,
-        politeness: 'assertive',
-      });
+      this.snackBar.open(
+        extrahiereFehlermeldung(error, 'Wareneintrag konnte nicht gelöscht werden.'),
+        'OK',
+        {
+          duration: 8000,
+          politeness: 'assertive',
+        },
+      );
     } finally {
       this.loeschenLaeuft = false;
     }

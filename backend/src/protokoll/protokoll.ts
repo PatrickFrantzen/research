@@ -1,4 +1,11 @@
-import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync } from 'node:fs';
+import {
+  appendFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+} from 'node:fs';
 import path from 'node:path';
 
 export type ProtokollArt = 'aktivitaet' | 'fehler';
@@ -46,7 +53,11 @@ export class Protokoll {
   // Alle Tage mit mindestens einer Datei, neueste zuerst.
   tage(): string[] {
     if (!existsSync(this.verzeichnis)) return [];
-    const tage = new Set(readdirSync(this.verzeichnis).flatMap((name) => DATEINAME.exec(name)?.[2] ?? []));
+    const tage = new Set(
+      readdirSync(this.verzeichnis).flatMap(
+        (name) => DATEINAME.exec(name)?.[2] ?? [],
+      ),
+    );
     return [...tage].sort().reverse();
   }
 
@@ -59,7 +70,9 @@ export class Protokoll {
     }
     // Zeilenumbrüche raus: sonst ließen sich über Fehlermeldungen oder
     // App-Meldungen gefälschte Zeilen einschleusen.
-    const zeile = [`${datum} ${uhrzeit}`, ...felder].map((feld) => feld.replace(/[\r\n]+/g, ' ')).join(' | ');
+    const zeile = [`${datum} ${uhrzeit}`, ...felder]
+      .map((feld) => feld.replace(/[\r\n]+/g, ' '))
+      .join(' | ');
     appendFileSync(this.pfad(art, datum), `${zeile}\n`);
   }
 
@@ -69,7 +82,8 @@ export class Protokoll {
     const grenzDatum = grenze.toISOString().slice(0, 10);
     for (const name of readdirSync(this.verzeichnis)) {
       const datum = DATEINAME.exec(name)?.[2];
-      if (datum && datum < grenzDatum) rmSync(path.join(this.verzeichnis, name));
+      if (datum && datum < grenzDatum)
+        rmSync(path.join(this.verzeichnis, name));
     }
   }
 

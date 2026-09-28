@@ -7,10 +7,18 @@ import { AppFehlerMelder } from '../../core/app-fehler-melder.js';
 import { WareneintragErfassen } from './wareneintrag-erfassen.js';
 
 interface TestableWareneintragErfassen {
-  ausgewaehlterAvvCode: { id: string; code: string; bezeichnung: string; gefaehrlich?: boolean } | null;
+  ausgewaehlterAvvCode: {
+    id: string;
+    code: string;
+    bezeichnung: string;
+    gefaehrlich?: boolean;
+  } | null;
   kannAbsenden: boolean;
   fehler: () => string | null;
-  onFotoAusgewaehlt: (ansicht: 'fotoFern' | 'fotoNah' | 'fotoDetail', event: Event) => Promise<void>;
+  onFotoAusgewaehlt: (
+    ansicht: 'fotoFern' | 'fotoNah' | 'fotoDetail',
+    event: Event,
+  ) => Promise<void>;
   onDokumentAusgewaehlt: (event: Event) => void;
   fotoVorschau: (ansicht: 'fotoFern' | 'fotoNah' | 'fotoDetail') => string | null;
 }
@@ -51,7 +59,9 @@ describe('WareneintragErfassen', () => {
       const fixture = createComponent();
       const element = fixture.nativeElement as HTMLElement;
 
-      expect((element.querySelector('[data-testid="dokument"]') as HTMLInputElement).accept).toBe('application/pdf');
+      expect((element.querySelector('[data-testid="dokument"]') as HTMLInputElement).accept).toBe(
+        'application/pdf',
+      );
       expect(element.querySelector('[aria-label="Dokument (PDF) hinzufügen"]')).not.toBeNull();
     });
 
@@ -68,7 +78,9 @@ describe('WareneintragErfassen', () => {
       fixture.componentInstance.freitext = 'Bauschutt mit Lieferschein';
       const submitPromise = fixture.componentInstance.submit();
       const request = httpMock.expectOne('/api/v1/wareneintraege');
-      expect(((request.request.body as FormData).get('dokument') as File).name).toBe('lieferschein.pdf');
+      expect(((request.request.body as FormData).get('dokument') as File).name).toBe(
+        'lieferschein.pdf',
+      );
       request.flush({ id: 'wareneintrag-1' });
       await submitPromise;
     });
@@ -77,7 +89,9 @@ describe('WareneintragErfassen', () => {
       const fixture = createComponent();
       const component = asTestable(fixture.componentInstance);
 
-      component.onDokumentAusgewaehlt(fotoAuswahlEvent(new File(['x'], 'foto.jpg', { type: 'image/jpeg' })));
+      component.onDokumentAusgewaehlt(
+        fotoAuswahlEvent(new File(['x'], 'foto.jpg', { type: 'image/jpeg' })),
+      );
       fixture.detectChanges();
 
       expect(fixture.nativeElement.textContent).toContain('Dokument (PDF): Nur PDF erlaubt.');
@@ -97,12 +111,16 @@ describe('WareneintragErfassen', () => {
     it('offers only the image types the server accepts, with a camera and a gallery field per tile', () => {
       const fixture = createComponent();
       const inputs = Array.from(
-        fixture.nativeElement.querySelectorAll('[data-testid^="kamera-"], [data-testid^="galerie-"]') as NodeListOf<HTMLInputElement>,
+        fixture.nativeElement.querySelectorAll(
+          '[data-testid^="kamera-"], [data-testid^="galerie-"]',
+        ) as NodeListOf<HTMLInputElement>,
       );
 
       expect(inputs.length).toBe(6);
       inputs.forEach((input) => expect(input.accept).toBe('image/jpeg,image/png,image/webp'));
-      expect(inputs.filter((input) => input.getAttribute('capture') === 'environment').length).toBe(3);
+      expect(inputs.filter((input) => input.getAttribute('capture') === 'environment').length).toBe(
+        3,
+      );
       expect(inputs.filter((input) => !input.hasAttribute('capture')).length).toBe(3);
     });
 
@@ -117,8 +135,13 @@ describe('WareneintragErfassen', () => {
       (element.querySelector('[aria-label="Fernansicht hinzufügen"]') as HTMLButtonElement).click();
       fixture.detectChanges();
       await fixture.whenStable();
-      const eintraege = Array.from(document.querySelectorAll('.mat-mdc-menu-item')) as HTMLButtonElement[];
-      expect(eintraege.map((e) => e.textContent?.trim())).toEqual(['photo_cameraKamera', 'photo_libraryGalerie']);
+      const eintraege = Array.from(
+        document.querySelectorAll('.mat-mdc-menu-item'),
+      ) as HTMLButtonElement[];
+      expect(eintraege.map((e) => e.textContent?.trim())).toEqual([
+        'photo_cameraKamera',
+        'photo_libraryGalerie',
+      ]);
 
       eintraege[1].click();
       expect(galerieKlick).toHaveBeenCalled();
@@ -129,10 +152,15 @@ describe('WareneintragErfassen', () => {
       const fixture = createComponent();
       const component = asTestable(fixture.componentInstance);
 
-      await component.onFotoAusgewaehlt('fotoFern', fotoAuswahlEvent(new File(['gif'], 'foto.gif', { type: 'image/gif' })));
+      await component.onFotoAusgewaehlt(
+        'fotoFern',
+        fotoAuswahlEvent(new File(['gif'], 'foto.gif', { type: 'image/gif' })),
+      );
       fixture.detectChanges();
 
-      expect(fixture.nativeElement.textContent).toContain('Fernansicht: Nur JPEG, PNG oder WebP erlaubt.');
+      expect(fixture.nativeElement.textContent).toContain(
+        'Fernansicht: Nur JPEG, PNG oder WebP erlaubt.',
+      );
       expect(component.fotoVorschau('fotoFern')).toBeNull();
 
       component.ausgewaehlterAvvCode = { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' };
@@ -153,15 +181,22 @@ describe('WareneintragErfassen', () => {
         fotoAuswahlEvent(new File(['heic'], 'IMG_1.heic', { type: 'image/heic' })),
       );
 
-      expect(melde).toHaveBeenCalledOnceWith(jasmine.stringContaining('Fernansicht: Nur JPEG, PNG oder WebP erlaubt.'));
+      expect(melde).toHaveBeenCalledOnceWith(
+        jasmine.stringContaining('Fernansicht: Nur JPEG, PNG oder WebP erlaubt.'),
+      );
       expect(melde.calls.mostRecent().args[0]).toContain('image/heic');
     });
 
     it('accepts a large PNG or WebP without a client-side size limit: clears the previous message, shows a preview and submits it', async () => {
       const fixture = createComponent();
       const component = asTestable(fixture.componentInstance);
-      await component.onFotoAusgewaehlt('fotoDetail', fotoAuswahlEvent(new File(['gif'], 'alt.gif', { type: 'image/gif' })));
-      const grenze = new File([new Uint8Array(11 * 1024 * 1024)], 'detail.webp', { type: 'image/webp' });
+      await component.onFotoAusgewaehlt(
+        'fotoDetail',
+        fotoAuswahlEvent(new File(['gif'], 'alt.gif', { type: 'image/gif' })),
+      );
+      const grenze = new File([new Uint8Array(11 * 1024 * 1024)], 'detail.webp', {
+        type: 'image/webp',
+      });
 
       await component.onFotoAusgewaehlt('fotoDetail', fotoAuswahlEvent(grenze));
       fixture.detectChanges();
@@ -172,7 +207,9 @@ describe('WareneintragErfassen', () => {
       fixture.componentInstance.freitext = 'Bauschutt am Eingang';
       const submitPromise = fixture.componentInstance.submit();
       const request = httpMock.expectOne('/api/v1/wareneintraege');
-      expect(((request.request.body as FormData).get('fotoDetail') as File).name).toBe('detail.webp');
+      expect(((request.request.body as FormData).get('fotoDetail') as File).name).toBe(
+        'detail.webp',
+      );
       request.flush({ id: 'wareneintrag-1' });
       await submitPromise;
     });
@@ -182,14 +219,20 @@ describe('WareneintragErfassen', () => {
       const fixture = createComponent();
       const component = asTestable(fixture.componentInstance);
       const cloudFoto = new File(['cloud'], 'cloud.jpg', { type: 'image/jpeg' });
-      spyOn(cloudFoto, 'arrayBuffer').and.rejectWith(new DOMException('Datei nicht lesbar', 'NotReadableError'));
+      spyOn(cloudFoto, 'arrayBuffer').and.rejectWith(
+        new DOMException('Datei nicht lesbar', 'NotReadableError'),
+      );
 
       await component.onFotoAusgewaehlt('fotoFern', fotoAuswahlEvent(cloudFoto));
       fixture.detectChanges();
 
-      expect(fixture.nativeElement.textContent).toContain('Fernansicht: Foto konnte nicht gelesen werden.');
+      expect(fixture.nativeElement.textContent).toContain(
+        'Fernansicht: Foto konnte nicht gelesen werden.',
+      );
       expect(component.fotoVorschau('fotoFern')).toBeNull();
-      expect(melde).toHaveBeenCalledOnceWith(jasmine.stringContaining('Foto konnte nicht gelesen werden.'));
+      expect(melde).toHaveBeenCalledOnceWith(
+        jasmine.stringContaining('Foto konnte nicht gelesen werden.'),
+      );
 
       component.ausgewaehlterAvvCode = { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' };
       fixture.componentInstance.freitext = 'Bauschutt am Eingang';
@@ -209,7 +252,8 @@ describe('WareneintragErfassen', () => {
       input.dispatchEvent(new Event('change'));
       const component = asTestable(fixture.componentInstance);
       // Das Einlesen des Fotos ist asynchron.
-      while (!component.fotoVorschau('fotoFern')) await new Promise((resolve) => setTimeout(resolve));
+      while (!component.fotoVorschau('fotoFern'))
+        await new Promise((resolve) => setTimeout(resolve));
       component.ausgewaehlterAvvCode = { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' };
       fixture.componentInstance.freitext = 'Bauschutt am Eingang';
 
@@ -218,7 +262,9 @@ describe('WareneintragErfassen', () => {
       await submitPromise;
       fixture.detectChanges();
 
-      const inputs = fixture.nativeElement.querySelectorAll('input[type="file"]') as NodeListOf<HTMLInputElement>;
+      const inputs = fixture.nativeElement.querySelectorAll(
+        'input[type="file"]',
+      ) as NodeListOf<HTMLInputElement>;
       inputs.forEach((feld) => expect(feld.files?.length ?? 0).toBe(0));
       expect(component.fotoVorschau('fotoFern')).toBeNull();
     });
@@ -275,7 +321,11 @@ describe('WareneintragErfassen', () => {
     request.flush({ id: 'wareneintrag-1' });
     await submitPromise;
 
-    expect(openSpy).toHaveBeenCalledWith('Wareneintrag wurde angelegt.', undefined, jasmine.anything());
+    expect(openSpy).toHaveBeenCalledWith(
+      'Wareneintrag wurde angelegt.',
+      undefined,
+      jasmine.anything(),
+    );
     expect(fixture.componentInstance.freitext).toBe('');
     expect(component.ausgewaehlterAvvCode).toBeNull();
   });
@@ -307,7 +357,9 @@ describe('WareneintragErfassen', () => {
     fixture.componentInstance.freitext = 'Bauschutt am Eingang';
 
     const submitPromise = fixture.componentInstance.submit();
-    httpMock.expectOne('/api/v1/wareneintraege').flush('error', { status: 500, statusText: 'Server Error' });
+    httpMock
+      .expectOne('/api/v1/wareneintraege')
+      .flush('error', { status: 500, statusText: 'Server Error' });
     await submitPromise;
 
     expect(component.fehler()).toBe('Wareneintrag konnte nicht angelegt werden.');
@@ -316,7 +368,10 @@ describe('WareneintragErfassen', () => {
   it('resets fotos, AVV-Code and freitext when starting another entry', async () => {
     const fixture = createComponent();
     const component = asTestable(fixture.componentInstance);
-    await component.onFotoAusgewaehlt('fotoFern', fotoAuswahlEvent(new File(['foto'], 'foto.jpg', { type: 'image/jpeg' })));
+    await component.onFotoAusgewaehlt(
+      'fotoFern',
+      fotoAuswahlEvent(new File(['foto'], 'foto.jpg', { type: 'image/jpeg' })),
+    );
     component.ausgewaehlterAvvCode = { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' };
     fixture.componentInstance.freitext = 'Bauschutt am Eingang';
 
@@ -383,7 +438,9 @@ describe('WareneintragErfassen', () => {
     fixture.componentInstance.onAvvSucheEingabe('17');
     fixture.componentInstance.onAvvSucheEingabe('17 01');
     tick(299);
-    httpMock.expectNone((req) => req.url === '/api/v1/avv-codes' && req.params.get('suche') === '17 01');
+    httpMock.expectNone(
+      (req) => req.url === '/api/v1/avv-codes' && req.params.get('suche') === '17 01',
+    );
     tick(1);
     fixture.detectChanges();
     httpMock

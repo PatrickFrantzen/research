@@ -8,7 +8,12 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { firstValueFrom } from 'rxjs';
 import { ConfirmDialog } from '../../../core/confirm-dialog/confirm-dialog.js';
 import { extrahiereFehlermeldung } from '../../../core/http-fehler.js';
-import { GespeicherteKiAnalyse, KiAnalyseErgebnis, Wareneintrag, WareneintragApi } from '../../../core/wareneintrag-api.js';
+import {
+  GespeicherteKiAnalyse,
+  KiAnalyseErgebnis,
+  Wareneintrag,
+  WareneintragApi,
+} from '../../../core/wareneintrag-api.js';
 import { KiAnalyseErgebnisAnzeige } from '../ki-analyse-ergebnis/ki-analyse-ergebnis.js';
 
 export interface WareneintragDetailDialogDaten {
@@ -36,7 +41,15 @@ export function fotosVon(wareneintrag: Wareneintrag): Foto[] {
 // dieselbe Spur. Die Position folgt dem Scrollstand, egal wodurch er kam.
 @Component({
   selector: 'app-wareneintrag-detail-dialog',
-  imports: [DatePipe, KiAnalyseErgebnisAnzeige, MatButtonModule, MatDialogModule, MatIconModule, MatProgressBarModule, MatTooltipModule],
+  imports: [
+    DatePipe,
+    KiAnalyseErgebnisAnzeige,
+    MatButtonModule,
+    MatDialogModule,
+    MatIconModule,
+    MatProgressBarModule,
+    MatTooltipModule,
+  ],
   templateUrl: './wareneintrag-detail-dialog.html',
   styleUrl: './wareneintrag-detail-dialog.scss',
   host: {
@@ -72,7 +85,9 @@ export class WareneintragDetailDialog {
 
   protected async speichern(): Promise<void> {
     await this.fuehreAus(async () => {
-      this.gespeichert.set(await firstValueFrom(this.wareneintragApi.analyseSpeichern(this.wareneintrag.id)));
+      this.gespeichert.set(
+        await firstValueFrom(this.wareneintragApi.analyseSpeichern(this.wareneintrag.id)),
+      );
       this.analyse.set(null);
     }, 'Die KI-Analyse konnte nicht gespeichert werden.');
   }
@@ -96,7 +111,9 @@ export class WareneintragDetailDialog {
     );
     if (!bestaetigt) return;
     await this.fuehreAus(async () => {
-      this.analyse.set(await firstValueFrom(this.wareneintragApi.analysieren(this.wareneintrag.id)));
+      this.analyse.set(
+        await firstValueFrom(this.wareneintragApi.analysieren(this.wareneintrag.id)),
+      );
     }, 'Die KI-Analyse ist fehlgeschlagen. Bitte später erneut versuchen.');
   }
 

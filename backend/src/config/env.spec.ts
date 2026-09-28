@@ -32,10 +32,18 @@ describe('loadEnv', () => {
     const env = loadEnv();
 
     expect(env.databaseUrl).toBe(REQUIRED_VARS.DATABASE_URL);
-    expect(env.objectStorage.endpoint).toBe(REQUIRED_VARS.OBJECT_STORAGE_ENDPOINT);
-    expect(env.objectStorage.publicEndpoint).toBe(REQUIRED_VARS.OBJECT_STORAGE_ENDPOINT);
-    expect(env.objectStorage.accessKeyId).toBe(REQUIRED_VARS.OBJECT_STORAGE_ACCESS_KEY_ID);
-    expect(env.objectStorage.secretAccessKey).toBe(REQUIRED_VARS.OBJECT_STORAGE_SECRET_ACCESS_KEY);
+    expect(env.objectStorage.endpoint).toBe(
+      REQUIRED_VARS.OBJECT_STORAGE_ENDPOINT,
+    );
+    expect(env.objectStorage.publicEndpoint).toBe(
+      REQUIRED_VARS.OBJECT_STORAGE_ENDPOINT,
+    );
+    expect(env.objectStorage.accessKeyId).toBe(
+      REQUIRED_VARS.OBJECT_STORAGE_ACCESS_KEY_ID,
+    );
+    expect(env.objectStorage.secretAccessKey).toBe(
+      REQUIRED_VARS.OBJECT_STORAGE_SECRET_ACCESS_KEY,
+    );
     expect(env.objectStorage.bucket).toBe(REQUIRED_VARS.OBJECT_STORAGE_BUCKET);
     expect(env.auth.jwtSecret).toBe(REQUIRED_VARS.JWT_SECRET);
     expect(env.redis.url).toBe(REQUIRED_VARS.REDIS_URL);
@@ -52,7 +60,9 @@ describe('loadEnv', () => {
 
   it('uses OBJECT_STORAGE_PUBLIC_ENDPOINT when set, instead of falling back to the internal endpoint', () => {
     process.env['OBJECT_STORAGE_PUBLIC_ENDPOINT'] = 'http://localhost:9000';
-    expect(loadEnv().objectStorage.publicEndpoint).toBe('http://localhost:9000');
+    expect(loadEnv().objectStorage.publicEndpoint).toBe(
+      'http://localhost:9000',
+    );
   });
 
   it('defaults JWT_EXPIRES_IN to 8h when not set', () => {
@@ -104,7 +114,11 @@ describe('loadEnv', () => {
     });
 
     it('verlangt APP_URL, sobald SMTP_HOST gesetzt ist', () => {
-      Object.assign(process.env, { SMTP_HOST: 'smtp.web.de', SMTP_USER: 'a@web.de', SMTP_PASSWORT: 'x' });
+      Object.assign(process.env, {
+        SMTP_HOST: 'smtp.web.de',
+        SMTP_USER: 'a@web.de',
+        SMTP_PASSWORT: 'x',
+      });
 
       expect(() => loadEnv()).toThrow('APP_URL');
     });
@@ -112,7 +126,9 @@ describe('loadEnv', () => {
 
   it('throws when a required variable is missing', () => {
     delete process.env['DATABASE_URL'];
-    expect(() => loadEnv()).toThrow('Missing required environment variable: DATABASE_URL');
+    expect(() => loadEnv()).toThrow(
+      'Missing required environment variable: DATABASE_URL',
+    );
   });
 
   describe('fail-closed on known default secrets in production', () => {
@@ -136,7 +152,8 @@ describe('loadEnv', () => {
 
     it('allows a strong JWT_SECRET in production', () => {
       process.env['NODE_ENV'] = 'production';
-      process.env['JWT_SECRET'] = 'a-sufficiently-long-random-production-secret-value';
+      process.env['JWT_SECRET'] =
+        'a-sufficiently-long-random-production-secret-value';
       expect(() => loadEnv()).not.toThrow();
     });
   });

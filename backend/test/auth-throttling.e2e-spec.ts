@@ -30,14 +30,28 @@ describe('Auth-Endpunkte: Rate-Limiting', () => {
       providers: [
         AuthService,
         { provide: APP_GUARD, useClass: ThrottlerGuard },
-        { provide: PrismaService, useValue: { nutzer: { findUnique: async () => null, update: async () => ({}) } } },
-        { provide: Mailer, useValue: { sendPasswortSetzenLink: async () => undefined } },
+        {
+          provide: PrismaService,
+          useValue: {
+            nutzer: { findUnique: async () => null, update: async () => ({}) },
+          },
+        },
+        {
+          provide: Mailer,
+          useValue: { sendPasswortSetzenLink: async () => undefined },
+        },
       ],
     }).compile();
 
     app = moduleRef.createNestApplication();
     app.setGlobalPrefix('api/v1');
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }));
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+      }),
+    );
     await app.init();
   });
 
@@ -47,14 +61,21 @@ describe('Auth-Endpunkte: Rate-Limiting', () => {
 
   it('blocks login after 5 requests per minute from the same client with 429', async () => {
     const server = app.getHttpServer();
-    const payload = { email: 'angreifer@research.local', passwort: 'irrelevant' };
+    const payload = {
+      email: 'angreifer@research.local',
+      passwort: 'irrelevant',
+    };
 
     for (let i = 0; i < 5; i++) {
-      const response = await request(server).post('/api/v1/auth/login').send(payload);
+      const response = await request(server)
+        .post('/api/v1/auth/login')
+        .send(payload);
       expect(response.status).not.toBe(429);
     }
 
-    const geblockt = await request(server).post('/api/v1/auth/login').send(payload);
+    const geblockt = await request(server)
+      .post('/api/v1/auth/login')
+      .send(payload);
     expect(geblockt.status).toBe(429);
   });
 
@@ -63,11 +84,15 @@ describe('Auth-Endpunkte: Rate-Limiting', () => {
     const payload = { email: 'opfer@research.local' };
 
     for (let i = 0; i < 5; i++) {
-      const response = await request(server).post('/api/v1/auth/passwort-vergessen').send(payload);
+      const response = await request(server)
+        .post('/api/v1/auth/passwort-vergessen')
+        .send(payload);
       expect(response.status).not.toBe(429);
     }
 
-    const geblockt = await request(server).post('/api/v1/auth/passwort-vergessen').send(payload);
+    const geblockt = await request(server)
+      .post('/api/v1/auth/passwort-vergessen')
+      .send(payload);
     expect(geblockt.status).toBe(429);
   });
 });
@@ -89,15 +114,29 @@ describe('Auth-Endpunkte: Rate-Limiting hinter dem Reverse-Proxy', () => {
       providers: [
         AuthService,
         { provide: APP_GUARD, useClass: ThrottlerGuard },
-        { provide: PrismaService, useValue: { nutzer: { findUnique: async () => null, update: async () => ({}) } } },
-        { provide: Mailer, useValue: { sendPasswortSetzenLink: async () => undefined } },
+        {
+          provide: PrismaService,
+          useValue: {
+            nutzer: { findUnique: async () => null, update: async () => ({}) },
+          },
+        },
+        {
+          provide: Mailer,
+          useValue: { sendPasswortSetzenLink: async () => undefined },
+        },
       ],
     }).compile();
 
     app = moduleRef.createNestApplication<NestExpressApplication>();
     vertraueReverseProxy(app);
     app.setGlobalPrefix('api/v1');
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }));
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+      }),
+    );
     await app.init();
   });
 
@@ -107,10 +146,16 @@ describe('Auth-Endpunkte: Rate-Limiting hinter dem Reverse-Proxy', () => {
 
   it('keys the login limit on the client address forwarded by the proxy, not on the proxy itself', async () => {
     const server = app.getHttpServer();
-    const payload = { email: 'angreifer@research.local', passwort: 'irrelevant' };
+    const payload = {
+      email: 'angreifer@research.local',
+      passwort: 'irrelevant',
+    };
 
     for (let i = 0; i < 5; i++) {
-      await request(server).post('/api/v1/auth/login').set('X-Forwarded-For', '203.0.113.1').send(payload);
+      await request(server)
+        .post('/api/v1/auth/login')
+        .set('X-Forwarded-For', '203.0.113.1')
+        .send(payload);
     }
     const angreiferGeblockt = await request(server)
       .post('/api/v1/auth/login')

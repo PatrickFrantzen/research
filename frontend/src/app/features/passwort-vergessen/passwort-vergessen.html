@@ -7,7 +7,8 @@
     @if (angefordert()) {
       <mat-card-content>
         <p role="status" appFokusBeiAnzeige>
-          Falls ein Account mit dieser E-Mail existiert, wurde ein Link zum Setzen eines neuen Passworts versendet.
+          Falls ein Account mit dieser E-Mail existiert, wurde ein Link zum Setzen eines neuen
+          Passworts versendet.
         </p>
       </mat-card-content>
       <mat-card-actions align="end">
@@ -18,13 +19,22 @@
         <mat-card-content class="formular">
           <mat-form-field appearance="outline">
             <mat-label>E-Mail</mat-label>
-            <input matInput type="email" [formField]="passwortVergessenForm.email" autocomplete="username" />
+            <input
+              matInput
+              type="email"
+              [formField]="passwortVergessenForm.email"
+              autocomplete="username"
+            />
           </mat-form-field>
         </mat-card-content>
 
         <mat-card-actions align="end">
           <a matButton routerLink="/login">Zurück zum Login</a>
-          <button matButton="filled" type="submit" [disabled]="!passwortVergessenForm().valid() || wirdGeladen()">
+          <button
+            matButton="filled"
+            type="submit"
+            [disabled]="!passwortVergessenForm().valid() || wirdGeladen()"
+          >
             Link anfordern
           </button>
         </mat-card-actions>

@@ -29,7 +29,10 @@ import { Aktivitaet } from '../protokoll/aktivitaet.decorator.js';
 import type { AuthenticatedRequest } from '../auth/jwt.strategy.js';
 import { CreateWareneintragDto } from './dto/create-wareneintrag.dto.js';
 import { UpdateWareneintragDto } from './dto/update-wareneintrag.dto.js';
-import { WareneintragDateien, WareneintragService } from './wareneintrag.service.js';
+import {
+  WareneintragDateien,
+  WareneintragService,
+} from './wareneintrag.service.js';
 
 const UPLOAD_MAX_MB = uploadMaxMb();
 const STANDARD_PRO_SEITE = 20;
@@ -72,15 +75,20 @@ const FOTO_FELDER = [
 @Injectable()
 class VerstaendlicheGroessenMeldung implements NestInterceptor {
   intercept(_context: ExecutionContext, next: CallHandler) {
-    return next.handle().pipe(
-      catchError((error: unknown) =>
-        throwError(() =>
-          error instanceof PayloadTooLargeException && error.message === 'File too large'
-            ? new PayloadTooLargeException(`Datei ist größer als ${UPLOAD_MAX_MB} MB.`)
-            : error,
+    return next
+      .handle()
+      .pipe(
+        catchError((error: unknown) =>
+          throwError(() =>
+            error instanceof PayloadTooLargeException &&
+            error.message === 'File too large'
+              ? new PayloadTooLargeException(
+                  `Datei ist größer als ${UPLOAD_MAX_MB} MB.`,
+                )
+              : error,
+          ),
         ),
-      ),
-    );
+      );
   }
 }
 
@@ -106,7 +114,9 @@ function typValidator(fileType: RegExp) {
 // nicht die benannte Feldstruktur, die FileFieldsInterceptor liefert
 // (`{fotoFern: [File], ...}`) – deshalb hier manuell auf die tatsächlich
 // hochgeladenen Dateien anwenden, statt es der Pipe direkt zu übergeben.
-async function extrahiereUndValidiereDateien(dateien: HochgeladeneDateien): Promise<WareneintragDateien> {
+async function extrahiereUndValidiereDateien(
+  dateien: HochgeladeneDateien,
+): Promise<WareneintragDateien> {
   const fotoFern = dateien.fotoFern?.[0];
   const fotoNah = dateien.fotoNah?.[0];
   const fotoDetail = dateien.fotoDetail?.[0];
@@ -132,8 +142,20 @@ export class WareneintragController {
     @Query('proSeite') proSeite?: string,
     @Query('standortId') standortId?: string,
   ) {
-    const seitenNummer = this.parseGanzeZahl(seite, 0, 0, Number.MAX_SAFE_INTEGER, 'seite');
-    const eintraegeProSeite = this.parseGanzeZahl(proSeite, STANDARD_PRO_SEITE, 1, MAX_PRO_SEITE, 'proSeite');
+    const seitenNummer = this.parseGanzeZahl(
+      seite,
+      0,
+      0,
+      Number.MAX_SAFE_INTEGER,
+      'seite',
+    );
+    const eintraegeProSeite = this.parseGanzeZahl(
+      proSeite,
+      STANDARD_PRO_SEITE,
+      1,
+      MAX_PRO_SEITE,
+      'proSeite',
+    );
     return this.wareneintragService.findAll({
       avvCodeId,
       standortId,
@@ -143,36 +165,59 @@ export class WareneintragController {
     });
   }
 
-  private parseGanzeZahl(wert: string | undefined, standardwert: number, minimum: number, maximum: number, name: string) {
+  private parseGanzeZahl(
+    wert: string | undefined,
+    standardwert: number,
+    minimum: number,
+    maximum: number,
+    name: string,
+  ) {
     if (wert === undefined) return standardwert;
     const zahl = Number(wert);
     if (!Number.isInteger(zahl) || zahl < minimum || zahl > maximum) {
-      throw new BadRequestException(`${name} muss eine ganze Zahl zwischen ${minimum} und ${maximum} sein.`);
+      throw new BadRequestException(
+        `${name} muss eine ganze Zahl zwischen ${minimum} und ${maximum} sein.`,
+      );
     }
     return zahl;
   }
 
   @Post()
   @Aktivitaet('Wareneintrag erstellt')
-  @UseInterceptors(VerstaendlicheGroessenMeldung, FileFieldsInterceptor(FOTO_FELDER, FOTO_UPLOAD_OPTIONS))
+  @UseInterceptors(
+    VerstaendlicheGroessenMeldung,
+    FileFieldsInterceptor(FOTO_FELDER, FOTO_UPLOAD_OPTIONS),
+  )
   async create(
     @Req() request: AuthenticatedRequest,
     @UploadedFiles() dateien: HochgeladeneDateien,
     @Body() dto: CreateWareneintragDto,
   ) {
-    return this.wareneintragService.create(request.user.id, dto, await extrahiereUndValidiereDateien(dateien));
+    return this.wareneintragService.create(
+      request.user.id,
+      dto,
+      await extrahiereUndValidiereDateien(dateien),
+    );
   }
 
   @Patch(':id')
   @Aktivitaet('Wareneintrag geändert')
-  @UseInterceptors(VerstaendlicheGroessenMeldung, FileFieldsInterceptor(FOTO_FELDER, FOTO_UPLOAD_OPTIONS))
+  @UseInterceptors(
+    VerstaendlicheGroessenMeldung,
+    FileFieldsInterceptor(FOTO_FELDER, FOTO_UPLOAD_OPTIONS),
+  )
   async update(
     @Req() request: AuthenticatedRequest,
     @Param('id') id: string,
     @Body() dto: UpdateWareneintragDto,
     @UploadedFiles() dateien: HochgeladeneDateien,
   ) {
-    return this.wareneintragService.update(id, request.user.id, dto, await extrahiereUndValidiereDateien(dateien));
+    return this.wareneintragService.update(
+      id,
+      request.user.id,
+      dto,
+      await extrahiereUndValidiereDateien(dateien),
+    );
   }
 
   @Delete(':id')

@@ -4,7 +4,12 @@
   <button matButton type="button" data-testid="confirm-dialog-abbrechen" (click)="abbrechen()">
     {{ daten.abbrechenLabel ?? 'Abbrechen' }}
   </button>
-  <button matButton="filled" type="button" data-testid="confirm-dialog-bestaetigen" (click)="bestaetigen()">
+  <button
+    matButton="filled"
+    type="button"
+    data-testid="confirm-dialog-bestaetigen"
+    (click)="bestaetigen()"
+  >
     {{ daten.bestaetigenLabel ?? 'Bestätigen' }}
   </button>
 </mat-dialog-actions>

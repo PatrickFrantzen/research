@@ -26,7 +26,11 @@ export interface NutzerUebersicht {
   erstelltAm: string;
 }
 
-export type NutzerAnlegenDaten = { vorname: string; nachname: string; email: string } & StandortAuswahl;
+export type NutzerAnlegenDaten = {
+  vorname: string;
+  nachname: string;
+  email: string;
+} & StandortAuswahl;
 
 export type EigeneDatenUpdate = { vorname: string; nachname: string } & StandortAuswahl;
 

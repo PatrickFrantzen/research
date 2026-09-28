@@ -25,7 +25,9 @@ describe('Protokolle', () => {
     fixture.detectChanges();
     httpMock
       .expectOne('/api/v1/protokoll/aktivitaet/2026-09-26')
-      .flush('2026-09-26 08:00:00 | a@x.de | Wareneintrag erstellt | 1\n2026-09-26 09:00:00 | b@x.de | Nutzer angelegt | 2\n');
+      .flush(
+        '2026-09-26 08:00:00 | a@x.de | Wareneintrag erstellt | 1\n2026-09-26 09:00:00 | b@x.de | Nutzer angelegt | 2\n',
+      );
     await fixture.whenStable();
     fixture.detectChanges();
     return fixture;
@@ -41,18 +43,26 @@ describe('Protokolle', () => {
   it('lädt beim Umschalten das Fehler-Log desselben Tages', async () => {
     const fixture = await geladen();
 
-    (fixture.nativeElement.querySelector('[data-testid="art-fehler"]') as HTMLButtonElement).click();
+    (
+      fixture.nativeElement.querySelector('[data-testid="art-fehler"]') as HTMLButtonElement
+    ).click();
     fixture.detectChanges();
-    httpMock.expectOne('/api/v1/protokoll/fehler/2026-09-26').flush('2026-09-26 10:00:00 | 400 | POST /x | a@x.de | kaputt\n');
+    httpMock
+      .expectOne('/api/v1/protokoll/fehler/2026-09-26')
+      .flush('2026-09-26 10:00:00 | 400 | POST /x | a@x.de | kaputt\n');
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect((fixture.nativeElement as HTMLElement).querySelector('pre')?.textContent).toContain('kaputt');
+    expect((fixture.nativeElement as HTMLElement).querySelector('pre')?.textContent).toContain(
+      'kaputt',
+    );
   });
 
   it('bietet die Datei zum Herunterladen an', async () => {
     const fixture = await geladen();
-    const link = (fixture.nativeElement as HTMLElement).querySelector('a[download]') as HTMLAnchorElement;
+    const link = (fixture.nativeElement as HTMLElement).querySelector(
+      'a[download]',
+    ) as HTMLAnchorElement;
 
     expect(link.getAttribute('href')).toBe('/api/v1/protokoll/aktivitaet/2026-09-26');
     expect(link.getAttribute('download')).toBe('aktivitaet-2026-09-26.log');

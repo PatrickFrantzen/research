@@ -1,4 +1,10 @@
-import { Controller, INestApplication, Post, UseGuards, ValidationPipe } from '@nestjs/common';
+import {
+  Controller,
+  INestApplication,
+  Post,
+  UseGuards,
+  ValidationPipe,
+} from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
@@ -56,7 +62,11 @@ describe('Cookie-basierte Auth + CSRF (Issue #24)', () => {
         PassportModule.register({ defaultStrategy: 'jwt' }),
         JwtModule.register({
           secret: 'test-secret',
-          signOptions: { algorithm: 'HS256', issuer: 'test-issuer', audience: 'test-audience' },
+          signOptions: {
+            algorithm: 'HS256',
+            issuer: 'test-issuer',
+            audience: 'test-audience',
+          },
         }),
       ],
       controllers: [AuthController, DummyController],
@@ -64,15 +74,32 @@ describe('Cookie-basierte Auth + CSRF (Issue #24)', () => {
         AuthService,
         JwtStrategy,
         { provide: APP_GUARD, useClass: ThrottlerGuard },
-        { provide: PrismaService, useValue: { nutzer: { findUnique: async () => nutzer, update: async () => nutzer } } },
-        { provide: Mailer, useValue: { sendPasswortSetzenLink: async () => undefined } },
+        {
+          provide: PrismaService,
+          useValue: {
+            nutzer: {
+              findUnique: async () => nutzer,
+              update: async () => nutzer,
+            },
+          },
+        },
+        {
+          provide: Mailer,
+          useValue: { sendPasswortSetzenLink: async () => undefined },
+        },
       ],
     }).compile();
 
     app = moduleRef.createNestApplication();
     app.use(cookieParser());
     app.setGlobalPrefix('api/v1');
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }));
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+      }),
+    );
     await app.init();
   });
 
@@ -93,7 +120,11 @@ describe('Cookie-basierte Auth + CSRF (Issue #24)', () => {
       .send({ email: 'chef@research.local', passwort: 'geheim1234567' });
 
     expect(response.status).toBe(201);
-    expect(response.body).toEqual({ mussPasswortSetzen: false, id: 'nutzer-1', istAdmin: true });
+    expect(response.body).toEqual({
+      mussPasswortSetzen: false,
+      id: 'nutzer-1',
+      istAdmin: true,
+    });
     expect(response.body.accessToken).toBeUndefined();
 
     const cookies = response.headers['set-cookie'] as unknown as string[];
@@ -107,7 +138,9 @@ describe('Cookie-basierte Auth + CSRF (Issue #24)', () => {
   it('GET /auth/me returns the id for a valid cookie, 401 without one', async () => {
     const cookies = await loginCookies();
 
-    const mit = await request(app.getHttpServer()).get('/api/v1/auth/me').set('Cookie', cookies);
+    const mit = await request(app.getHttpServer())
+      .get('/api/v1/auth/me')
+      .set('Cookie', cookies);
     expect(mit.status).toBe(200);
     expect(mit.body).toEqual({ id: 'nutzer-1', istAdmin: true });
 
@@ -118,7 +151,9 @@ describe('Cookie-basierte Auth + CSRF (Issue #24)', () => {
   it('rejects a mutating request with a valid auth cookie but no CSRF header (403)', async () => {
     const cookies = await loginCookies();
 
-    const response = await request(app.getHttpServer()).post('/api/v1/dummy/mutieren').set('Cookie', cookies);
+    const response = await request(app.getHttpServer())
+      .post('/api/v1/dummy/mutieren')
+      .set('Cookie', cookies);
 
     expect(response.status).toBe(403);
   });
@@ -157,10 +192,19 @@ describe('Cookie-basierte Auth + CSRF (Issue #24)', () => {
       .send({ token: 'link-token', neuesPasswort: 'ein-neues-Passwort-1' });
 
     expect(response.status).toBe(200);
-    expect(response.body).toEqual({ mussPasswortSetzen: false, id: 'nutzer-1', istAdmin: true });
+    expect(response.body).toEqual({
+      mussPasswortSetzen: false,
+      id: 'nutzer-1',
+      istAdmin: true,
+    });
     const cookies = response.headers['set-cookie'] as unknown as string[];
-    expect(cookies.find((c) => c.startsWith('accessToken='))).toContain('HttpOnly');
-    const csrfToken = cookies.find((c) => c.startsWith('csrfToken='))!.split(';')[0].split('=')[1];
+    expect(cookies.find((c) => c.startsWith('accessToken='))).toContain(
+      'HttpOnly',
+    );
+    const csrfToken = cookies
+      .find((c) => c.startsWith('csrfToken='))!
+      .split(';')[0]
+      .split('=')[1];
 
     const geschuetzt = await request(app.getHttpServer())
       .post('/api/v1/dummy/mutieren')
@@ -170,10 +214,16 @@ describe('Cookie-basierte Auth + CSRF (Issue #24)', () => {
   });
 
   it('POST /auth/logout clears both cookies', async () => {
-    const response = await request(app.getHttpServer()).post('/api/v1/auth/logout');
+    const response = await request(app.getHttpServer()).post(
+      '/api/v1/auth/logout',
+    );
 
     expect(response.status).toBe(204);
     const cookies = response.headers['set-cookie'] as unknown as string[];
-    expect(cookies.some((c) => c.startsWith('accessToken=;') || c.includes('accessToken=;'))).toBe(true);
+    expect(
+      cookies.some(
+        (c) => c.startsWith('accessToken=;') || c.includes('accessToken=;'),
+      ),
+    ).toBe(true);
   });
 });

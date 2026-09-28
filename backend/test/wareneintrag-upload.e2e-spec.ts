@@ -1,4 +1,8 @@
-import { ExecutionContext, INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  ExecutionContext,
+  INestApplication,
+  ValidationPipe,
+} from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
@@ -27,12 +31,17 @@ class AlsNutzerAngemeldet {
 
 // Minimaler gültiger PNG-Header + IHDR-Chunk-Anfang reicht der Magic-Number-Erkennung.
 const PNG_BYTES = Buffer.from([
-  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52, 0x00, 0x00,
-  0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06, 0x00, 0x00, 0x00, 0x1f, 0x15, 0xc4, 0x89,
+  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49,
+  0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06,
+  0x00, 0x00, 0x00, 0x1f, 0x15, 0xc4, 0x89,
 ]);
 
 // Kleinstes PDF, das die Magic-Number-Erkennung als application/pdf einstuft.
-const PDF_BYTES = Buffer.from(['%PDF-1.4', '1 0 obj<<>>endobj', 'trailer<<>>', '%%EOF', ''].join(String.fromCharCode(10)));
+const PDF_BYTES = Buffer.from(
+  ['%PDF-1.4', '1 0 obj<<>>endobj', 'trailer<<>>', '%%EOF', ''].join(
+    String.fromCharCode(10),
+  ),
+);
 
 describe('Wareneintrag-Foto-Upload: Härtung', () => {
   let app: INestApplication;
@@ -44,9 +53,17 @@ describe('Wareneintrag-Foto-Upload: Härtung', () => {
         WareneintragService,
         {
           provide: PrismaService,
-          useValue: { nutzer: { findUniqueOrThrow: async () => ({ standortId: 'standort-1' }) }, wareneintrag: { create: async (args: unknown) => args } },
+          useValue: {
+            nutzer: {
+              findUniqueOrThrow: async () => ({ standortId: 'standort-1' }),
+            },
+            wareneintrag: { create: async (args: unknown) => args },
+          },
         },
-        { provide: ObjectStorageService, useValue: { uploadFoto: async () => 'wareneintraege/foto-1' } },
+        {
+          provide: ObjectStorageService,
+          useValue: { uploadFoto: async () => 'wareneintraege/foto-1' },
+        },
       ],
     })
       .overrideGuard(JwtAuthGuard)
@@ -54,7 +71,13 @@ describe('Wareneintrag-Foto-Upload: Härtung', () => {
       .compile();
 
     app = moduleRef.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }));
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+      }),
+    );
     await app.init();
   });
 
@@ -67,7 +90,10 @@ describe('Wareneintrag-Foto-Upload: Härtung', () => {
       .post('/wareneintraege')
       .field('avvCodeId', 'f8a3632d-6b2c-4843-b223-85a711b4a9a7')
       .field('freitext', 'Testeintrag')
-      .attach('fotoFern', PNG_BYTES, { filename: 'foto.png', contentType: 'image/png' });
+      .attach('fotoFern', PNG_BYTES, {
+        filename: 'foto.png',
+        contentType: 'image/png',
+      });
 
     expect(response.status).toBe(201);
   });
@@ -88,31 +114,45 @@ describe('Wareneintrag-Foto-Upload: Härtung', () => {
       .post('/wareneintraege')
       .field('avvCodeId', 'f8a3632d-6b2c-4843-b223-85a711b4a9a7')
       .field('freitext', 'Testeintrag')
-      .attach('fotoFern', htmlAlsBildGetarnt, { filename: 'foto.png', contentType: 'image/png' });
+      .attach('fotoFern', htmlAlsBildGetarnt, {
+        filename: 'foto.png',
+        contentType: 'image/png',
+      });
 
     expect(response.status).toBe(400);
   });
 
   it('rejects an SVG (can contain script), even though it matches /^image\\//', async () => {
-    const svg = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>');
+    const svg = Buffer.from(
+      '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>',
+    );
 
     const response = await request(app.getHttpServer())
       .post('/wareneintraege')
       .field('avvCodeId', 'f8a3632d-6b2c-4843-b223-85a711b4a9a7')
       .field('freitext', 'Testeintrag')
-      .attach('fotoFern', svg, { filename: 'foto.svg', contentType: 'image/svg+xml' });
+      .attach('fotoFern', svg, {
+        filename: 'foto.svg',
+        contentType: 'image/svg+xml',
+      });
 
     expect(response.status).toBe(400);
   });
 
   it('accepts a photo just below the configured UPLOAD_MAX_MB', async () => {
-    const knappDarunter = Buffer.concat([PNG_BYTES, Buffer.alloc(1024 * 1024 - PNG_BYTES.length - 1024)]);
+    const knappDarunter = Buffer.concat([
+      PNG_BYTES,
+      Buffer.alloc(1024 * 1024 - PNG_BYTES.length - 1024),
+    ]);
 
     const response = await request(app.getHttpServer())
       .post('/wareneintraege')
       .field('avvCodeId', 'f8a3632d-6b2c-4843-b223-85a711b4a9a7')
       .field('freitext', 'Testeintrag')
-      .attach('fotoFern', knappDarunter, { filename: 'foto.png', contentType: 'image/png' });
+      .attach('fotoFern', knappDarunter, {
+        filename: 'foto.png',
+        contentType: 'image/png',
+      });
 
     expect(response.status).toBe(201);
   });
@@ -124,7 +164,10 @@ describe('Wareneintrag-Foto-Upload: Härtung', () => {
       .post('/wareneintraege')
       .field('avvCodeId', 'f8a3632d-6b2c-4843-b223-85a711b4a9a7')
       .field('freitext', 'Testeintrag')
-      .attach('fotoFern', zuGross, { filename: 'foto.png', contentType: 'image/png' });
+      .attach('fotoFern', zuGross, {
+        filename: 'foto.png',
+        contentType: 'image/png',
+      });
 
     expect(response.status).toBe(413);
     expect(response.body.message).toBe('Datei ist größer als 1 MB.');
@@ -135,7 +178,10 @@ describe('Wareneintrag-Foto-Upload: Härtung', () => {
       .post('/wareneintraege')
       .field('avvCodeId', 'f8a3632d-6b2c-4843-b223-85a711b4a9a7')
       .field('freitext', 'Testeintrag mit Lieferschein')
-      .attach('dokument', PDF_BYTES, { filename: 'lieferschein.pdf', contentType: 'application/pdf' });
+      .attach('dokument', PDF_BYTES, {
+        filename: 'lieferschein.pdf',
+        contentType: 'application/pdf',
+      });
 
     expect(response.status).toBe(201);
     expect(response.body.data.dokumentUrl).toBe('wareneintraege/foto-1');
@@ -146,7 +192,10 @@ describe('Wareneintrag-Foto-Upload: Härtung', () => {
       .post('/wareneintraege')
       .field('avvCodeId', 'f8a3632d-6b2c-4843-b223-85a711b4a9a7')
       .field('freitext', 'Testeintrag')
-      .attach('dokument', PNG_BYTES, { filename: 'bild.pdf', contentType: 'application/pdf' });
+      .attach('dokument', PNG_BYTES, {
+        filename: 'bild.pdf',
+        contentType: 'application/pdf',
+      });
 
     expect(response.status).toBe(400);
   });
@@ -156,7 +205,10 @@ describe('Wareneintrag-Foto-Upload: Härtung', () => {
       .post('/wareneintraege')
       .field('avvCodeId', 'f8a3632d-6b2c-4843-b223-85a711b4a9a7')
       .field('freitext', 'Testeintrag')
-      .attach('fotoFern', PDF_BYTES, { filename: 'foto.pdf', contentType: 'image/png' });
+      .attach('fotoFern', PDF_BYTES, {
+        filename: 'foto.pdf',
+        contentType: 'image/png',
+      });
 
     expect(response.status).toBe(400);
   });

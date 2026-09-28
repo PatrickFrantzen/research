@@ -1,7 +1,14 @@
 import { ClipboardModule } from '@angular/cdk/clipboard';
 import { Component, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { FormField, disabled, email as emailValidator, form, required, maxLength } from '@angular/forms/signals';
+import {
+  FormField,
+  disabled,
+  email as emailValidator,
+  form,
+  required,
+  maxLength,
+} from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -44,17 +51,27 @@ export class NutzerAnlegen {
   });
 
   // Ohne geladene Standorte ist kein gültiger Account möglich (Issue #60).
-  protected readonly standortListe = computed(() => (this.standorte.hasValue() ? this.standorte.value() : []));
+  protected readonly standortListe = computed(() =>
+    this.standorte.hasValue() ? this.standorte.value() : [],
+  );
 
   protected readonly ANDERER_STANDORT = ANDERER_STANDORT;
-  protected readonly nutzerDaten = signal({ vorname: '', nachname: '', email: '', standortId: '', neuerStandort: '' });
+  protected readonly nutzerDaten = signal({
+    vorname: '',
+    nachname: '',
+    email: '',
+    standortId: '',
+    neuerStandort: '',
+  });
   protected readonly nutzerForm = form(this.nutzerDaten, (pfad) => {
     required(pfad.vorname);
     required(pfad.nachname);
     required(pfad.email);
     emailValidator(pfad.email);
     required(pfad.standortId);
-    required(pfad.neuerStandort, { when: () => this.nutzerDaten().standortId === ANDERER_STANDORT });
+    required(pfad.neuerStandort, {
+      when: () => this.nutzerDaten().standortId === ANDERER_STANDORT,
+    });
     maxLength(pfad.neuerStandort, 100);
     disabled(pfad.standortId, { when: () => !this.standorte.hasValue() });
   });
@@ -119,7 +136,13 @@ export class NutzerAnlegen {
       // Neu angelegter Standort soll beim nächsten Nutzer in der Liste stehen.
       if (this.standortId === ANDERER_STANDORT) this.standorte.reload();
       this.angelegt.set(result);
-      this.nutzerDaten.set({ vorname: '', nachname: '', email: '', standortId: '', neuerStandort: '' });
+      this.nutzerDaten.set({
+        vorname: '',
+        nachname: '',
+        email: '',
+        standortId: '',
+        neuerStandort: '',
+      });
     } catch (error) {
       this.fehler.set(extrahiereFehlermeldung(error, 'Account konnte nicht angelegt werden.'));
     } finally {
@@ -129,7 +152,9 @@ export class NutzerAnlegen {
 
   // Link nur in die Zwischenablage, nicht loggen oder speichern (Issue #60).
   linkKopiert(erfolgreich: boolean): void {
-    this.snackBar.open(erfolgreich ? 'Link kopiert.' : 'Kopieren fehlgeschlagen.', undefined, { duration: 3000 });
+    this.snackBar.open(erfolgreich ? 'Link kopiert.' : 'Kopieren fehlgeschlagen.', undefined, {
+      duration: 3000,
+    });
   }
 
   weitererNutzer(): void {

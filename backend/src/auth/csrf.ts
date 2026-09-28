@@ -7,7 +7,9 @@ const SICHERE_METHODEN = new Set(['GET', 'HEAD', 'OPTIONS']);
 // Request automatisch mit, aber nur eigenes JS (same-origin) kann den Wert
 // auch als Header setzen – eine fremde Seite kennt den Cookie-Wert nicht
 // (Issue #24). Nur für state-changing Requests relevant.
-export function csrfIstGueltig(req: Pick<Request, 'method' | 'cookies' | 'headers'>): boolean {
+export function csrfIstGueltig(
+  req: Pick<Request, 'method' | 'cookies' | 'headers'>,
+): boolean {
   if (SICHERE_METHODEN.has(req.method)) {
     return true;
   }

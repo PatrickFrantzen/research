@@ -1,10 +1,17 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { Mailer } from '../mailer/mailer.js';
 import { normalisiereEmail } from '../nutzer/email.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { erzeugePasswortSetzenToken, hashPasswortSetzenToken } from './passwort-setzen-token.js';
+import {
+  erzeugePasswortSetzenToken,
+  hashPasswortSetzenToken,
+} from './passwort-setzen-token.js';
 
 const PASSWORT_VERGESSEN_GUELTIGKEIT_MS = 60 * 60 * 1000; // 1 Stunde
 
@@ -24,16 +31,27 @@ export class AuthService {
   ) {}
 
   async login(email: string, passwort: string): Promise<Anmeldung> {
-    const nutzer = await this.prisma.nutzer.findUnique({ where: { email: normalisiereEmail(email) } });
+    const nutzer = await this.prisma.nutzer.findUnique({
+      where: { email: normalisiereEmail(email) },
+    });
     if (!nutzer || !(await bcrypt.compare(passwort, nutzer.passwortHash))) {
       throw new UnauthorizedException('E-Mail oder Passwort ungültig.');
     }
     return this.anmeldung(nutzer);
   }
 
-  private async anmeldung(nutzer: { id: string; mussPasswortSetzen: boolean; istAdmin: boolean }): Promise<Anmeldung> {
+  private async anmeldung(nutzer: {
+    id: string;
+    mussPasswortSetzen: boolean;
+    istAdmin: boolean;
+  }): Promise<Anmeldung> {
     const accessToken = await this.jwtService.signAsync({ sub: nutzer.id });
-    return { accessToken, mussPasswortSetzen: nutzer.mussPasswortSetzen, id: nutzer.id, istAdmin: nutzer.istAdmin };
+    return {
+      accessToken,
+      mussPasswortSetzen: nutzer.mussPasswortSetzen,
+      id: nutzer.id,
+      istAdmin: nutzer.istAdmin,
+    };
   }
 
   async passwortVergessen(rohEmail: string): Promise<void> {
@@ -46,7 +64,11 @@ export class AuthService {
     // Ein noch gültiger Initial-Zugang-Link darf nicht anonym ersetzt werden:
     // der neue Link wird (noch) nicht zugestellt, der Einladungslink wäre
     // damit tot und das Konto ließe sich nicht mehr aktivieren (Security-Audit run-1).
-    if (nutzer.mussPasswortSetzen && nutzer.passwortSetzenTokenAblauf && nutzer.passwortSetzenTokenAblauf > new Date()) {
+    if (
+      nutzer.mussPasswortSetzen &&
+      nutzer.passwortSetzenTokenAblauf &&
+      nutzer.passwortSetzenTokenAblauf > new Date()
+    ) {
       return;
     }
 
@@ -55,21 +77,33 @@ export class AuthService {
       where: { id: nutzer.id },
       data: {
         passwortSetzenToken: hashedToken,
-        passwortSetzenTokenAblauf: new Date(Date.now() + PASSWORT_VERGESSEN_GUELTIGKEIT_MS),
+        passwortSetzenTokenAblauf: new Date(
+          Date.now() + PASSWORT_VERGESSEN_GUELTIGKEIT_MS,
+        ),
       },
     });
 
-    await this.mailer.sendPasswortSetzenLink(email, `/passwort-setzen?token=${rawToken}`);
+    await this.mailer.sendPasswortSetzenLink(
+      email,
+      `/passwort-setzen?token=${rawToken}`,
+    );
   }
 
   // Wer den Link aus der Mail hat, ist danach direkt angemeldet: der Token
   // ist einmalig und wird hier verbraucht, ein zweiter Login-Schritt mit dem
   // eben gesetzten Passwort bringt keine zusätzliche Sicherheit.
-  async passwortSetzen(token: string, neuesPasswort: string): Promise<Anmeldung> {
+  async passwortSetzen(
+    token: string,
+    neuesPasswort: string,
+  ): Promise<Anmeldung> {
     const nutzer = await this.prisma.nutzer.findUnique({
       where: { passwortSetzenToken: hashPasswortSetzenToken(token) },
     });
-    if (!nutzer || !nutzer.passwortSetzenTokenAblauf || nutzer.passwortSetzenTokenAblauf < new Date()) {
+    if (
+      !nutzer ||
+      !nutzer.passwortSetzenTokenAblauf ||
+      nutzer.passwortSetzenTokenAblauf < new Date()
+    ) {
       throw new BadRequestException('Link ist ungültig oder abgelaufen.');
     }
 

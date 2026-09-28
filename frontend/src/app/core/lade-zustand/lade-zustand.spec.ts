@@ -28,7 +28,9 @@ describe('LadeZustand', () => {
   it('shows the error with a retry action that reloads the resource', () => {
     const { element, ressource } = erstelle('error');
 
-    expect(element.querySelector('[role="alert"]')?.textContent).toContain('Standorte konnten nicht geladen werden.');
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain(
+      'Standorte konnten nicht geladen werden.',
+    );
     (element.querySelector('[data-testid="erneut-laden"]') as HTMLButtonElement).click();
 
     expect(ressource.reload).toHaveBeenCalled();

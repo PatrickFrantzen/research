@@ -52,8 +52,10 @@ describe('WareneintragDetailDialog', () => {
     const fixture = TestBed.createComponent(WareneintragDetailDialog);
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
-    const position = () => element.querySelector('[data-testid="galerie-position"]')?.textContent?.trim();
-    const button = (name: string) => element.querySelector(`button[aria-label="${name}"]`) as HTMLButtonElement;
+    const position = () =>
+      element.querySelector('[data-testid="galerie-position"]')?.textContent?.trim();
+    const button = (name: string) =>
+      element.querySelector(`button[aria-label="${name}"]`) as HTMLButtonElement;
     return { fixture, element, position, button };
   }
 
@@ -75,7 +77,8 @@ describe('WareneintragDetailDialog', () => {
 
   it('pages with ←/→ and stops at the ends', () => {
     const { fixture, element, position } = erstelle(WARENEINTRAG, 0);
-    const taste = (key: string) => element.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+    const taste = (key: string) =>
+      element.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
 
     taste('ArrowLeft');
     fixture.detectChanges();
@@ -100,7 +103,10 @@ describe('WareneintragDetailDialog', () => {
   });
 
   it('offers the PDF as a link that opens in a new tab (Issue #103)', () => {
-    const { element } = erstelle({ ...WARENEINTRAG, dokumentUrl: 'https://files.example/lieferschein' }, 0);
+    const { element } = erstelle(
+      { ...WARENEINTRAG, dokumentUrl: 'https://files.example/lieferschein' },
+      0,
+    );
     const link = element.querySelector('a[data-testid="dokument-oeffnen"]') as HTMLAnchorElement;
     expect(link.href).toBe('https://files.example/lieferschein');
     expect(link.target).toBe('_blank');
@@ -113,7 +119,10 @@ describe('WareneintragDetailDialog', () => {
   });
 
   it('shows no gallery for a Wareneintrag without fotos', () => {
-    const { element } = erstelle({ ...WARENEINTRAG, fotoFernUrl: null, fotoNahUrl: null, fotoDetailUrl: null }, 0);
+    const { element } = erstelle(
+      { ...WARENEINTRAG, fotoFernUrl: null, fotoNahUrl: null, fotoDetailUrl: null },
+      0,
+    );
     expect(element.querySelector('.galerie')).toBeNull();
     expect(element.textContent).toContain('Bauschutt am Eingang');
   });
@@ -151,7 +160,10 @@ describe('WareneintragDetailDialog', () => {
       fixture.detectChanges();
 
       const zeilen = [...element.querySelectorAll('.fraktionen li')].map((li) =>
-        [...li.children].map((spalte) => spalte.textContent?.trim()).filter(Boolean).join(' '),
+        [...li.children]
+          .map((spalte) => spalte.textContent?.trim())
+          .filter(Boolean)
+          .join(' '),
       );
       expect(zeilen).toEqual(['Beton 70 %', 'Holz 30 %', 'Gesamt 100 %']);
       expect(element.querySelectorAll('.balken span').length).toBe(2);
@@ -165,11 +177,15 @@ describe('WareneintragDetailDialog', () => {
       const { fixture, element } = erstelle(WARENEINTRAG, 0);
       analysierenButton(element).click();
       await nachBestaetigung();
-      TestBed.inject(HttpTestingController).expectOne({ method: 'POST', url: URL }).flush({ fraktionen: [], einschaetzung: 'Nur Boden.', avvPruefung: AVV_PASST });
+      TestBed.inject(HttpTestingController)
+        .expectOne({ method: 'POST', url: URL })
+        .flush({ fraktionen: [], einschaetzung: 'Nur Boden.', avvPruefung: AVV_PASST });
       await nachBestaetigung();
       fixture.detectChanges();
 
-      expect(element.querySelector('[data-testid="kein-abfall"]')?.textContent).toContain('kein Abfall erkennbar');
+      expect(element.querySelector('[data-testid="kein-abfall"]')?.textContent).toContain(
+        'kein Abfall erkennbar',
+      );
       expect(element.querySelector('.fraktionen')).toBeNull();
     });
 
@@ -186,19 +202,28 @@ describe('WareneintragDetailDialog', () => {
       await nachBestaetigung();
       fixture.detectChanges();
 
-      expect(element.querySelector('[role="alert"]')?.textContent).toContain('Tageskontingent der KI-Analyse erschöpft');
+      expect(element.querySelector('[role="alert"]')?.textContent).toContain(
+        'Tageskontingent der KI-Analyse erschöpft',
+      );
       expect(analysierenButton(element).disabled).toBeFalse();
     });
 
     it('disables the button for a Wareneintrag without fotos', () => {
-      const { element } = erstelle({ ...WARENEINTRAG, fotoFernUrl: null, fotoNahUrl: null, fotoDetailUrl: null }, 0);
+      const { element } = erstelle(
+        { ...WARENEINTRAG, fotoFernUrl: null, fotoNahUrl: null, fotoDetailUrl: null },
+        0,
+      );
       expect(analysierenButton(element).disabled).toBeTrue();
     });
   });
 
   describe('gespeicherte KI-Analyse (Issue #94)', () => {
     const URL = '/api/v1/wareneintraege/wareneintrag-1/ki-analyse';
-    const ERGEBNIS = { fraktionen: [{ name: 'Beton', anteilProzent: 100 }], einschaetzung: 'Nur Beton.', avvPruefung: AVV_PASST };
+    const ERGEBNIS = {
+      fraktionen: [{ name: 'Beton', anteilProzent: 100 }],
+      einschaetzung: 'Nur Beton.',
+      avvPruefung: AVV_PASST,
+    };
     const GESPEICHERT = {
       ergebnis: ERGEBNIS,
       analysiertVon: { vorname: 'Max', nachname: 'Mustermann' },
@@ -214,13 +239,20 @@ describe('WareneintragDetailDialog', () => {
 
     it('shows the saved analysis with author and time right after opening', async () => {
       const { fixture, element } = erstelle(WARENEINTRAG, 0);
-      TestBed.inject(HttpTestingController).expectOne({ method: 'GET', url: URL }).flush(GESPEICHERT);
+      TestBed.inject(HttpTestingController)
+        .expectOne({ method: 'GET', url: URL })
+        .flush(GESPEICHERT);
       await nach(fixture);
 
-      expect(element.querySelector('[data-testid="einschaetzung"]')?.textContent).toContain('Nur Beton.');
-      expect(element.querySelector('[data-testid="analysiert-von"]')?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
-        'Analysiert von Max Mustermann am 20.09.2026, 14:05',
+      expect(element.querySelector('[data-testid="einschaetzung"]')?.textContent).toContain(
+        'Nur Beton.',
       );
+      expect(
+        element
+          .querySelector('[data-testid="analysiert-von"]')
+          ?.textContent?.replace(/\s+/g, ' ')
+          .trim(),
+      ).toBe('Analysiert von Max Mustermann am 20.09.2026, 14:05');
       expect(button(element, 'analysieren')).not.toBeNull();
       expect(element.querySelector('[data-testid="nicht-analysiert"]')).toBeNull();
     });
@@ -229,7 +261,9 @@ describe('WareneintragDetailDialog', () => {
       const { fixture, element } = erstelle(WARENEINTRAG, 0);
       TestBed.inject(HttpTestingController).expectOne({ method: 'GET', url: URL }).flush(null);
       await nach(fixture);
-      expect(element.querySelector('[data-testid="nicht-analysiert"]')?.textContent).toContain('Noch nicht analysiert.');
+      expect(element.querySelector('[data-testid="nicht-analysiert"]')?.textContent).toContain(
+        'Noch nicht analysiert.',
+      );
     });
 
     it('offers Speichern and Wiederholen for a preview and shows the saved result after saving', async () => {
@@ -248,10 +282,15 @@ describe('WareneintragDetailDialog', () => {
       button(element, 'analyse-speichern')!.click();
       const speichern = httpMock.expectOne({ method: 'PUT', url: URL });
       expect(speichern.request.body).toBeNull();
-      speichern.flush({ ...GESPEICHERT, analysiertVon: { vorname: 'Erika', nachname: 'Musterfrau' } });
+      speichern.flush({
+        ...GESPEICHERT,
+        analysiertVon: { vorname: 'Erika', nachname: 'Musterfrau' },
+      });
       await nach(fixture);
 
-      expect(element.querySelector('[data-testid="analysiert-von"]')?.textContent).toContain('Erika Musterfrau');
+      expect(element.querySelector('[data-testid="analysiert-von"]')?.textContent).toContain(
+        'Erika Musterfrau',
+      );
       expect(element.textContent).not.toContain('Vorschau, noch nicht gespeichert.');
       expect(button(element, 'analyse-speichern')).toBeNull();
       expect(button(element, 'analysieren')).not.toBeNull();
@@ -265,14 +304,20 @@ describe('WareneintragDetailDialog', () => {
 
       button(element, 'analysieren')!.click();
       await nachBestaetigung();
-      httpMock.expectOne({ method: 'POST', url: URL }).flush({ ...ERGEBNIS, einschaetzung: 'Erster Versuch.' });
+      httpMock
+        .expectOne({ method: 'POST', url: URL })
+        .flush({ ...ERGEBNIS, einschaetzung: 'Erster Versuch.' });
       await nach(fixture);
       button(element, 'analyse-wiederholen')!.click();
       await nachBestaetigung();
-      httpMock.expectOne({ method: 'POST', url: URL }).flush({ ...ERGEBNIS, einschaetzung: 'Zweiter Versuch.' });
+      httpMock
+        .expectOne({ method: 'POST', url: URL })
+        .flush({ ...ERGEBNIS, einschaetzung: 'Zweiter Versuch.' });
       await nach(fixture);
 
-      expect(element.querySelector('[data-testid="einschaetzung"]')?.textContent).toContain('Zweiter Versuch.');
+      expect(element.querySelector('[data-testid="einschaetzung"]')?.textContent).toContain(
+        'Zweiter Versuch.',
+      );
       httpMock.expectNone({ method: 'PUT', url: URL });
     });
 
@@ -288,10 +333,15 @@ describe('WareneintragDetailDialog', () => {
       button(element, 'analyse-speichern')!.click();
       httpMock
         .expectOne({ method: 'PUT', url: URL })
-        .flush({ message: 'Keine aktuelle Analyse zum Speichern vorhanden. Bitte erneut analysieren.' }, { status: 400, statusText: 'Bad Request' });
+        .flush(
+          { message: 'Keine aktuelle Analyse zum Speichern vorhanden. Bitte erneut analysieren.' },
+          { status: 400, statusText: 'Bad Request' },
+        );
       await nach(fixture);
 
-      expect(element.querySelector('[role="alert"]')?.textContent).toContain('Keine aktuelle Analyse zum Speichern vorhanden.');
+      expect(element.querySelector('[role="alert"]')?.textContent).toContain(
+        'Keine aktuelle Analyse zum Speichern vorhanden.',
+      );
     });
   });
 
@@ -303,9 +353,11 @@ describe('WareneintragDetailDialog', () => {
       const httpMock = TestBed.inject(HttpTestingController);
       (element.querySelector('[data-testid="analysieren"]') as HTMLButtonElement).click();
       await nachBestaetigung();
-      httpMock
-        .expectOne({ method: 'POST', url: URL })
-        .flush({ fraktionen: [{ name: 'Beton', anteilProzent: 100 }], einschaetzung: 'Beton.', avvPruefung });
+      httpMock.expectOne({ method: 'POST', url: URL }).flush({
+        fraktionen: [{ name: 'Beton', anteilProzent: 100 }],
+        einschaetzung: 'Beton.',
+        avvPruefung,
+      });
       await nachBestaetigung();
       fixture.detectChanges();
       return element.querySelector('[data-testid="avv-pruefung"]') as HTMLElement;
@@ -315,7 +367,10 @@ describe('WareneintragDetailDialog', () => {
       const pruefung = await mitPruefung({
         urteil: 'passt_eher_nicht',
         begruendung: 'Gemischter Bauschutt statt reinem Beton.',
-        vorschlag: { code: '17 01 07', bezeichnung: 'Gemische aus Beton, Ziegeln, Fliesen und Keramik' },
+        vorschlag: {
+          code: '17 01 07',
+          bezeichnung: 'Gemische aus Beton, Ziegeln, Fliesen und Keramik',
+        },
       });
 
       expect(pruefung.querySelector('.urteil')?.textContent).toContain('AVV-Code passt eher nicht');
@@ -329,7 +384,11 @@ describe('WareneintragDetailDialog', () => {
     });
 
     it('shows no suggestion when there is none', async () => {
-      const pruefung = await mitPruefung({ urteil: 'passt', begruendung: 'Passt.', vorschlag: null });
+      const pruefung = await mitPruefung({
+        urteil: 'passt',
+        begruendung: 'Passt.',
+        vorschlag: null,
+      });
       expect(pruefung.querySelector('.urteil')?.textContent).toContain('AVV-Code passt');
       expect(pruefung.querySelector('mat-icon')?.textContent?.trim()).toBe('check_circle');
       expect(pruefung.querySelector('[data-testid="avv-vorschlag"]')).toBeNull();

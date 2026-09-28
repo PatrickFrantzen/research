@@ -54,7 +54,9 @@ function required(name: string): string {
 function requiredSecret(name: string, knownDefaults: Set<string>): string {
   const value = required(name);
   if (process.env['NODE_ENV'] === 'production' && knownDefaults.has(value)) {
-    throw new Error(`Environment variable ${name} still has an insecure default value. Set a strong secret before running in production.`);
+    throw new Error(
+      `Environment variable ${name} still has an insecure default value. Set a strong secret before running in production.`,
+    );
   }
   return value;
 }
@@ -94,7 +96,9 @@ export function loadEnv(): EnvConfig {
       // Docker-intern (z.B. "http://minio:9000") ist nur vom Backend aus
       // erreichbar. Fotos-URLs gehen an den Browser, der einen von außen
       // erreichbaren Host braucht – daher separat konfigurierbar.
-      publicEndpoint: process.env['OBJECT_STORAGE_PUBLIC_ENDPOINT'] ?? required('OBJECT_STORAGE_ENDPOINT'),
+      publicEndpoint:
+        process.env['OBJECT_STORAGE_PUBLIC_ENDPOINT'] ??
+        required('OBJECT_STORAGE_ENDPOINT'),
       region: process.env['OBJECT_STORAGE_REGION'] ?? 'us-east-1',
       accessKeyId: required('OBJECT_STORAGE_ACCESS_KEY_ID'),
       secretAccessKey: required('OBJECT_STORAGE_SECRET_ACCESS_KEY'),
@@ -118,7 +122,9 @@ export function loadEnv(): EnvConfig {
       ? {
           apiKey: process.env['GEMINI_API_KEY'],
           model: process.env['GEMINI_MODEL'] || 'gemini-3.8-flash',
-          apiUrl: process.env['GEMINI_API_URL'] || 'https://generativelanguage.googleapis.com/v1beta',
+          apiUrl:
+            process.env['GEMINI_API_URL'] ||
+            'https://generativelanguage.googleapis.com/v1beta',
         }
       : undefined,
   };

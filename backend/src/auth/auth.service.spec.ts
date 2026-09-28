@@ -12,13 +12,21 @@ function buildService() {
   const prisma = {
     nutzer: {
       findUnique: vi.fn(),
-      update: vi.fn().mockResolvedValue({ id: 'nutzer-1', mussPasswortSetzen: false, istAdmin: false }),
+      update: vi.fn().mockResolvedValue({
+        id: 'nutzer-1',
+        mussPasswortSetzen: false,
+        istAdmin: false,
+      }),
     },
   };
   const jwtService = { signAsync: vi.fn().mockResolvedValue('signed-token') };
   const mailer = { sendPasswortSetzenLink: vi.fn() };
 
-  const service = new AuthService(prisma as never, jwtService as never, mailer as never);
+  const service = new AuthService(
+    prisma as never,
+    jwtService as never,
+    mailer as never,
+  );
   return { service, prisma, jwtService, mailer };
 }
 
@@ -50,20 +58,26 @@ describe('AuthService', () => {
     it('findet den Nutzer unabhängig von Groß-/Kleinschreibung der E-Mail', async () => {
       const { service, prisma } = buildService();
       const passwortHash = await bcrypt.hash('geheim123', 4);
-      prisma.nutzer.findUnique.mockResolvedValue({ id: 'nutzer-1', passwortHash, mussPasswortSetzen: false });
+      prisma.nutzer.findUnique.mockResolvedValue({
+        id: 'nutzer-1',
+        passwortHash,
+        mussPasswortSetzen: false,
+      });
 
       await service.login(' Thomas@Research.local', 'geheim123');
 
-      expect(prisma.nutzer.findUnique).toHaveBeenCalledWith({ where: { email: 'thomas@research.local' } });
+      expect(prisma.nutzer.findUnique).toHaveBeenCalledWith({
+        where: { email: 'thomas@research.local' },
+      });
     });
 
     it('rejects an unknown email', async () => {
       const { service, prisma } = buildService();
       prisma.nutzer.findUnique.mockResolvedValue(null);
 
-      await expect(service.login('unbekannt@research.local', 'egal')).rejects.toBeInstanceOf(
-        UnauthorizedException,
-      );
+      await expect(
+        service.login('unbekannt@research.local', 'egal'),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
     });
 
     it('rejects a wrong password', async () => {
@@ -75,7 +89,9 @@ describe('AuthService', () => {
         mussPasswortSetzen: false,
       });
 
-      await expect(service.login('max@research.local', 'falsch')).rejects.toBeInstanceOf(UnauthorizedException);
+      await expect(
+        service.login('max@research.local', 'falsch'),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
     });
   });
 
@@ -87,13 +103,19 @@ describe('AuthService', () => {
       await service.passwortVergessen('max@research.local');
 
       expect(prisma.nutzer.update).toHaveBeenCalledOnce();
-      const persistedToken = prisma.nutzer.update.mock.calls[0][0].data.passwortSetzenToken as string;
+      const persistedToken = prisma.nutzer.update.mock.calls[0][0].data
+        .passwortSetzenToken as string;
       expect(mailer.sendPasswortSetzenLink).toHaveBeenCalledWith(
         'max@research.local',
         expect.stringContaining('/passwort-setzen?token='),
       );
-      const [, sentLink] = mailer.sendPasswortSetzenLink.mock.calls[0] as [string, string];
-      const rawToken = new URLSearchParams(sentLink.split('?')[1]).get('token')!;
+      const [, sentLink] = mailer.sendPasswortSetzenLink.mock.calls[0] as [
+        string,
+        string,
+      ];
+      const rawToken = new URLSearchParams(sentLink.split('?')[1]).get(
+        'token',
+      )!;
       // Persisted value must be the SHA-256 hash of the raw token, not the raw token itself.
       expect(persistedToken).toBe(sha256(rawToken));
       expect(persistedToken).not.toBe(rawToken);
@@ -105,8 +127,12 @@ describe('AuthService', () => {
 
       await service.passwortVergessen('Max@Research.local');
 
-      expect(prisma.nutzer.findUnique).toHaveBeenCalledWith({ where: { email: 'max@research.local' } });
-      expect(mailer.sendPasswortSetzenLink.mock.calls[0][0]).toBe('max@research.local');
+      expect(prisma.nutzer.findUnique).toHaveBeenCalledWith({
+        where: { email: 'max@research.local' },
+      });
+      expect(mailer.sendPasswortSetzenLink.mock.calls[0][0]).toBe(
+        'max@research.local',
+      );
     });
 
     it('keeps a still valid Initial-Zugang token instead of replacing it with an undelivered one', async () => {
@@ -140,7 +166,9 @@ describe('AuthService', () => {
       const { service, prisma, mailer } = buildService();
       prisma.nutzer.findUnique.mockResolvedValue(null);
 
-      await expect(service.passwortVergessen('unbekannt@research.local')).resolves.toBeUndefined();
+      await expect(
+        service.passwortVergessen('unbekannt@research.local'),
+      ).resolves.toBeUndefined();
       expect(prisma.nutzer.update).not.toHaveBeenCalled();
       expect(mailer.sendPasswortSetzenLink).not.toHaveBeenCalled();
     });
@@ -165,7 +193,9 @@ describe('AuthService', () => {
       const { service, prisma } = buildService();
       prisma.nutzer.findUnique.mockResolvedValue(null);
 
-      await expect(service.passwortSetzen('unbekannt', 'neuesPasswort1')).rejects.toThrow();
+      await expect(
+        service.passwortSetzen('unbekannt', 'neuesPasswort1'),
+      ).rejects.toThrow();
     });
 
     it('rejects an expired token and signs nobody in', async () => {
@@ -175,7 +205,9 @@ describe('AuthService', () => {
         passwortSetzenTokenAblauf: new Date(Date.now() - 1000),
       });
 
-      await expect(service.passwortSetzen('abgelaufen', 'neuesPasswort1')).rejects.toThrow();
+      await expect(
+        service.passwortSetzen('abgelaufen', 'neuesPasswort1'),
+      ).rejects.toThrow();
       expect(jwtService.signAsync).not.toHaveBeenCalled();
     });
 
@@ -185,13 +217,27 @@ describe('AuthService', () => {
         id: 'nutzer-1',
         passwortSetzenTokenAblauf: new Date(Date.now() + 1000 * 60),
       });
-      prisma.nutzer.update.mockResolvedValue({ id: 'nutzer-1', mussPasswortSetzen: false, istAdmin: false });
+      prisma.nutzer.update.mockResolvedValue({
+        id: 'nutzer-1',
+        mussPasswortSetzen: false,
+        istAdmin: false,
+      });
 
-      const anmeldung = await service.passwortSetzen('gueltig', 'neuesPasswort1');
+      const anmeldung = await service.passwortSetzen(
+        'gueltig',
+        'neuesPasswort1',
+      );
 
-      expect(anmeldung).toEqual({ accessToken: 'signed-token', mussPasswortSetzen: false, id: 'nutzer-1', istAdmin: false });
+      expect(anmeldung).toEqual({
+        accessToken: 'signed-token',
+        mussPasswortSetzen: false,
+        id: 'nutzer-1',
+        istAdmin: false,
+      });
       expect(jwtService.signAsync).toHaveBeenCalledWith({ sub: 'nutzer-1' });
-      expect(jwtService.signAsync.mock.invocationCallOrder[0]).toBeGreaterThan(prisma.nutzer.update.mock.invocationCallOrder[0]);
+      expect(jwtService.signAsync.mock.invocationCallOrder[0]).toBeGreaterThan(
+        prisma.nutzer.update.mock.invocationCallOrder[0],
+      );
 
       expect(prisma.nutzer.update).toHaveBeenCalledWith({
         where: { id: 'nutzer-1' },
@@ -213,9 +259,13 @@ describe('AuthService', () => {
 
       await service.passwortSetzen('gueltig', 'neuesPasswort1');
 
-      const data = prisma.nutzer.update.mock.calls[0][0].data as { passwortGeaendertAm: Date };
+      const data = prisma.nutzer.update.mock.calls[0][0].data as {
+        passwortGeaendertAm: Date;
+      };
       expect(data.passwortGeaendertAm).toBeInstanceOf(Date);
-      expect(data.passwortGeaendertAm.getTime()).toBeGreaterThanOrEqual(vorher.getTime());
+      expect(data.passwortGeaendertAm.getTime()).toBeGreaterThanOrEqual(
+        vorher.getTime(),
+      );
     });
   });
 });

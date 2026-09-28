@@ -3,7 +3,15 @@
 // und Löschen arbeiten auf eigens angelegten Einträgen, damit die Zählungen
 // der Seed-Daten unberührt bleiben.
 import { APIRequestContext, expect, Page, test } from '@playwright/test';
-import { AVV_A, AVV_B, csrfHeader, ERIKA, MAX, pruefeBarrierefreiheit, TEST_PNG } from './testdaten.js';
+import {
+  AVV_A,
+  AVV_B,
+  csrfHeader,
+  ERIKA,
+  MAX,
+  pruefeBarrierefreiheit,
+  TEST_PNG,
+} from './testdaten.js';
 
 test.use({ storageState: ERIKA.storageState });
 
@@ -16,9 +24,17 @@ async function sucheFreitext(page: Page, begriff: string): Promise<void> {
   await page.getByTestId('freitext-suche').fill(begriff);
 }
 
-async function legeEintragAn(api: APIRequestContext, freitext: string, fotos: string[] = []): Promise<void> {
-  const [avvCode] = (await (await api.get('/api/v1/avv-codes', { params: { suche: AVV_A.suche } })).json()) as { id: string }[];
-  const fotoFelder = Object.fromEntries(fotos.map((feld) => [feld, { name: `${feld}.png`, mimeType: 'image/png', buffer: TEST_PNG }]));
+async function legeEintragAn(
+  api: APIRequestContext,
+  freitext: string,
+  fotos: string[] = [],
+): Promise<void> {
+  const [avvCode] = (await (
+    await api.get('/api/v1/avv-codes', { params: { suche: AVV_A.suche } })
+  ).json()) as { id: string }[];
+  const fotoFelder = Object.fromEntries(
+    fotos.map((feld) => [feld, { name: `${feld}.png`, mimeType: 'image/png', buffer: TEST_PNG }]),
+  );
   const antwort = await api.post('/api/v1/wareneintraege', {
     headers: await csrfHeader(api),
     multipart: { avvCodeId: avvCode.id, freitext, ...fotoFelder },
@@ -109,12 +125,26 @@ test('eigenen Wareneintrag nach Bestätigung löschen', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1, name: 'Wareneinträge' })).toBeFocused();
 });
 
-test('PDF-Dokument anlegen, in Liste und Details sehen, im Bearbeiten-Dialog ersetzen (Issue #103)', async ({ page }) => {
-  const pdf = (name: string) => ({ name, mimeType: 'application/pdf', buffer: Buffer.from(['%PDF-1.4', '1 0 obj<<>>endobj', 'trailer<<>>', '%%EOF', ''].join(String.fromCharCode(10))) });
-  const [avvCode] = (await (await page.request.get('/api/v1/avv-codes', { params: { suche: AVV_A.suche } })).json()) as { id: string }[];
+test('PDF-Dokument anlegen, in Liste und Details sehen, im Bearbeiten-Dialog ersetzen (Issue #103)', async ({
+  page,
+}) => {
+  const pdf = (name: string) => ({
+    name,
+    mimeType: 'application/pdf',
+    buffer: Buffer.from(
+      ['%PDF-1.4', '1 0 obj<<>>endobj', 'trailer<<>>', '%%EOF', ''].join(String.fromCharCode(10)),
+    ),
+  });
+  const [avvCode] = (await (
+    await page.request.get('/api/v1/avv-codes', { params: { suche: AVV_A.suche } })
+  ).json()) as { id: string }[];
   const antwort = await page.request.post('/api/v1/wareneintraege', {
     headers: await csrfHeader(page.request),
-    multipart: { avvCodeId: avvCode.id, freitext: 'E2E Lieferschein', dokument: pdf('lieferschein.pdf') },
+    multipart: {
+      avvCodeId: avvCode.id,
+      freitext: 'E2E Lieferschein',
+      dokument: pdf('lieferschein.pdf'),
+    },
   });
   expect(antwort.status()).toBe(201);
 
@@ -175,7 +205,9 @@ test('Detail-Dialog mit Bildergalerie öffnen (Issue #92)', async ({ page }) => 
   await expect(page.getByRole('dialog', { name: 'Wareneintrag bearbeiten' })).toBeVisible();
 });
 
-test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen (Issues #93 bis #96)', async ({ page }) => {
+test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen (Issues #93 bis #96)', async ({
+  page,
+}) => {
   // Gemini ist im E2E-Stack der lokale Stub (e2e/gemini-stub.mjs), der
   // Weg durch das Backend inklusive Redis-Vorschau ist echt.
   await legeEintragAn(page.request, 'E2E Analyse', ['fotoFern']);
@@ -214,8 +246,14 @@ test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen 
   await expect(dialog.getByTestId('nicht-analysiert')).toBeVisible();
 
   await analysieren('Analysieren');
-  await expect(dialog.getByRole('listitem')).toHaveText([/Mineralischer Bauschutt\s*70 %/, /Holz\s*30 %/, /Gesamt\s*100 %/]);
-  await expect(dialog.getByTestId('einschaetzung')).toHaveText('Überwiegend Bauschutt mit etwas Holz.');
+  await expect(dialog.getByRole('listitem')).toHaveText([
+    /Mineralischer Bauschutt\s*70 %/,
+    /Holz\s*30 %/,
+    /Gesamt\s*100 %/,
+  ]);
+  await expect(dialog.getByTestId('einschaetzung')).toHaveText(
+    'Überwiegend Bauschutt mit etwas Holz.',
+  );
   await expect(dialog).toContainText('KI-Schätzung aus den Fotos, keine Messung.');
   // AVV-Prüfung (Issue #95): Vorschlag aus avv_codes, nur Anzeige.
   await expect(dialog.getByTestId('avv-pruefung')).toContainText('AVV-Code passt eher nicht');
@@ -235,7 +273,9 @@ test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen 
   await expect(analysiertVon).toContainText(ERIKA.vorname);
   await schliessen();
   await oeffnen();
-  await expect(dialog.getByTestId('einschaetzung')).toHaveText('Überwiegend Bauschutt mit etwas Holz.');
+  await expect(dialog.getByTestId('einschaetzung')).toHaveText(
+    'Überwiegend Bauschutt mit etwas Holz.',
+  );
   await expect(dialog.getByTestId('analysiert-von')).toBeVisible();
   await expect(dialog.getByTestId('avv-vorschlag')).toContainText(AVV_B.code);
   await schliessen();
@@ -252,7 +292,9 @@ test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen 
 
   // ... ein ersetztes Foto löscht sie.
   await page.getByTestId('wareneintrag-bearbeiten').click();
-  await bearbeiten.getByTestId('bearbeiten-foto-fotoFern').setInputFiles({ name: 'neu.png', mimeType: 'image/png', buffer: TEST_PNG });
+  await bearbeiten
+    .getByTestId('bearbeiten-foto-fotoFern')
+    .setInputFiles({ name: 'neu.png', mimeType: 'image/png', buffer: TEST_PNG });
   await bearbeiten.getByTestId('bearbeiten-speichern').click();
   await expect(bearbeiten).toBeHidden();
   await oeffnen();
@@ -262,6 +304,9 @@ test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen 
 
   // Löschen des Eintrags nimmt die Analyse mit (ON DELETE CASCADE).
   await page.getByTestId('wareneintrag-loeschen').click();
-  await page.getByRole('dialog', { name: 'Wareneintrag löschen' }).getByTestId('confirm-dialog-bestaetigen').click();
+  await page
+    .getByRole('dialog', { name: 'Wareneintrag löschen' })
+    .getByTestId('confirm-dialog-bestaetigen')
+    .click();
   await expect(page.getByText('Wareneintrag wurde gelöscht.')).toBeVisible();
 });

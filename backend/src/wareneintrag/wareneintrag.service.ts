@@ -17,14 +17,23 @@ export interface WareneintragDateien {
 // die Upload-Validierung prüft zwar die Magic Bytes, aber `foto.mimetype`
 // bleibt trotzdem der ungeprüfte Header-Wert. Content-Type im Objektspeicher
 // muss dem tatsächlichen Inhalt entsprechen (Issue #43).
-async function erkannterBildTyp(buffer: Buffer, deklarierterTyp: string): Promise<string> {
+async function erkannterBildTyp(
+  buffer: Buffer,
+  deklarierterTyp: string,
+): Promise<string> {
   const erkannt = await fileTypeFromBuffer(buffer);
   return erkannt?.mime ?? deklarierterTyp;
 }
 
-async function ladeFotoHoch(objectStorage: ObjectStorageService, foto?: Express.Multer.File): Promise<string | undefined> {
+async function ladeFotoHoch(
+  objectStorage: ObjectStorageService,
+  foto?: Express.Multer.File,
+): Promise<string | undefined> {
   if (!foto) return undefined;
-  return objectStorage.uploadFoto(foto.buffer, await erkannterBildTyp(foto.buffer, foto.mimetype));
+  return objectStorage.uploadFoto(
+    foto.buffer,
+    await erkannterBildTyp(foto.buffer, foto.mimetype),
+  );
 }
 
 @Injectable()
@@ -34,10 +43,22 @@ export class WareneintragService {
     private readonly objectStorage: ObjectStorageService,
   ) {}
 
-  async findAll(filter: { avvCodeId?: string; standortId?: string; suche?: string; seite?: number; proSeite?: number }) {
+  async findAll(filter: {
+    avvCodeId?: string;
+    standortId?: string;
+    suche?: string;
+    seite?: number;
+    proSeite?: number;
+  }) {
     const { suche, avvCodeId, standortId, seite = 0, proSeite = 20 } = filter;
     const { treffer, gesamt } = suche
-      ? await this.sucheMitVolltext({ avvCodeId, standortId, suche, seite, proSeite })
+      ? await this.sucheMitVolltext({
+          avvCodeId,
+          standortId,
+          suche,
+          seite,
+          proSeite,
+        })
       : await this.listeAlle({ avvCodeId, standortId, seite, proSeite });
     const daten = await Promise.all(
       treffer.map(async (wareneintrag) => ({
@@ -47,18 +68,29 @@ export class WareneintragService {
         // Client, in zeitlich begrenzt gültige URLs übersetzen, statt den
         // Bucket öffentlich lesbar zu machen (Issue #45). Fehlende Fotos
         // (optional, siehe CONTEXT.md) bleiben null.
-        fotoFernUrl: wareneintrag.fotoFernUrl ? await this.objectStorage.getSignedUrl(wareneintrag.fotoFernUrl) : null,
-        fotoNahUrl: wareneintrag.fotoNahUrl ? await this.objectStorage.getSignedUrl(wareneintrag.fotoNahUrl) : null,
+        fotoFernUrl: wareneintrag.fotoFernUrl
+          ? await this.objectStorage.getSignedUrl(wareneintrag.fotoFernUrl)
+          : null,
+        fotoNahUrl: wareneintrag.fotoNahUrl
+          ? await this.objectStorage.getSignedUrl(wareneintrag.fotoNahUrl)
+          : null,
         fotoDetailUrl: wareneintrag.fotoDetailUrl
           ? await this.objectStorage.getSignedUrl(wareneintrag.fotoDetailUrl)
           : null,
-        dokumentUrl: wareneintrag.dokumentUrl ? await this.objectStorage.getSignedUrl(wareneintrag.dokumentUrl) : null,
+        dokumentUrl: wareneintrag.dokumentUrl
+          ? await this.objectStorage.getSignedUrl(wareneintrag.dokumentUrl)
+          : null,
       })),
     );
     return { daten, gesamt };
   }
 
-  private async listeAlle(filter: { avvCodeId?: string; standortId?: string; seite: number; proSeite: number }) {
+  private async listeAlle(filter: {
+    avvCodeId?: string;
+    standortId?: string;
+    seite: number;
+    proSeite: number;
+  }) {
     const bedingungen = {
       ...(filter.avvCodeId && { avvCodeId: filter.avvCodeId }),
       ...(filter.standortId && { standortId: filter.standortId }),
@@ -90,11 +122,15 @@ export class WareneintragService {
     seite: number;
     proSeite: number;
   }) {
-    const avvFilter = filter.avvCodeId ? Prisma.sql`AND avv_code_id = ${filter.avvCodeId}` : Prisma.empty;
+    const avvFilter = filter.avvCodeId
+      ? Prisma.sql`AND avv_code_id = ${filter.avvCodeId}`
+      : Prisma.empty;
     const standortFilter = filter.standortId
       ? Prisma.sql`AND wareneintraege.standort_id = ${filter.standortId}`
       : Prisma.empty;
-    const praefixSuche = (filter.suche.match(/[\p{L}\p{N}]+/gu) ?? []).map((wort) => `${wort}:*`).join(' & ');
+    const praefixSuche = (filter.suche.match(/[\p{L}\p{N}]+/gu) ?? [])
+      .map((wort) => `${wort}:*`)
+      .join(' & ');
     const treffer = await this.prisma.$queryRaw<
       {
         id: string;
@@ -129,21 +165,30 @@ export class WareneintragService {
       LIMIT ${filter.proSeite} OFFSET ${filter.seite * filter.proSeite}
     `;
     return {
-      treffer: treffer.map(({ gesamt: _gesamt, ...wareneintrag }) => wareneintrag),
+      treffer: treffer.map(
+        ({ gesamt: _gesamt, ...wareneintrag }) => wareneintrag,
+      ),
       gesamt: Number(treffer[0]?.gesamt ?? 0),
     };
   }
 
-  async create(erfasstVonId: string, dto: CreateWareneintragDto, fotos: WareneintragDateien) {
+  async create(
+    erfasstVonId: string,
+    dto: CreateWareneintragDto,
+    fotos: WareneintragDateien,
+  ) {
     // Standort wird als Kopie des aktuellen Nutzer-Standorts geschrieben, nicht
     // nur über erfasstVonId live abgeleitet, siehe ADR-0004.
-    const nutzer = await this.prisma.nutzer.findUniqueOrThrow({ where: { id: erfasstVonId } });
-    const [fotoFernUrl, fotoNahUrl, fotoDetailUrl, dokumentUrl] = await Promise.all([
-      ladeFotoHoch(this.objectStorage, fotos.fotoFern),
-      ladeFotoHoch(this.objectStorage, fotos.fotoNah),
-      ladeFotoHoch(this.objectStorage, fotos.fotoDetail),
-      ladeFotoHoch(this.objectStorage, fotos.dokument),
-    ]);
+    const nutzer = await this.prisma.nutzer.findUniqueOrThrow({
+      where: { id: erfasstVonId },
+    });
+    const [fotoFernUrl, fotoNahUrl, fotoDetailUrl, dokumentUrl] =
+      await Promise.all([
+        ladeFotoHoch(this.objectStorage, fotos.fotoFern),
+        ladeFotoHoch(this.objectStorage, fotos.fotoNah),
+        ladeFotoHoch(this.objectStorage, fotos.fotoDetail),
+        ladeFotoHoch(this.objectStorage, fotos.dokument),
+      ]);
 
     return this.prisma.wareneintrag.create({
       data: {
@@ -159,17 +204,23 @@ export class WareneintragService {
     });
   }
 
-  async update(id: string, nutzerId: string, dto: UpdateWareneintragDto, fotos: WareneintragDateien) {
+  async update(
+    id: string,
+    nutzerId: string,
+    dto: UpdateWareneintragDto,
+    fotos: WareneintragDateien,
+  ) {
     const bestehend = await this.pruefeBesitz(id, nutzerId);
 
     // Altes Foto ersetzen: erst neues hochladen, dann altes im Objektspeicher
     // entfernen, um verwaiste Referenzen bei einem Fehlschlag zu vermeiden.
-    const [fotoFernUrl, fotoNahUrl, fotoDetailUrl, dokumentUrl] = await Promise.all([
-      this.ersetzeFoto(bestehend.fotoFernUrl, fotos.fotoFern),
-      this.ersetzeFoto(bestehend.fotoNahUrl, fotos.fotoNah),
-      this.ersetzeFoto(bestehend.fotoDetailUrl, fotos.fotoDetail),
-      this.ersetzeFoto(bestehend.dokumentUrl, fotos.dokument),
-    ]);
+    const [fotoFernUrl, fotoNahUrl, fotoDetailUrl, dokumentUrl] =
+      await Promise.all([
+        this.ersetzeFoto(bestehend.fotoFernUrl, fotos.fotoFern),
+        this.ersetzeFoto(bestehend.fotoNahUrl, fotos.fotoNah),
+        this.ersetzeFoto(bestehend.fotoDetailUrl, fotos.fotoDetail),
+        this.ersetzeFoto(bestehend.dokumentUrl, fotos.dokument),
+      ]);
 
     // Andere Fotos, andere Grundlage: die gespeicherte KI-Analyse passt nicht
     // mehr und wird gelöscht, ein falsches Ergebnis ist schlimmer als keins
@@ -177,16 +228,31 @@ export class WareneintragService {
     // lässt. Freitext, AVV-Code und PDF (wird nicht analysiert, Issue #103)
     // lassen sie unberührt.
     const fotosGeaendert =
-      fotoFernUrl !== bestehend.fotoFernUrl || fotoNahUrl !== bestehend.fotoNahUrl || fotoDetailUrl !== bestehend.fotoDetailUrl;
-    if (fotosGeaendert) await this.prisma.wareneintragAnalyse.deleteMany({ where: { wareneintragId: id } });
+      fotoFernUrl !== bestehend.fotoFernUrl ||
+      fotoNahUrl !== bestehend.fotoNahUrl ||
+      fotoDetailUrl !== bestehend.fotoDetailUrl;
+    if (fotosGeaendert)
+      await this.prisma.wareneintragAnalyse.deleteMany({
+        where: { wareneintragId: id },
+      });
 
     return this.prisma.wareneintrag.update({
       where: { id },
-      data: { avvCodeId: dto.avvCodeId, freitext: dto.freitext, fotoFernUrl, fotoNahUrl, fotoDetailUrl, dokumentUrl },
+      data: {
+        avvCodeId: dto.avvCodeId,
+        freitext: dto.freitext,
+        fotoFernUrl,
+        fotoNahUrl,
+        fotoDetailUrl,
+        dokumentUrl,
+      },
     });
   }
 
-  private async ersetzeFoto(bestehenderKey: string | null, neuesFoto?: Express.Multer.File): Promise<string | null> {
+  private async ersetzeFoto(
+    bestehenderKey: string | null,
+    neuesFoto?: Express.Multer.File,
+  ): Promise<string | null> {
     if (!neuesFoto) return bestehenderKey;
     const neuerKey = await ladeFotoHoch(this.objectStorage, neuesFoto);
     if (bestehenderKey) await this.objectStorage.deleteFoto(bestehenderKey);
@@ -196,7 +262,12 @@ export class WareneintragService {
   async remove(id: string, nutzerId: string) {
     const wareneintrag = await this.pruefeBesitz(id, nutzerId);
     await Promise.all(
-      [wareneintrag.fotoFernUrl, wareneintrag.fotoNahUrl, wareneintrag.fotoDetailUrl, wareneintrag.dokumentUrl]
+      [
+        wareneintrag.fotoFernUrl,
+        wareneintrag.fotoNahUrl,
+        wareneintrag.fotoDetailUrl,
+        wareneintrag.dokumentUrl,
+      ]
         .filter((key): key is string => key !== null)
         .map((key) => this.objectStorage.deleteFoto(key)),
     );
@@ -206,9 +277,13 @@ export class WareneintragService {
   // Nur der erfassende Nutzer darf seinen eigenen Wareneintrag
   // bearbeiten/löschen (nicht mehr rollenbasiert, siehe CONTEXT.md).
   private async pruefeBesitz(id: string, nutzerId: string) {
-    const wareneintrag = await this.prisma.wareneintrag.findUniqueOrThrow({ where: { id } });
+    const wareneintrag = await this.prisma.wareneintrag.findUniqueOrThrow({
+      where: { id },
+    });
     if (wareneintrag.erfasstVonId !== nutzerId) {
-      throw new ForbiddenException('Nur der erfassende Nutzer darf diesen Wareneintrag ändern.');
+      throw new ForbiddenException(
+        'Nur der erfassende Nutzer darf diesen Wareneintrag ändern.',
+      );
     }
     return wareneintrag;
   }

@@ -24,7 +24,9 @@ export function fokussiereUeberschriftNachNavigation(): void {
       // Erst nach dem Rendern der neuen (lazy geladenen) Seite.
       afterNextRender(
         () => {
-          const ziel = document.querySelector<HTMLElement>('h1') ?? document.querySelector<HTMLElement>('main');
+          const ziel =
+            document.querySelector<HTMLElement>('h1') ??
+            document.querySelector<HTMLElement>('main');
           if (!ziel) return;
           if (!ziel.hasAttribute('tabindex')) ziel.setAttribute('tabindex', '-1');
           ziel.focus();

@@ -9,7 +9,11 @@ import { Protokoll } from './protokoll.js';
 @Module({
   controllers: [ProtokollController],
   providers: [
-    { provide: Protokoll, useFactory: () => new Protokoll(process.env['PROTOKOLL_VERZEICHNIS'] || 'logs') },
+    {
+      provide: Protokoll,
+      useFactory: () =>
+        new Protokoll(process.env['PROTOKOLL_VERZEICHNIS'] || 'logs'),
+    },
     { provide: APP_INTERCEPTOR, useClass: ProtokollInterceptor },
     { provide: APP_FILTER, useClass: ProtokollFilter },
   ],

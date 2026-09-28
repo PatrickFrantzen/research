@@ -45,7 +45,12 @@ describe('NutzerAnlegen', () => {
 
     const submitPromise = component.submit();
     const request = httpMock.expectOne('/api/v1/nutzer');
-    expect(request.request.body).toEqual({ vorname: 'Clara', nachname: 'B', email: 'clara@example.com', neuerStandort: 'Winsen' });
+    expect(request.request.body).toEqual({
+      vorname: 'Clara',
+      nachname: 'B',
+      email: 'clara@example.com',
+      neuerStandort: 'Winsen',
+    });
     request.flush({ email: 'clara@example.com', passwortSetzenLink: '/x', mailVersendet: true });
     await submitPromise;
     fixture.detectChanges();
@@ -73,7 +78,10 @@ describe('NutzerAnlegen', () => {
       email: 'erika@example.com',
       standortId: 'standort-1',
     });
-    request.flush({ email: 'erika@example.com', passwortSetzenLink: 'https://example.com/setzen?token=abc' });
+    request.flush({
+      email: 'erika@example.com',
+      passwortSetzenLink: 'https://example.com/setzen?token=abc',
+    });
     await submitPromise;
 
     expect(component.vorname).toBe('');
@@ -93,12 +101,14 @@ describe('NutzerAnlegen', () => {
     fixture.componentInstance.standortId = 'standort-1';
 
     const submitPromise = fixture.componentInstance.submit();
-    httpMock.expectOne('/api/v1/nutzer').flush('error', { status: 500, statusText: 'Server Error' });
+    httpMock
+      .expectOne('/api/v1/nutzer')
+      .flush('error', { status: 500, statusText: 'Server Error' });
     await submitPromise;
 
-    expect(
-      (fixture.componentInstance as unknown as { fehler: () => string | null }).fehler(),
-    ).toBe('Account konnte nicht angelegt werden.');
+    expect((fixture.componentInstance as unknown as { fehler: () => string | null }).fehler()).toBe(
+      'Account konnte nicht angelegt werden.',
+    );
   });
 
   async function legeNutzerAn(fixture: ReturnType<typeof TestBed.createComponent<NutzerAnlegen>>) {
@@ -108,9 +118,10 @@ describe('NutzerAnlegen', () => {
     component.email = 'erika@example.com';
     component.standortId = 'standort-1';
     const submitPromise = component.submit();
-    httpMock
-      .expectOne('/api/v1/nutzer')
-      .flush({ email: 'erika@example.com', passwortSetzenLink: 'https://example.com/setzen?token=abc' });
+    httpMock.expectOne('/api/v1/nutzer').flush({
+      email: 'erika@example.com',
+      passwortSetzenLink: 'https://example.com/setzen?token=abc',
+    });
     await submitPromise;
     fixture.detectChanges();
   }
@@ -123,7 +134,9 @@ describe('NutzerAnlegen', () => {
     await fixture.whenStable();
     await legeNutzerAn(fixture);
 
-    const link = fixture.nativeElement.querySelector('[data-testid="passwort-setzen-link"]') as HTMLInputElement;
+    const link = fixture.nativeElement.querySelector(
+      '[data-testid="passwort-setzen-link"]',
+    ) as HTMLInputElement;
     expect(link.value).toBe('https://example.com/setzen?token=abc');
     expect(link.readOnly).toBeTrue();
     fixture.componentInstance.linkKopiert(true);
@@ -137,7 +150,9 @@ describe('NutzerAnlegen', () => {
     await fixture.whenStable();
     await legeNutzerAn(fixture);
 
-    (fixture.nativeElement.querySelector('[data-testid="weiterer-nutzer"]') as HTMLButtonElement).click();
+    (
+      fixture.nativeElement.querySelector('[data-testid="weiterer-nutzer"]') as HTMLButtonElement
+    ).click();
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('[data-testid="passwort-setzen-link"]')).toBeNull();
@@ -148,7 +163,9 @@ describe('NutzerAnlegen', () => {
   it('shows a Standort load error with retry and blocks submitting until Standorte are loaded', async () => {
     const fixture = TestBed.createComponent(NutzerAnlegen);
     fixture.detectChanges();
-    httpMock.expectOne('/api/v1/standorte').flush('Fehler', { status: 500, statusText: 'Server Error' });
+    httpMock
+      .expectOne('/api/v1/standorte')
+      .flush('Fehler', { status: 500, statusText: 'Server Error' });
     await fixture.whenStable();
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
@@ -159,8 +176,12 @@ describe('NutzerAnlegen', () => {
     component.standortId = 'standort-1';
     fixture.detectChanges();
 
-    expect(element.querySelector('[role="alert"]')?.textContent).toContain('Standorte konnten nicht geladen werden.');
-    expect((element.querySelector('button[type="submit"]') as HTMLButtonElement).disabled).toBeTrue();
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain(
+      'Standorte konnten nicht geladen werden.',
+    );
+    expect(
+      (element.querySelector('button[type="submit"]') as HTMLButtonElement).disabled,
+    ).toBeTrue();
     await component.submit();
     httpMock.expectNone('/api/v1/nutzer');
 
@@ -171,6 +192,8 @@ describe('NutzerAnlegen', () => {
     fixture.detectChanges();
 
     expect(element.querySelector('[role="alert"]')).toBeNull();
-    expect((element.querySelector('button[type="submit"]') as HTMLButtonElement).disabled).toBeFalse();
+    expect(
+      (element.querySelector('button[type="submit"]') as HTMLButtonElement).disabled,
+    ).toBeFalse();
   });
 });

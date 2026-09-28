@@ -30,7 +30,9 @@ describe('ThemeService', () => {
 
     const erwartet = vorher === 'dunkel' ? 'hell' : 'dunkel';
     expect(service.modus()).toBe(erwartet);
-    expect(document.documentElement.style.colorScheme).toBe(erwartet === 'dunkel' ? 'dark' : 'light');
+    expect(document.documentElement.style.colorScheme).toBe(
+      erwartet === 'dunkel' ? 'dark' : 'light',
+    );
     expect(localStorage.getItem('farbmodus')).toBe(erwartet);
   });
 

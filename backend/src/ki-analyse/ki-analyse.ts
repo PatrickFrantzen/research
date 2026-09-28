@@ -6,7 +6,11 @@ export interface Fraktion {
   anteilProzent: number;
 }
 
-export const URTEILE = ['passt', 'passt_eher_nicht', 'nicht_beurteilbar'] as const;
+export const URTEILE = [
+  'passt',
+  'passt_eher_nicht',
+  'nicht_beurteilbar',
+] as const;
 export type Urteil = (typeof URTEILE)[number];
 
 // Vorschlag ist nur gesetzt, wenn der Code in avv_codes existiert (Issue #95).
@@ -25,7 +29,9 @@ export interface KiAnalyseErgebnis {
 // Ergebnis von pruefeAntwort: der Code-Vorschlag ist nur formal geprüft, der
 // Abgleich mit der Datenbank passiert im Service.
 export type GepruefteAntwort = Omit<KiAnalyseErgebnis, 'avvPruefung'> & {
-  avvPruefung: Omit<AvvPruefung, 'vorschlag'> & { vorgeschlagenerCode: string | null };
+  avvPruefung: Omit<AvvPruefung, 'vorschlag'> & {
+    vorgeschlagenerCode: string | null;
+  };
 };
 
 export const MAX_FRAKTIONEN = 8;
@@ -62,7 +68,10 @@ export const ANTWORT_SCHEMA = {
       maxItems: MAX_FRAKTIONEN,
       items: {
         type: 'OBJECT',
-        properties: { name: { type: 'STRING' }, anteilProzent: { type: 'NUMBER' } },
+        properties: {
+          name: { type: 'STRING' },
+          anteilProzent: { type: 'NUMBER' },
+        },
         required: ['name', 'anteilProzent'],
       },
     },
@@ -85,12 +94,19 @@ export const ANTWORT_SCHEMA = {
 export function normalisiereAvvCode(roh: unknown): string | null {
   if (typeof roh !== 'string') return null;
   const ziffern = roh.replace(/[\s*]/g, '');
-  return /^\d{6}$/.test(ziffern) ? ziffern.replace(/^(\d\d)(\d\d)(\d\d)$/, '$1 $2 $3') : null;
+  return /^\d{6}$/.test(ziffern)
+    ? ziffern.replace(/^(\d\d)(\d\d)(\d\d)$/, '$1 $2 $3')
+    : null;
 }
 
-function pruefeAvvPruefung(roh: unknown): GepruefteAntwort['avvPruefung'] | null {
+function pruefeAvvPruefung(
+  roh: unknown,
+): GepruefteAntwort['avvPruefung'] | null {
   if (typeof roh !== 'object' || roh === null) return null;
-  const { urteil, begruendung, vorgeschlagenerCode } = roh as Record<string, unknown>;
+  const { urteil, begruendung, vorgeschlagenerCode } = roh as Record<
+    string,
+    unknown
+  >;
   if (!URTEILE.includes(urteil as Urteil)) return null;
   if (typeof begruendung !== 'string' || !begruendung.trim()) return null;
   return {
@@ -105,18 +121,35 @@ function pruefeAvvPruefung(roh: unknown): GepruefteAntwort['avvPruefung'] | null
 export function pruefeAntwort(roh: unknown): GepruefteAntwort | null {
   if (typeof roh !== 'object' || roh === null) return null;
   const { fraktionen, einschaetzung } = roh as Record<string, unknown>;
-  const avvPruefung = pruefeAvvPruefung((roh as Record<string, unknown>)['avvPruefung']);
+  const avvPruefung = pruefeAvvPruefung(
+    (roh as Record<string, unknown>)['avvPruefung'],
+  );
   if (!avvPruefung) return null;
-  if (!Array.isArray(fraktionen) || fraktionen.length > MAX_FRAKTIONEN) return null;
+  if (!Array.isArray(fraktionen) || fraktionen.length > MAX_FRAKTIONEN)
+    return null;
   if (typeof einschaetzung !== 'string' || !einschaetzung.trim()) return null;
   const geprueft: Fraktion[] = [];
   for (const fraktion of fraktionen) {
     const { name, anteilProzent } = (fraktion ?? {}) as Record<string, unknown>;
-    if (typeof name !== 'string' || !name.trim() || name.length > MAX_NAME_ZEICHEN) return null;
-    if (typeof anteilProzent !== 'number' || !Number.isFinite(anteilProzent) || anteilProzent < 0) return null;
+    if (
+      typeof name !== 'string' ||
+      !name.trim() ||
+      name.length > MAX_NAME_ZEICHEN
+    )
+      return null;
+    if (
+      typeof anteilProzent !== 'number' ||
+      !Number.isFinite(anteilProzent) ||
+      anteilProzent < 0
+    )
+      return null;
     geprueft.push({ name: name.trim(), anteilProzent });
   }
-  if (geprueft.length > 0 && geprueft.every((fraktion) => fraktion.anteilProzent === 0)) return null;
+  if (
+    geprueft.length > 0 &&
+    geprueft.every((fraktion) => fraktion.anteilProzent === 0)
+  )
+    return null;
   return {
     fraktionen: rundeAufHundert(geprueft),
     einschaetzung: einschaetzung.trim().slice(0, MAX_EINSCHAETZUNG_ZEICHEN),
@@ -128,9 +161,14 @@ export function pruefeAntwort(roh: unknown): GepruefteAntwort | null {
 // größten Nachkommareste verteilen. Summe ist danach genau 100. Anteile, die
 // auf 0 fallen, entfallen; Ergebnis absteigend sortiert.
 export function rundeAufHundert(fraktionen: Fraktion[]): Fraktion[] {
-  const summe = fraktionen.reduce((gesamt, fraktion) => gesamt + fraktion.anteilProzent, 0);
+  const summe = fraktionen.reduce(
+    (gesamt, fraktion) => gesamt + fraktion.anteilProzent,
+    0,
+  );
   if (summe <= 0) return [];
-  const exakt = fraktionen.map((fraktion) => (fraktion.anteilProzent / summe) * 100);
+  const exakt = fraktionen.map(
+    (fraktion) => (fraktion.anteilProzent / summe) * 100,
+  );
   const gerundet = exakt.map(Math.floor);
   const fehlend = 100 - gerundet.reduce((gesamt, wert) => gesamt + wert, 0);
   exakt
@@ -139,7 +177,10 @@ export function rundeAufHundert(fraktionen: Fraktion[]): Fraktion[] {
     .slice(0, fehlend)
     .forEach(({ index }) => gerundet[index]++);
   return fraktionen
-    .map((fraktion, index) => ({ name: fraktion.name, anteilProzent: gerundet[index] }))
+    .map((fraktion, index) => ({
+      name: fraktion.name,
+      anteilProzent: gerundet[index],
+    }))
     .filter((fraktion) => fraktion.anteilProzent > 0)
     .sort((a, b) => b.anteilProzent - a.anteilProzent);
 }

@@ -12,7 +12,10 @@ export class SmtpMailer extends Mailer {
     super();
   }
 
-  async sendPasswortSetzenLink(empfaenger: string, link: string): Promise<void> {
+  async sendPasswortSetzenLink(
+    empfaenger: string,
+    link: string,
+  ): Promise<void> {
     await this.senden(
       empfaenger,
       'RESEARCH: Passwort neu setzen',
@@ -28,7 +31,16 @@ export class SmtpMailer extends Mailer {
     );
   }
 
-  private async senden(empfaenger: string, betreff: string, text: string): Promise<void> {
-    await this.transport.sendMail({ from: this.absender, to: empfaenger, subject: betreff, text });
+  private async senden(
+    empfaenger: string,
+    betreff: string,
+    text: string,
+  ): Promise<void> {
+    await this.transport.sendMail({
+      from: this.absender,
+      to: empfaenger,
+      subject: betreff,
+      text,
+    });
   }
 }

@@ -8,13 +8,23 @@
       <mat-card-content class="formular">
         <p role="status" appFokusBeiAnzeige>Account für {{ ergebnis.email }} wurde angelegt.</p>
         @if (ergebnis.mailVersendet) {
-          <p>Die Einladung wurde per Mail verschickt. Alternativ kannst du den Link direkt weitergeben:</p>
+          <p>
+            Die Einladung wurde per Mail verschickt. Alternativ kannst du den Link direkt
+            weitergeben:
+          </p>
         } @else {
-          <p class="fehler">Die Einladungsmail konnte nicht verschickt werden. Bitte gib den Link direkt weiter:</p>
+          <p class="fehler">
+            Die Einladungsmail konnte nicht verschickt werden. Bitte gib den Link direkt weiter:
+          </p>
         }
         <mat-form-field appearance="outline">
           <mat-label>Link zum Passwort-Setzen</mat-label>
-          <input matInput readonly data-testid="passwort-setzen-link" [value]="ergebnis.passwortSetzenLink" />
+          <input
+            matInput
+            readonly
+            data-testid="passwort-setzen-link"
+            [value]="ergebnis.passwortSetzenLink"
+          />
           <button
             matIconButton
             matSuffix
@@ -30,14 +40,22 @@
       </mat-card-content>
       <mat-card-actions align="end">
         <a matButton routerLink="/nutzerverwaltung">Zur Nutzerverwaltung</a>
-        <button matButton="filled" type="button" data-testid="weiterer-nutzer" (click)="weitererNutzer()">
+        <button
+          matButton="filled"
+          type="button"
+          data-testid="weiterer-nutzer"
+          (click)="weitererNutzer()"
+        >
           Weiteren Nutzer anlegen
         </button>
       </mat-card-actions>
     } @else {
       <form (submit)="$event.preventDefault(); submit()">
         <mat-card-content class="formular">
-          <app-lade-zustand [ressource]="standorte" meldung="Standorte konnten nicht geladen werden." />
+          <app-lade-zustand
+            [ressource]="standorte"
+            meldung="Standorte konnten nicht geladen werden."
+          />
 
           <mat-form-field appearance="outline">
             <mat-label>Vorname</mat-label>
@@ -82,7 +100,11 @@
 
         <mat-card-actions align="end">
           <a matButton routerLink="/nutzerverwaltung">Abbrechen</a>
-          <button matButton="filled" type="submit" [disabled]="!standorte.hasValue() || !nutzerForm().valid() || wirdGeladen()">
+          <button
+            matButton="filled"
+            type="submit"
+            [disabled]="!standorte.hasValue() || !nutzerForm().valid() || wirdGeladen()"
+          >
             Anlegen
           </button>
         </mat-card-actions>

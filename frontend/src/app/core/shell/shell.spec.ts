@@ -52,7 +52,9 @@ describe('Shell', () => {
     const fixture = TestBed.createComponent(Shell);
     fixture.detectChanges();
 
-    const link = fixture.nativeElement.querySelector('footer.desktop-footer a') as HTMLAnchorElement | null;
+    const link = fixture.nativeElement.querySelector(
+      'footer.desktop-footer a',
+    ) as HTMLAnchorElement | null;
     expect(link?.getAttribute('href')).toBe('/impressum');
   });
 
@@ -61,14 +63,20 @@ describe('Shell', () => {
     const fixture = TestBed.createComponent(Shell);
     fixture.detectChanges();
 
-    (fixture.nativeElement.querySelector('.desktop-toolbar [data-testid="farbmodus-umschalten"]') as HTMLButtonElement).click();
+    (
+      fixture.nativeElement.querySelector(
+        '.desktop-toolbar [data-testid="farbmodus-umschalten"]',
+      ) as HTMLButtonElement
+    ).click();
 
     expect(umschaltenSpy).toHaveBeenCalled();
   });
 
   it('opens the Mehr bottom sheet with MehrMenu', () => {
     const bottomSheet = TestBed.inject(MatBottomSheet);
-    const openSpy = spyOn(bottomSheet, 'open').and.returnValue({ afterDismissed: () => EMPTY } as unknown as MatBottomSheetRef);
+    const openSpy = spyOn(bottomSheet, 'open').and.returnValue({
+      afterDismissed: () => EMPTY,
+    } as unknown as MatBottomSheetRef);
     const fixture = TestBed.createComponent(Shell);
     fixture.detectChanges();
 
@@ -81,7 +89,9 @@ describe('Shell', () => {
   it('returns focus to "Mehr" when the bottom sheet closes without navigation', () => {
     const bottomSheet = TestBed.inject(MatBottomSheet);
     const geschlossen = new Subject<void>();
-    const openSpy = spyOn(bottomSheet, 'open').and.returnValue({ afterDismissed: () => geschlossen } as unknown as MatBottomSheetRef);
+    const openSpy = spyOn(bottomSheet, 'open').and.returnValue({
+      afterDismissed: () => geschlossen,
+    } as unknown as MatBottomSheetRef);
     const fixture = TestBed.createComponent(Shell);
     fixture.detectChanges();
     document.body.appendChild(fixture.nativeElement);
@@ -90,7 +100,10 @@ describe('Shell', () => {
     (document.activeElement as HTMLElement | null)?.blur();
     geschlossen.next();
 
-    expect(openSpy.calls.mostRecent().args[1]).toEqual({ restoreFocus: false, ariaLabel: 'Weitere Aktionen' });
+    expect(openSpy.calls.mostRecent().args[1]).toEqual({
+      restoreFocus: false,
+      ariaLabel: 'Weitere Aktionen',
+    });
     expect(document.activeElement?.textContent).toContain('Mehr');
     fixture.nativeElement.remove();
   });
@@ -99,7 +112,9 @@ describe('Shell', () => {
     const fixture = TestBed.createComponent(Shell);
     fixture.detectChanges();
 
-    const namen = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('nav')).map((nav) => nav.getAttribute('aria-label'));
+    const namen = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('nav')).map(
+      (nav) => nav.getAttribute('aria-label'),
+    );
     expect(namen).toEqual(['Hauptnavigation', 'Mobile Navigation']);
     expect((fixture.nativeElement as HTMLElement).querySelector('main')).not.toBeNull();
   });

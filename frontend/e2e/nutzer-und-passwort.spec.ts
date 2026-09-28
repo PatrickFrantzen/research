@@ -40,7 +40,9 @@ test.describe('mit Session von Erika', () => {
   });
 });
 
-test('Passwort setzen mit ungültigem Link zeigt eine fokussierte Fehlermeldung', async ({ page }) => {
+test('Passwort setzen mit ungültigem Link zeigt eine fokussierte Fehlermeldung', async ({
+  page,
+}) => {
   await page.goto('/passwort-setzen?token=ungueltig');
   await page.getByLabel('Neues Passwort').fill('e2e-Passwort-Egal-01');
   await page.getByRole('button', { name: 'Passwort setzen' }).click();

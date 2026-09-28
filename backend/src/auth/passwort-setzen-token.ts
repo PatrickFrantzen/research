@@ -6,7 +6,10 @@ import { createHash, randomBytes } from 'node:crypto';
 // Zufall trägt. Gemeinsam genutzt von AuthService (Passwort-Reset) und
 // NutzerService (Initial-Zugang), siehe Prisma-Schema-Kommentar zu
 // passwortSetzenToken.
-export function erzeugePasswortSetzenToken(): { rawToken: string; hashedToken: string } {
+export function erzeugePasswortSetzenToken(): {
+  rawToken: string;
+  hashedToken: string;
+} {
   const rawToken = randomBytes(32).toString('hex');
   return { rawToken, hashedToken: hashPasswortSetzenToken(rawToken) };
 }

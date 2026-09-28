@@ -1,7 +1,12 @@
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { Global, INestApplication, Module, ValidationPipe } from '@nestjs/common';
+import {
+  Global,
+  INestApplication,
+  Module,
+  ValidationPipe,
+} from '@nestjs/common';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { Test } from '@nestjs/testing';
@@ -67,14 +72,25 @@ describe('Protokoll', () => {
     process.env['REDIS_URL'] ??= 'redis://localhost:6379';
 
     verzeichnis = mkdtempSync(path.join(tmpdir(), 'protokoll-e2e-'));
-    protokoll = new Protokoll(verzeichnis, () => new Date(`${heute}T10:00:00Z`));
+    protokoll = new Protokoll(
+      verzeichnis,
+      () => new Date(`${heute}T10:00:00Z`),
+    );
 
     const prisma = {
       nutzer: {
-        findUnique: async ({ where }: { where: { id?: string; email?: string } }) =>
-          nutzer.find((n) => n.id === where.id || n.email === where.email) ?? null,
+        findUnique: async ({
+          where,
+        }: {
+          where: { id?: string; email?: string };
+        }) =>
+          nutzer.find((n) => n.id === where.id || n.email === where.email) ??
+          null,
         findMany: async () => [],
-        create: async ({ data }: { data: Record<string, unknown> }) => ({ id: 'neu-1', ...data }),
+        create: async ({ data }: { data: Record<string, unknown> }) => ({
+          id: 'neu-1',
+          ...data,
+        }),
         update: async () => undefined,
       },
     };
@@ -85,7 +101,11 @@ describe('Protokoll', () => {
         PassportGlobal,
         JwtModule.register({
           secret: 'test-secret',
-          signOptions: { algorithm: 'HS256', issuer: 'test-issuer', audience: 'test-audience' },
+          signOptions: {
+            algorithm: 'HS256',
+            issuer: 'test-issuer',
+            audience: 'test-audience',
+          },
         }),
       ],
       controllers: [AuthController, NutzerController],
@@ -96,7 +116,10 @@ describe('Protokoll', () => {
         { provide: PrismaService, useValue: prisma },
         {
           provide: Mailer,
-          useValue: { sendPasswortSetzenLink: async () => undefined, sendEinladung: async () => undefined },
+          useValue: {
+            sendPasswortSetzenLink: async () => undefined,
+            sendEinladung: async () => undefined,
+          },
         },
       ],
     })
@@ -107,7 +130,13 @@ describe('Protokoll', () => {
     app = moduleRef.createNestApplication();
     app.use(cookieParser());
     app.setGlobalPrefix('api/v1');
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }));
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+      }),
+    );
     await app.init();
     jwt = moduleRef.get(JwtService);
   });
@@ -118,7 +147,10 @@ describe('Protokoll', () => {
   });
 
   async function cookiesFuer(id: string): Promise<string[]> {
-    return [`accessToken=${await jwt.signAsync({ sub: id })}`, `csrfToken=${csrf}`];
+    return [
+      `accessToken=${await jwt.signAsync({ sub: id })}`,
+      `csrfToken=${csrf}`,
+    ];
   }
 
   function log(art: 'aktivitaet' | 'fehler'): string {
@@ -132,18 +164,33 @@ describe('Protokoll', () => {
       .post('/api/v1/nutzer')
       .set('Cookie', cookies)
       .set('x-csrf-token', csrf)
-      .send({ vorname: 'Neu', nachname: 'N', email: 'neu@research.local', standortId: '5b1e0a8e-7a4c-4a39-9d3e-2f1c7f0b6b11' })
+      .send({
+        vorname: 'Neu',
+        nachname: 'N',
+        email: 'neu@research.local',
+        standortId: '5b1e0a8e-7a4c-4a39-9d3e-2f1c7f0b6b11',
+      })
       .expect(201);
-    await request(app.getHttpServer()).get('/api/v1/nutzer').set('Cookie', cookies).expect(200);
+    await request(app.getHttpServer())
+      .get('/api/v1/nutzer')
+      .set('Cookie', cookies)
+      .expect(200);
 
-    expect(log('aktivitaet')).toContain('| admin@research.local | Nutzer angelegt | neu-1');
+    expect(log('aktivitaet')).toContain(
+      '| admin@research.local | Nutzer angelegt | neu-1',
+    );
     expect(log('aktivitaet')).not.toContain('GET');
   });
 
   it('schreibt verweigerten Zugriff mit Status, Pfad, Nutzer und Grund ins Fehler-Log', async () => {
-    await request(app.getHttpServer()).get('/api/v1/nutzer').set('Cookie', await cookiesFuer('nutzer-2')).expect(403);
+    await request(app.getHttpServer())
+      .get('/api/v1/nutzer')
+      .set('Cookie', await cookiesFuer('nutzer-2'))
+      .expect(403);
 
-    expect(log('fehler')).toContain('| 403 | GET /api/v1/nutzer | thomas@research.local | Nur für Admins.');
+    expect(log('fehler')).toContain(
+      '| 403 | GET /api/v1/nutzer | thomas@research.local | Nur für Admins.',
+    );
   });
 
   it('lässt den erwarteten 401 beim App-Start ohne Login (/auth/me) aus dem Fehler-Log', async () => {
@@ -157,10 +204,17 @@ describe('Protokoll', () => {
       .post('/api/v1/nutzer')
       .set('Cookie', await cookiesFuer('admin-1'))
       .set('x-csrf-token', csrf)
-      .send({ vorname: 'Neu', nachname: 'N', email: 'keine-mail', standortId: '5b1e0a8e-7a4c-4a39-9d3e-2f1c7f0b6b11' })
+      .send({
+        vorname: 'Neu',
+        nachname: 'N',
+        email: 'keine-mail',
+        standortId: '5b1e0a8e-7a4c-4a39-9d3e-2f1c7f0b6b11',
+      })
       .expect(400);
 
-    expect(log('fehler')).toMatch(/\| 400 \| POST \/api\/v1\/nutzer \| admin@research\.local \| .*email must be an email/);
+    expect(log('fehler')).toMatch(
+      /\| 400 \| POST \/api\/v1\/nutzer \| admin@research\.local \| .*email must be an email/,
+    );
   });
 
   it('protokolliert fehlgeschlagene Logins mit versuchter E-Mail und IP, nie mit Passwort', async () => {
@@ -169,8 +223,12 @@ describe('Protokoll', () => {
       .send({ email: 'thomas@research.local', passwort: 'falsches-geheimnis' })
       .expect(401);
 
-    const zeile = log('fehler').split('\n').find((z) => z.includes('/auth/login'))!;
-    expect(zeile).toContain('| 401 | POST /api/v1/auth/login | versucht: thomas@research.local |');
+    const zeile = log('fehler')
+      .split('\n')
+      .find((z) => z.includes('/auth/login'))!;
+    expect(zeile).toContain(
+      '| 401 | POST /api/v1/auth/login | versucht: thomas@research.local |',
+    );
     expect(zeile).toMatch(/IP \S+/);
     expect(log('fehler')).not.toContain('falsches-geheimnis');
   });
@@ -184,28 +242,49 @@ describe('Protokoll', () => {
       .post('/api/v1/protokoll/app-fehler')
       .set('Cookie', await cookiesFuer('nutzer-2'))
       .set('x-csrf-token', csrf)
-      .send({ meldung: 'Foto zu groß (12 MB)', seite: '/wareneintrag-erfassen' })
+      .send({
+        meldung: 'Foto zu groß (12 MB)',
+        seite: '/wareneintrag-erfassen',
+      })
       .expect(204);
 
-    expect(log('fehler')).toContain('| App | /wareneintrag-erfassen | thomas@research.local | Foto zu groß (12 MB)');
+    expect(log('fehler')).toContain(
+      '| App | /wareneintrag-erfassen | thomas@research.local | Foto zu groß (12 MB)',
+    );
   });
 
   it('lässt nur Admins die Tage und Logdateien lesen und prüft Art und Datum', async () => {
     const admin = await cookiesFuer('admin-1');
     const server = app.getHttpServer();
 
-    const tage = await request(server).get('/api/v1/protokoll').set('Cookie', admin);
-    const datei = await request(server).get(`/api/v1/protokoll/fehler/${heute}`).set('Cookie', admin);
-    const leer = await request(server).get('/api/v1/protokoll/fehler/2020-01-01').set('Cookie', admin);
-    const falscheArt = await request(server).get(`/api/v1/protokoll/passwoerter/${heute}`).set('Cookie', admin);
-    const falschesDatum = await request(server).get('/api/v1/protokoll/fehler/..%2F..%2Fetc').set('Cookie', admin);
-    const nichtAdmin = await request(server).get(`/api/v1/protokoll/fehler/${heute}`).set('Cookie', await cookiesFuer('nutzer-2'));
+    const tage = await request(server)
+      .get('/api/v1/protokoll')
+      .set('Cookie', admin);
+    const datei = await request(server)
+      .get(`/api/v1/protokoll/fehler/${heute}`)
+      .set('Cookie', admin);
+    const leer = await request(server)
+      .get('/api/v1/protokoll/fehler/2020-01-01')
+      .set('Cookie', admin);
+    const falscheArt = await request(server)
+      .get(`/api/v1/protokoll/passwoerter/${heute}`)
+      .set('Cookie', admin);
+    const falschesDatum = await request(server)
+      .get('/api/v1/protokoll/fehler/..%2F..%2Fetc')
+      .set('Cookie', admin);
+    const nichtAdmin = await request(server)
+      .get(`/api/v1/protokoll/fehler/${heute}`)
+      .set('Cookie', await cookiesFuer('nutzer-2'));
 
     expect(tage.body).toEqual({ tage: [heute] });
     expect(datei.status).toBe(200);
     expect(datei.headers['content-type']).toContain('text/plain');
     expect(datei.text).toContain('| 403 | GET /api/v1/nutzer |');
     expect(leer.text).toBe('');
-    expect([falscheArt.status, falschesDatum.status, nichtAdmin.status]).toEqual([400, 400, 403]);
+    expect([
+      falscheArt.status,
+      falschesDatum.status,
+      nichtAdmin.status,
+    ]).toEqual([400, 400, 403]);
   });
 });

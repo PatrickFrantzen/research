@@ -13,18 +13,23 @@ const SPEICHER_SCHLUESSEL = 'farbmodus';
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
   private readonly document = inject(DOCUMENT);
-  private readonly systemAbfrage = this.document.defaultView?.matchMedia?.('(prefers-color-scheme: dark)');
+  private readonly systemAbfrage = this.document.defaultView?.matchMedia?.(
+    '(prefers-color-scheme: dark)',
+  );
 
   private readonly gewaehlt = signal<Farbmodus | null>(this.leseGespeichert());
   private readonly systemDunkel = signal(this.systemAbfrage?.matches ?? false);
 
-  readonly modus = computed<Farbmodus>(() => this.gewaehlt() ?? (this.systemDunkel() ? 'dunkel' : 'hell'));
+  readonly modus = computed<Farbmodus>(
+    () => this.gewaehlt() ?? (this.systemDunkel() ? 'dunkel' : 'hell'),
+  );
 
   constructor() {
     this.systemAbfrage?.addEventListener('change', (event) => this.systemDunkel.set(event.matches));
     effect(() => {
       const gewaehlt = this.gewaehlt();
-      this.document.documentElement.style.colorScheme = gewaehlt === null ? '' : gewaehlt === 'dunkel' ? 'dark' : 'light';
+      this.document.documentElement.style.colorScheme =
+        gewaehlt === null ? '' : gewaehlt === 'dunkel' ? 'dark' : 'light';
     });
   }
 

@@ -35,28 +35,42 @@ describe('JwtStrategy', () => {
     const { strategy, prisma } = buildStrategy();
     prisma.nutzer.findUnique.mockResolvedValue(null);
 
-    await expect(strategy.validate({ sub: 'geloeschter-nutzer' })).rejects.toBeInstanceOf(UnauthorizedException);
+    await expect(
+      strategy.validate({ sub: 'geloeschter-nutzer' }),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
   describe('Invalidierung nach Passwortänderung (Issue #40)', () => {
     it('rejects a token issued before the last password change', async () => {
       const { strategy, prisma } = buildStrategy();
       const passwortGeaendertAm = new Date('2026-01-02T00:00:00Z');
-      prisma.nutzer.findUnique.mockResolvedValue({ id: 'nutzer-1', passwortGeaendertAm });
-      const iatVorDerAenderung = Math.floor(new Date('2026-01-01T00:00:00Z').getTime() / 1000);
-
-      await expect(strategy.validate({ sub: 'nutzer-1', iat: iatVorDerAenderung })).rejects.toBeInstanceOf(
-        UnauthorizedException,
+      prisma.nutzer.findUnique.mockResolvedValue({
+        id: 'nutzer-1',
+        passwortGeaendertAm,
+      });
+      const iatVorDerAenderung = Math.floor(
+        new Date('2026-01-01T00:00:00Z').getTime() / 1000,
       );
+
+      await expect(
+        strategy.validate({ sub: 'nutzer-1', iat: iatVorDerAenderung }),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
     });
 
     it('accepts a token issued after the last password change', async () => {
       const { strategy, prisma } = buildStrategy();
       const passwortGeaendertAm = new Date('2026-01-02T00:00:00Z');
-      prisma.nutzer.findUnique.mockResolvedValue({ id: 'nutzer-1', passwortGeaendertAm });
-      const iatNachDerAenderung = Math.floor(new Date('2026-01-03T00:00:00Z').getTime() / 1000);
+      prisma.nutzer.findUnique.mockResolvedValue({
+        id: 'nutzer-1',
+        passwortGeaendertAm,
+      });
+      const iatNachDerAenderung = Math.floor(
+        new Date('2026-01-03T00:00:00Z').getTime() / 1000,
+      );
 
-      await expect(strategy.validate({ sub: 'nutzer-1', iat: iatNachDerAenderung })).resolves.toEqual({
+      await expect(
+        strategy.validate({ sub: 'nutzer-1', iat: iatNachDerAenderung }),
+      ).resolves.toEqual({
         id: 'nutzer-1',
       });
     });
@@ -67,10 +81,17 @@ describe('JwtStrategy', () => {
     it('accepts a token issued in the same second as the password change', async () => {
       const { strategy, prisma } = buildStrategy();
       const passwortGeaendertAm = new Date('2026-01-02T00:00:00.750Z');
-      prisma.nutzer.findUnique.mockResolvedValue({ id: 'nutzer-1', passwortGeaendertAm });
-      const iatSelbeSekunde = Math.floor(new Date('2026-01-02T00:00:00.900Z').getTime() / 1000);
+      prisma.nutzer.findUnique.mockResolvedValue({
+        id: 'nutzer-1',
+        passwortGeaendertAm,
+      });
+      const iatSelbeSekunde = Math.floor(
+        new Date('2026-01-02T00:00:00.900Z').getTime() / 1000,
+      );
 
-      await expect(strategy.validate({ sub: 'nutzer-1', iat: iatSelbeSekunde })).resolves.toEqual({
+      await expect(
+        strategy.validate({ sub: 'nutzer-1', iat: iatSelbeSekunde }),
+      ).resolves.toEqual({
         id: 'nutzer-1',
       });
     });

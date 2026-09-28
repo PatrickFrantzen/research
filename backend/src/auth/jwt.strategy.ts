@@ -51,7 +51,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     // Nutzer muss noch existieren, damit ein Token für einen gelöschten
     // Account nicht weiter funktioniert (Issue #34). Rolle kommt aus der DB,
     // nicht aus dem (potenziell veralteten) Token-Claim.
-    const nutzer = await this.prisma.nutzer.findUnique({ where: { id: payload.sub } });
+    const nutzer = await this.prisma.nutzer.findUnique({
+      where: { id: payload.sub },
+    });
     if (!nutzer) {
       throw new UnauthorizedException();
     }
@@ -59,7 +61,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     // auch wenn es noch nicht abgelaufen ist (Issue #40). Vergleich in ganzen
     // Sekunden, weil iat sekundengenau ist: sonst wäre ein Login in derselben
     // Sekunde wie das Passwort-Setzen sofort ungültig.
-    if (payload.iat !== undefined && payload.iat < Math.floor(nutzer.passwortGeaendertAm.getTime() / 1000)) {
+    if (
+      payload.iat !== undefined &&
+      payload.iat < Math.floor(nutzer.passwortGeaendertAm.getTime() / 1000)
+    ) {
       throw new UnauthorizedException();
     }
     return { id: nutzer.id, istAdmin: nutzer.istAdmin, email: nutzer.email };

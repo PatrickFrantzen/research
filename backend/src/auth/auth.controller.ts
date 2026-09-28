@@ -1,8 +1,22 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import type { Response } from 'express';
 import { AuthService } from './auth.service.js';
-import { ACCESS_TOKEN_COOKIE, CSRF_COOKIE, erzeugeCsrfToken } from './auth-cookies.js';
+import {
+  ACCESS_TOKEN_COOKIE,
+  CSRF_COOKIE,
+  erzeugeCsrfToken,
+} from './auth-cookies.js';
 import { LoginDto } from './dto/login.dto.js';
 import { PasswortSetzenDto } from './dto/passwort-setzen.dto.js';
 import { PasswortVergessenDto } from './dto/passwort-vergessen.dto.js';
@@ -51,8 +65,12 @@ export class AuthController {
 
   @Post('login')
   @Throttle(AUTH_THROTTLE)
-  async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
-    const { accessToken, mussPasswortSetzen, id, istAdmin } = await this.authService.login(dto.email, dto.passwort);
+  async login(
+    @Body() dto: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { accessToken, mussPasswortSetzen, id, istAdmin } =
+      await this.authService.login(dto.email, dto.passwort);
     setzeAuthCookies(res, accessToken);
     return { mussPasswortSetzen, id, istAdmin };
   }
@@ -83,11 +101,12 @@ export class AuthController {
   @Post('passwort-setzen')
   @Throttle(AUTH_THROTTLE)
   @HttpCode(HttpStatus.OK)
-  async passwortSetzen(@Body() dto: PasswortSetzenDto, @Res({ passthrough: true }) res: Response) {
-    const { accessToken, mussPasswortSetzen, id, istAdmin } = await this.authService.passwortSetzen(
-      dto.token,
-      dto.neuesPasswort,
-    );
+  async passwortSetzen(
+    @Body() dto: PasswortSetzenDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { accessToken, mussPasswortSetzen, id, istAdmin } =
+      await this.authService.passwortSetzen(dto.token, dto.neuesPasswort);
     setzeAuthCookies(res, accessToken);
     return { mussPasswortSetzen, id, istAdmin };
   }

@@ -46,12 +46,19 @@ test('Login nur per Tastatur, erst mit falschem, dann mit richtigem Passwort', a
   await expect(page.getByRole('heading', { level: 1, name: 'Wareneinträge' })).toBeFocused();
 
   const hauptnavigation = page.getByRole('navigation', { name: 'Hauptnavigation' });
-  await expect(hauptnavigation.getByRole('link', { name: 'Wareneinträge' })).toHaveAttribute('aria-current', 'page');
+  await expect(hauptnavigation.getByRole('link', { name: 'Wareneinträge' })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
 
   const erfassenLink = hauptnavigation.getByRole('link', { name: 'Wareneintrag erfassen' });
   await erfassenLink.focus();
   await page.keyboard.press('Enter');
-  await expect(page.getByRole('heading', { level: 1, name: 'Wareneintrag erfassen' })).toBeFocused();
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Wareneintrag erfassen' }),
+  ).toBeFocused();
   await expect(erfassenLink).toHaveAttribute('aria-current', 'page');
-  await expect(hauptnavigation.getByRole('link', { name: 'Wareneinträge' })).not.toHaveAttribute('aria-current');
+  await expect(hauptnavigation.getByRole('link', { name: 'Wareneinträge' })).not.toHaveAttribute(
+    'aria-current',
+  );
 });

@@ -22,7 +22,8 @@ describe('auth guards', () => {
   });
 
   function runGuard(guard: typeof authGuard) {
-    return TestBed.runInInjectionContext(() => guard({} as never, {} as never)) as boolean | UrlTree;
+    return TestBed.runInInjectionContext(() => guard({} as never, {} as never)) as
+      boolean | UrlTree;
   }
 
   describe('adminGuard', () => {

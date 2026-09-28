@@ -54,7 +54,9 @@
           @if (zeilen().length === 0) {
             <p>Keine Einträge an diesem Tag.</p>
           } @else {
-            <pre class="log" tabindex="0" aria-label="Logeinträge, neueste zuerst">{{ zeilen().join('\n') }}</pre>
+            <pre class="log" tabindex="0" aria-label="Logeinträge, neueste zuerst">{{
+              zeilen().join('\n')
+            }}</pre>
           }
         }
       }

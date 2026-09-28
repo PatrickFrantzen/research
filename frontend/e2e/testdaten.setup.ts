@@ -27,7 +27,11 @@ async function avvCodeId(api: APIRequestContext, suche: string): Promise<string>
   return treffer.id;
 }
 
-async function erstelleEintrag(api: APIRequestContext, avvCodeId: string, freitext: string): Promise<void> {
+async function erstelleEintrag(
+  api: APIRequestContext,
+  avvCodeId: string,
+  freitext: string,
+): Promise<void> {
   const antwort = await api.post('/api/v1/wareneintraege', {
     headers: await csrfHeader(api),
     multipart: { avvCodeId, freitext },
@@ -42,12 +46,20 @@ setup('Testdaten anlegen und Sessions speichern', async ({ baseURL }) => {
 
   // Max am zweiten Standort anlegen und Passwort über den Link setzen –
   // derselbe Weg wie in der UI (Nutzer anlegen → Passwort setzen).
-  const standorte = (await (await erika.get('/api/v1/standorte')).json()) as { id: string; name: string }[];
+  const standorte = (await (await erika.get('/api/v1/standorte')).json()) as {
+    id: string;
+    name: string;
+  }[];
   const aussenlager = standorte.find((standort) => standort.name === MAX.standort);
   expect(aussenlager, 'Standort aus e2e-vorbereiten.ts').toBeDefined();
   const angelegt = await erika.post('/api/v1/nutzer', {
     headers: await csrfHeader(erika),
-    data: { vorname: MAX.vorname, nachname: MAX.nachname, email: MAX.email, standortId: aussenlager!.id },
+    data: {
+      vorname: MAX.vorname,
+      nachname: MAX.nachname,
+      email: MAX.email,
+      standortId: aussenlager!.id,
+    },
   });
   expect(angelegt.status()).toBe(201);
   const { passwortSetzenLink } = (await angelegt.json()) as { passwortSetzenLink: string };

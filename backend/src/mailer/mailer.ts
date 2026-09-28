@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 
 export abstract class Mailer {
-  abstract sendPasswortSetzenLink(empfaenger: string, link: string): Promise<void>;
+  abstract sendPasswortSetzenLink(
+    empfaenger: string,
+    link: string,
+  ): Promise<void>;
   abstract sendEinladung(empfaenger: string, link: string): Promise<void>;
 }
 
@@ -11,7 +14,10 @@ export abstract class Mailer {
 export class ConsoleMailer extends Mailer {
   private readonly logger = new Logger(ConsoleMailer.name);
 
-  async sendPasswortSetzenLink(empfaenger: string, _link: string): Promise<void> {
+  async sendPasswortSetzenLink(
+    empfaenger: string,
+    _link: string,
+  ): Promise<void> {
     // Der Link enthält den Roh-Reset-Token und darf nie geloggt werden
     // (Issue #30) – Logzugriff würde sonst zur Kontoübernahme reichen.
     this.logger.log(`Passwort-setzen-Link wurde an ${empfaenger} versendet.`);

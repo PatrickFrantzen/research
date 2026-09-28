@@ -22,12 +22,18 @@ describe('extrahiereFehlermeldung', () => {
   });
 
   it('returns the server message when present as a string', () => {
-    const error = new HttpErrorResponse({ status: 400, error: { message: 'AVV-Code ist ungültig.' } });
+    const error = new HttpErrorResponse({
+      status: 400,
+      error: { message: 'AVV-Code ist ungültig.' },
+    });
     expect(extrahiereFehlermeldung(error, 'Fallback')).toBe('AVV-Code ist ungültig.');
   });
 
   it('joins the server message when present as an array (class-validator)', () => {
-    const error = new HttpErrorResponse({ status: 400, error: { message: ['Feld A fehlt', 'Feld B ist ungültig'] } });
+    const error = new HttpErrorResponse({
+      status: 400,
+      error: { message: ['Feld A fehlt', 'Feld B ist ungültig'] },
+    });
     expect(extrahiereFehlermeldung(error, 'Fallback')).toBe('Feld A fehlt Feld B ist ungültig');
   });
 

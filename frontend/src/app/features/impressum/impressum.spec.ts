@@ -14,7 +14,9 @@ describe('Impressum', () => {
     const fixture = TestBed.createComponent(Impressum);
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
-    const ueberschriften = Array.from(element.querySelectorAll('h2')).map((h2) => h2.textContent?.trim());
+    const ueberschriften = Array.from(element.querySelectorAll('h2')).map((h2) =>
+      h2.textContent?.trim(),
+    );
 
     expect(ueberschriften).toEqual([
       'Angaben gemäß § 5 DDG',

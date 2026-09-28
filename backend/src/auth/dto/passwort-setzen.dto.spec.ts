@@ -4,7 +4,10 @@ import { describe, expect, it } from 'vitest';
 import { PasswortSetzenDto } from './passwort-setzen.dto.js';
 
 async function validatePasswort(neuesPasswort: string) {
-  const dto = plainToInstance(PasswortSetzenDto, { token: 'irgendein-token', neuesPasswort });
+  const dto = plainToInstance(PasswortSetzenDto, {
+    token: 'irgendein-token',
+    neuesPasswort,
+  });
   return validate(dto);
 }
 

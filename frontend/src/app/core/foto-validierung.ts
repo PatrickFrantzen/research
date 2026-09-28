@@ -40,7 +40,9 @@ async function verkleinereFoto(datei: File): Promise<File> {
   canvas.height = hoehe;
   canvas.getContext('2d')?.drawImage(bild, 0, 0, breite, hoehe);
   bild.close();
-  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', FOTO_JPEG_QUALITAET));
+  const blob = await new Promise<Blob | null>((resolve) =>
+    canvas.toBlob(resolve, 'image/jpeg', FOTO_JPEG_QUALITAET),
+  );
   if (!blob) return datei;
   return new File([blob], datei.name.replace(/\.[^.]*$/, '') + '.jpg', { type: 'image/jpeg' });
 }
@@ -49,15 +51,19 @@ async function verkleinereFoto(datei: File): Promise<File> {
 // Galerie (Google Fotos, OneDrive) sind nur Verweise, die beim späteren Upload
 // ungültig sein können; die eigene Kopie im Speicher macht den Upload davon
 // unabhängig und zeigt unlesbare Dateien schon bei der Auswahl.
-export async function uebernehmeFoto(auswahl: File): Promise<{ datei: File | null; meldung: string | null }> {
-  if (!ERLAUBTE_FOTO_TYPEN.includes(auswahl.type)) return { datei: null, meldung: 'Nur JPEG, PNG oder WebP erlaubt.' };
+export async function uebernehmeFoto(
+  auswahl: File,
+): Promise<{ datei: File | null; meldung: string | null }> {
+  if (!ERLAUBTE_FOTO_TYPEN.includes(auswahl.type))
+    return { datei: null, meldung: 'Nur JPEG, PNG oder WebP erlaubt.' };
   let kopie: File;
   try {
     kopie = new File([await auswahl.arrayBuffer()], auswahl.name, { type: auswahl.type });
   } catch {
     return {
       datei: null,
-      meldung: 'Foto konnte nicht gelesen werden. Bitte mit der Kamera aufnehmen oder erst auf dem Gerät speichern.',
+      meldung:
+        'Foto konnte nicht gelesen werden. Bitte mit der Kamera aufnehmen oder erst auf dem Gerät speichern.',
     };
   }
   return { datei: await verkleinereFoto(kopie), meldung: null };

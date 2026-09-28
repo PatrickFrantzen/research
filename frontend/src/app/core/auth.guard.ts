@@ -24,5 +24,7 @@ const DESKTOP_BREAKPOINT = '(min-width: 768px)';
 export const startseiteRedirectGuard: CanActivateFn = () => {
   const breakpointObserver = inject(BreakpointObserver);
   const router = inject(Router);
-  return breakpointObserver.isMatched(DESKTOP_BREAKPOINT) ? router.createUrlTree(['/wareneintraege']) : true;
+  return breakpointObserver.isMatched(DESKTOP_BREAKPOINT)
+    ? router.createUrlTree(['/wareneintraege'])
+    : true;
 };

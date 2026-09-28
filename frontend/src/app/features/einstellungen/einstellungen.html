@@ -5,7 +5,10 @@
     </mat-card-header>
 
     <mat-card-content>
-      <app-lade-zustand [ressource]="eigeneDaten" meldung="Deine Daten konnten nicht geladen werden." />
+      <app-lade-zustand
+        [ressource]="eigeneDaten"
+        meldung="Deine Daten konnten nicht geladen werden."
+      />
       <app-lade-zustand [ressource]="standorte" meldung="Standorte konnten nicht geladen werden." />
     </mat-card-content>
 
@@ -38,7 +41,10 @@
           <mat-form-field appearance="outline">
             <mat-label>Neuer Standort</mat-label>
             <input matInput [formField]="einstellungenForm.neuerStandort" />
-            <mat-hint>Wird angelegt, falls es ihn noch nicht gibt. Deine bisherigen Einträge behalten ihren Standort.</mat-hint>
+            <mat-hint
+              >Wird angelegt, falls es ihn noch nicht gibt. Deine bisherigen Einträge behalten ihren
+              Standort.</mat-hint
+            >
           </mat-form-field>
         }
 
@@ -48,7 +54,11 @@
       </mat-card-content>
 
       <mat-card-actions align="end">
-        <button matButton="filled" type="submit" [disabled]="!geladen() || !einstellungenForm().valid() || wirdGeladen()">
+        <button
+          matButton="filled"
+          type="submit"
+          [disabled]="!geladen() || !einstellungenForm().valid() || wirdGeladen()"
+        >
           Speichern
         </button>
       </mat-card-actions>

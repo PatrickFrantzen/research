@@ -14,7 +14,12 @@ function tokenAus(link: string): string {
 describe('NutzerService', () => {
   it('schickt dem neuen Nutzer den Einladungslink per Mail und speichert die E-Mail klein', async () => {
     const prisma = {
-      nutzer: { create: vi.fn().mockImplementation(async ({ data }) => ({ id: 'nutzer-2', ...data })) },
+      nutzer: {
+        create: vi.fn().mockImplementation(async ({ data }) => ({
+          id: 'nutzer-2',
+          ...data,
+        })),
+      },
     };
     const mailer = mailerFake();
     const service = new NutzerService(prisma as never, mailer as never);
@@ -26,8 +31,13 @@ describe('NutzerService', () => {
       standortId: 'standort-1',
     });
 
-    expect(prisma.nutzer.create.mock.calls[0][0].data.email).toBe('thomas@research.local');
-    expect(mailer.sendEinladung).toHaveBeenCalledWith('thomas@research.local', result.passwortSetzenLink);
+    expect(prisma.nutzer.create.mock.calls[0][0].data.email).toBe(
+      'thomas@research.local',
+    );
+    expect(mailer.sendEinladung).toHaveBeenCalledWith(
+      'thomas@research.local',
+      result.passwortSetzenLink,
+    );
     expect(prisma.nutzer.create.mock.calls[0][0].data.passwortSetzenToken).toBe(
       hashPasswortSetzenToken(tokenAus(result.passwortSetzenLink)),
     );
@@ -35,7 +45,12 @@ describe('NutzerService', () => {
 
   it('liefert den Link trotzdem zurück, wenn der Mailversand scheitert', async () => {
     const prisma = {
-      nutzer: { create: vi.fn().mockImplementation(async ({ data }) => ({ id: 'nutzer-2', ...data })) },
+      nutzer: {
+        create: vi.fn().mockImplementation(async ({ data }) => ({
+          id: 'nutzer-2',
+          ...data,
+        })),
+      },
     };
     const mailer = mailerFake();
     mailer.sendEinladung.mockRejectedValue(new Error('SMTP down'));
@@ -56,7 +71,10 @@ describe('NutzerService', () => {
     it('setzt einen 24 h gültigen Token und mailt den Rohwert an den Nutzer', async () => {
       const prisma = {
         nutzer: {
-          findUnique: vi.fn().mockResolvedValue({ id: 'nutzer-2', email: 'thomas@research.local' }),
+          findUnique: vi.fn().mockResolvedValue({
+            id: 'nutzer-2',
+            email: 'thomas@research.local',
+          }),
           update: vi.fn(),
         },
       };
@@ -66,10 +84,13 @@ describe('NutzerService', () => {
 
       await service.sendePasswortLink('nutzer-2');
 
-      const [empfaenger, link] = mailer.sendPasswortSetzenLink.mock.calls[0] as [string, string];
+      const [empfaenger, link] = mailer.sendPasswortSetzenLink.mock
+        .calls[0] as [string, string];
       const data = prisma.nutzer.update.mock.calls[0][0].data;
       expect(empfaenger).toBe('thomas@research.local');
-      expect(data.passwortSetzenToken).toBe(hashPasswortSetzenToken(tokenAus(link)));
+      expect(data.passwortSetzenToken).toBe(
+        hashPasswortSetzenToken(tokenAus(link)),
+      );
       const gueltigMs = data.passwortSetzenTokenAblauf.getTime() - vorher;
       expect(gueltigMs).toBeGreaterThan(23 * 60 * 60 * 1000);
       expect(gueltigMs).toBeLessThanOrEqual(24 * 60 * 60 * 1000 + 1000);
@@ -103,7 +124,9 @@ describe('NutzerService', () => {
     expect(result.passwortSetzenLink).toContain('/passwort-setzen?token=');
     const rawToken = result.passwortSetzenLink.split('token=')[1];
     // Persisted value must be the hash of the raw token handed to the erstellenden Nutzer, not the raw token itself.
-    expect(createArgs.passwortSetzenToken).toBe(hashPasswortSetzenToken(rawToken));
+    expect(createArgs.passwortSetzenToken).toBe(
+      hashPasswortSetzenToken(rawToken),
+    );
     expect(result.email).toBe('max@research.local');
   });
 
@@ -118,12 +141,16 @@ describe('NutzerService', () => {
         passwortHash: 'geheim',
         passwortSetzenToken: 'token-geheim',
       };
-      const prisma = { nutzer: { findUniqueOrThrow: vi.fn().mockResolvedValue(nutzer) } };
+      const prisma = {
+        nutzer: { findUniqueOrThrow: vi.fn().mockResolvedValue(nutzer) },
+      };
       const service = new NutzerService(prisma as never, mailerFake() as never);
 
       const result = await service.findEigeneDaten('nutzer-1');
 
-      expect(prisma.nutzer.findUniqueOrThrow).toHaveBeenCalledWith({ where: { id: 'nutzer-1' } });
+      expect(prisma.nutzer.findUniqueOrThrow).toHaveBeenCalledWith({
+        where: { id: 'nutzer-1' },
+      });
       expect(result).toEqual({
         id: 'nutzer-1',
         vorname: 'Erika',
@@ -143,7 +170,9 @@ describe('NutzerService', () => {
         email: 'erika@research.local',
         standortId: 'standort-2',
       };
-      const prisma = { nutzer: { update: vi.fn().mockResolvedValue(aktualisiert) } };
+      const prisma = {
+        nutzer: { update: vi.fn().mockResolvedValue(aktualisiert) },
+      };
       const service = new NutzerService(prisma as never, mailerFake() as never);
 
       const result = await service.updateEigeneDaten('nutzer-1', {
@@ -154,7 +183,11 @@ describe('NutzerService', () => {
 
       expect(prisma.nutzer.update).toHaveBeenCalledWith({
         where: { id: 'nutzer-1' },
-        data: { vorname: 'Erika', nachname: 'Neuername', standortId: 'standort-2' },
+        data: {
+          vorname: 'Erika',
+          nachname: 'Neuername',
+          standortId: 'standort-2',
+        },
       });
       expect(result).toEqual({
         id: 'nutzer-1',
@@ -167,59 +200,99 @@ describe('NutzerService', () => {
   });
 
   describe('Standort als Freitext', () => {
-    function prismaMitStandorten(vorhandene: Array<{ id: string; name: string }>) {
+    function prismaMitStandorten(
+      vorhandene: Array<{ id: string; name: string }>,
+    ) {
       return {
         standort: {
           // Nachbau von "equals + mode: insensitive"
-          findFirst: vi.fn(async ({ where }) =>
-            vorhandene.find((s) => s.name.toLowerCase() === where.name.equals.toLowerCase()) ?? null,
+          findFirst: vi.fn(
+            async ({ where }) =>
+              vorhandene.find(
+                (s) => s.name.toLowerCase() === where.name.equals.toLowerCase(),
+              ) ?? null,
           ),
           create: vi.fn(async ({ data }) => ({ id: 'standort-neu', ...data })),
         },
         nutzer: {
           create: vi.fn(async ({ data }) => ({ id: 'nutzer-2', ...data })),
-          update: vi.fn(async ({ data }) => ({ id: 'nutzer-1', vorname: 'E', nachname: 'M', email: 'e@x.de', ...data })),
+          update: vi.fn(async ({ data }) => ({
+            id: 'nutzer-1',
+            vorname: 'E',
+            nachname: 'M',
+            email: 'e@x.de',
+            ...data,
+          })),
         },
       };
     }
     const neu = { vorname: 'Neu', nachname: 'N', email: 'neu@research.local' };
 
     it('nimmt einen vorhandenen Standort unabhängig von Groß-/Kleinschreibung statt eine Dublette anzulegen', async () => {
-      const prisma = prismaMitStandorten([{ id: 'standort-lg', name: 'Lüneburg' }]);
+      const prisma = prismaMitStandorten([
+        { id: 'standort-lg', name: 'Lüneburg' },
+      ]);
       const service = new NutzerService(prisma as never, mailerFake() as never);
 
-      await service.createNutzer('admin-1', { ...neu, neuerStandort: '  lüneburg ' });
+      await service.createNutzer('admin-1', {
+        ...neu,
+        neuerStandort: '  lüneburg ',
+      });
 
       expect(prisma.standort.create).not.toHaveBeenCalled();
-      expect(prisma.nutzer.create.mock.calls[0][0].data.standortId).toBe('standort-lg');
+      expect(prisma.nutzer.create.mock.calls[0][0].data.standortId).toBe(
+        'standort-lg',
+      );
     });
 
     it('legt einen unbekannten Standort neu an und ordnet den Nutzer zu', async () => {
       const prisma = prismaMitStandorten([]);
       const service = new NutzerService(prisma as never, mailerFake() as never);
 
-      await service.createNutzer('admin-1', { ...neu, neuerStandort: ' Winsen ' });
+      await service.createNutzer('admin-1', {
+        ...neu,
+        neuerStandort: ' Winsen ',
+      });
 
-      expect(prisma.standort.create).toHaveBeenCalledWith({ data: { name: 'Winsen' } });
-      expect(prisma.nutzer.create.mock.calls[0][0].data.standortId).toBe('standort-neu');
+      expect(prisma.standort.create).toHaveBeenCalledWith({
+        data: { name: 'Winsen' },
+      });
+      expect(prisma.nutzer.create.mock.calls[0][0].data.standortId).toBe(
+        'standort-neu',
+      );
     });
 
     it('lässt auch in den eigenen Einstellungen einen neuen Standort zu', async () => {
       const prisma = prismaMitStandorten([]);
       const service = new NutzerService(prisma as never, mailerFake() as never);
 
-      const result = await service.updateEigeneDaten('nutzer-1', { vorname: 'E', nachname: 'M', neuerStandort: 'Außenstelle Nord' });
+      const result = await service.updateEigeneDaten('nutzer-1', {
+        vorname: 'E',
+        nachname: 'M',
+        neuerStandort: 'Außenstelle Nord',
+      });
 
-      expect(prisma.standort.create).toHaveBeenCalledWith({ data: { name: 'Außenstelle Nord' } });
+      expect(prisma.standort.create).toHaveBeenCalledWith({
+        data: { name: 'Außenstelle Nord' },
+      });
       expect(result.standortId).toBe('standort-neu');
     });
 
     it('verlangt genau eins von beidem: Standort aus der Liste oder Freitext', async () => {
-      const service = new NutzerService(prismaMitStandorten([]) as never, mailerFake() as never);
+      const service = new NutzerService(
+        prismaMitStandorten([]) as never,
+        mailerFake() as never,
+      );
 
-      await expect(service.createNutzer('admin-1', { ...neu })).rejects.toBeInstanceOf(BadRequestException);
       await expect(
-        service.createNutzer('admin-1', { ...neu, standortId: 'standort-1', neuerStandort: 'Winsen' }),
+        service.createNutzer('admin-1', { ...neu }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      await expect(
+        service.createNutzer('admin-1', {
+          ...neu,
+          standortId: 'standort-1',
+          neuerStandort: 'Winsen',
+        }),
       ).rejects.toBeInstanceOf(BadRequestException);
     });
   });

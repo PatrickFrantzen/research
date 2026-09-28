@@ -46,17 +46,28 @@ export class Einstellungen {
 
   // Bis die eigenen Daten und die Standorte da sind, ist das Formular
   // gesperrt – sonst ließen sich leere Felder speichern (Issue #53).
-  protected readonly geladen = computed(() => this.eigeneDaten.hasValue() && this.standorte.hasValue());
-  protected readonly standortListe = computed(() => (this.standorte.hasValue() ? this.standorte.value() : []));
+  protected readonly geladen = computed(
+    () => this.eigeneDaten.hasValue() && this.standorte.hasValue(),
+  );
+  protected readonly standortListe = computed(() =>
+    this.standorte.hasValue() ? this.standorte.value() : [],
+  );
 
   protected readonly ANDERER_STANDORT = ANDERER_STANDORT;
-  protected readonly einstellungenDaten = signal({ vorname: '', nachname: '', standortId: '', neuerStandort: '' });
+  protected readonly einstellungenDaten = signal({
+    vorname: '',
+    nachname: '',
+    standortId: '',
+    neuerStandort: '',
+  });
   protected readonly einstellungenForm = form(this.einstellungenDaten, (pfad) => {
     disabled(pfad, { when: () => !this.geladen() });
     required(pfad.vorname);
     required(pfad.nachname);
     required(pfad.standortId);
-    required(pfad.neuerStandort, { when: () => this.einstellungenDaten().standortId === ANDERER_STANDORT });
+    required(pfad.neuerStandort, {
+      when: () => this.einstellungenDaten().standortId === ANDERER_STANDORT,
+    });
     maxLength(pfad.neuerStandort, 100);
   });
 
@@ -124,12 +135,18 @@ export class Einstellungen {
       );
       // Neu angelegten Standort in die Liste holen und auswählen.
       if (this.standortId === ANDERER_STANDORT) {
-        this.einstellungenDaten.update((daten) => ({ ...daten, standortId: gespeichert.standortId, neuerStandort: '' }));
+        this.einstellungenDaten.update((daten) => ({
+          ...daten,
+          standortId: gespeichert.standortId,
+          neuerStandort: '',
+        }));
         this.standorte.reload();
       }
       this.snackBar.open('Änderungen gespeichert.', undefined, { duration: 3000 });
     } catch (error) {
-      this.fehler.set(extrahiereFehlermeldung(error, 'Änderungen konnten nicht gespeichert werden.'));
+      this.fehler.set(
+        extrahiereFehlermeldung(error, 'Änderungen konnten nicht gespeichert werden.'),
+      );
     } finally {
       this.wirdGeladen.set(false);
     }

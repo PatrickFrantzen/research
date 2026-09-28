@@ -1,4 +1,10 @@
-import { mkdtempSync, readdirSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
+import {
+  mkdtempSync,
+  readdirSync,
+  rmSync,
+  utimesSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -23,7 +29,12 @@ describe('Protokoll', () => {
     const p = protokoll();
 
     p.aktivitaet(['max@example.com', 'Wareneintrag erstellt', 'id-1']);
-    p.fehler(['400', 'POST /api/v1/wareneintraege', 'max@example.com', 'Datei zu groß']);
+    p.fehler([
+      '400',
+      'POST /api/v1/wareneintraege',
+      'max@example.com',
+      'Datei zu groß',
+    ]);
 
     expect(p.lese('aktivitaet', '2026-09-27')).toBe(
       '2026-09-27 00:30:00 | max@example.com | Wareneintrag erstellt | id-1\n',
@@ -39,7 +50,9 @@ describe('Protokoll', () => {
 
     p.fehler(['App', 'boom\n2026-01-01 00:00:00 | gefälscht\r\nzeile']);
 
-    expect(p.lese('fehler', '2026-09-27')!.split('\n').filter(Boolean)).toHaveLength(1);
+    expect(
+      p.lese('fehler', '2026-09-27')!.split('\n').filter(Boolean),
+    ).toHaveLength(1);
   });
 
   it('liefert null für einen Tag ohne Datei oder ein ungültiges Datum', () => {
@@ -59,6 +72,9 @@ describe('Protokoll', () => {
 
     protokoll().aktivitaet(['x']);
 
-    expect(readdirSync(verzeichnis).sort()).toEqual(['aktivitaet-2026-09-20.log', 'aktivitaet-2026-09-27.log']);
+    expect(readdirSync(verzeichnis).sort()).toEqual([
+      'aktivitaet-2026-09-20.log',
+      'aktivitaet-2026-09-27.log',
+    ]);
   });
 });

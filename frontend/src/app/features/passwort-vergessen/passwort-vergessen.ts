@@ -10,7 +10,15 @@ import { FokusBeiAnzeige } from '../../core/fokus-bei-anzeige.js';
 
 @Component({
   selector: 'app-passwort-vergessen',
-  imports: [FokusBeiAnzeige, FormField, MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule, RouterLink],
+  imports: [
+    FokusBeiAnzeige,
+    FormField,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    RouterLink,
+  ],
   templateUrl: './passwort-vergessen.html',
 })
 export class PasswortVergessen {

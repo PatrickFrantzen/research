@@ -1,4 +1,3 @@
-
 // Include theming for Angular Material with `mat.theme()`.
 // This Sass mixin will define CSS variables that are used for styling Angular Material
 // components according to the Material 3 design spec.
@@ -41,14 +40,16 @@ html {
   color-scheme: light dark;
   // Markenpalette aus REMONDIS-Rot #ed1c24 und Anthrazit, siehe
   // _theme-colors.scss und docs/design/branding.md (Issue #17).
-  @include mat.theme((
-    color: (
-      primary: theme.$primary-palette,
-      tertiary: theme.$tertiary-palette,
-    ),
-    typography: Roboto,
-    density: 0,
-  ));
+  @include mat.theme(
+    (
+      color: (
+        primary: theme.$primary-palette,
+        tertiary: theme.$tertiary-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
 }
 
 body {

@@ -16,7 +16,9 @@ const HAEUFIGE_PASSWOERTER = new Set([
   'aaaaaaaaaaaa',
 ]);
 
-export function IstKeinHaeufigesPasswort(validationOptions?: ValidationOptions) {
+export function IstKeinHaeufigesPasswort(
+  validationOptions?: ValidationOptions,
+) {
   return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'istKeinHaeufigesPasswort',
@@ -25,7 +27,10 @@ export function IstKeinHaeufigesPasswort(validationOptions?: ValidationOptions) 
       options: validationOptions,
       validator: {
         validate(value: unknown): boolean {
-          return typeof value !== 'string' || !HAEUFIGE_PASSWOERTER.has(value.toLowerCase());
+          return (
+            typeof value !== 'string' ||
+            !HAEUFIGE_PASSWOERTER.has(value.toLowerCase())
+          );
         },
         defaultMessage(): string {
           return 'Dieses Passwort ist zu bekannt/unsicher, bitte ein anderes wählen.';
