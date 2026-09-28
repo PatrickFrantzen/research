@@ -228,7 +228,9 @@ export class WareneintragListe {
 
   bearbeitungOeffnen(wareneintrag: Wareneintrag): void {
     this.dialog
-      .open(WareneintragBearbeitenDialog, { data: { wareneintrag } })
+      // Fokus auf den Titel statt ins AVV-Feld: dessen Vorschlagsliste würde
+      // sonst sofort aufklappen und die Knöpfe darunter verdecken (Issue #104).
+      .open(WareneintragBearbeitenDialog, { data: { wareneintrag }, autoFocus: 'first-heading' })
       .afterClosed()
       .subscribe(() => {
         // Auch nach Abbrechen: Dateien löscht der Dialog sofort (Issue #104).

@@ -319,6 +319,8 @@ test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen 
   // ... Foto löschen wirkt sofort, "Ja" entfernt auch die Analyse. Danach
   // ließe sich direkt ein neues Foto wählen, hier wird abgebrochen.
   await page.getByTestId('wareneintrag-bearbeiten').click();
+  // Fokus auf dem Titel, die AVV-Vorschläge bleiben zu und verdecken nichts.
+  await expect(bearbeiten.getByRole('heading', { name: 'Wareneintrag bearbeiten' })).toBeFocused();
   await bearbeiten.getByTestId('bearbeiten-loeschen-fotoFern').click();
   await page
     .getByRole('dialog', { name: 'Fernansicht löschen?' })
