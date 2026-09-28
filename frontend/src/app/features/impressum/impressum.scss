@@ -8,13 +8,5 @@ h2 {
 }
 
 p {
-  margin: 0;
-}
-
-// Deutlich erkennbar, solange die echten Pflichtangaben fehlen.
-.platzhalter {
-  background: var(--mat-sys-tertiary-container);
-  color: var(--mat-sys-on-tertiary-container);
-  padding: 0 4px;
-  border-radius: var(--mat-sys-corner-extra-small);
+  margin: 0 0 8px;
 }
