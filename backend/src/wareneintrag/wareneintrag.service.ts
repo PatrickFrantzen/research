@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { fileTypeFromBuffer } from 'file-type';
 import { Prisma } from '../generated/prisma/client.js';
 import { ObjectStorageService } from '../object-storage/object-storage.service.js';
@@ -211,6 +215,11 @@ export class WareneintragService {
     fotos: WareneintragDateien,
   ) {
     const bestehend = await this.pruefeBesitz(id, nutzerId);
+    const entfernen = new Set(dto.entfernen ?? []);
+    if ([...entfernen].some((feld) => fotos[feld]))
+      throw new BadRequestException(
+        'Eine Datei kann nicht gleichzeitig ersetzt und gelöscht werden.',
+      );
 
     // Altes Foto ersetzen: erst neues hochladen, dann altes im Objektspeicher
     // entfernen, um verwaiste Referenzen bei einem Fehlschlag zu vermeiden.
@@ -222,31 +231,36 @@ export class WareneintragService {
         this.ersetzeFoto(bestehend.dokumentUrl, fotos.dokument),
       ]);
 
-    // Andere Fotos, andere Grundlage: die gespeicherte KI-Analyse passt nicht
-    // mehr und wird gelöscht, ein falsches Ergebnis ist schlimmer als keins
-    // (Issue #96). Vor dem Update, damit ein späterer Fehler sie nicht stehen
-    // lässt. Freitext, AVV-Code und PDF (wird nicht analysiert, Issue #103)
-    // lassen sie unberührt.
-    const fotosGeaendert =
-      fotoFernUrl !== bestehend.fotoFernUrl ||
-      fotoNahUrl !== bestehend.fotoNahUrl ||
-      fotoDetailUrl !== bestehend.fotoDetailUrl;
-    if (fotosGeaendert)
+    // Ob die KI-Analyse nach geänderten Fotos noch passt, entscheidet der
+    // Nutzer per Rückfrage (Issue #104, löst das automatische Löschen aus
+    // #96 ab). Vor dem Update, damit ein späterer Fehler sie nicht stehen
+    // lässt.
+    if (dto.analyseLoeschen)
       await this.prisma.wareneintragAnalyse.deleteMany({
         where: { wareneintragId: id },
       });
 
-    return this.prisma.wareneintrag.update({
+    const aktualisiert = await this.prisma.wareneintrag.update({
       where: { id },
       data: {
         avvCodeId: dto.avvCodeId,
         freitext: dto.freitext,
-        fotoFernUrl,
-        fotoNahUrl,
-        fotoDetailUrl,
-        dokumentUrl,
+        fotoFernUrl: entfernen.has('fotoFern') ? null : fotoFernUrl,
+        fotoNahUrl: entfernen.has('fotoNah') ? null : fotoNahUrl,
+        fotoDetailUrl: entfernen.has('fotoDetail') ? null : fotoDetailUrl,
+        dokumentUrl: entfernen.has('dokument') ? null : dokumentUrl,
       },
     });
+
+    // Gelöschte Dateien erst nach dem Update aus dem Objektspeicher nehmen,
+    // damit der Eintrag nie auf ein fehlendes Objekt zeigt.
+    await Promise.all(
+      [...entfernen]
+        .map((feld) => bestehend[`${feld}Url`])
+        .filter((key): key is string => key !== null)
+        .map((key) => this.objectStorage.deleteFoto(key)),
+    );
+    return aktualisiert;
   }
 
   private async ersetzeFoto(
