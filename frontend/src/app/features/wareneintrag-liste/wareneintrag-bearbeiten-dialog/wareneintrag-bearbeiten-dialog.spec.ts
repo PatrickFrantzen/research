@@ -75,6 +75,19 @@ describe('WareneintragBearbeitenDialog', () => {
     return fixture;
   }
 
+  // Gleiche Dateitypen wie beim Erfassen (Issue #117).
+  it('offers only the image types the server accepts for camera and gallery', () => {
+    const fixture = createComponent();
+    const inputs = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        '[data-testid^="bearbeiten-kamera-"], [data-testid^="bearbeiten-foto-"]',
+      ) as NodeListOf<HTMLInputElement>,
+    );
+
+    expect(inputs.length).toBe(6);
+    inputs.forEach((input) => expect(input.accept).toBe('image/jpeg,image/png,image/webp'));
+  });
+
   it('replaces the PDF: shows the chosen file name and sends it as dokument (Issue #103)', async () => {
     const fixture = createComponent();
     const element = fixture.nativeElement as HTMLElement;
