@@ -24,25 +24,16 @@ import { RouterLink } from '@angular/router';
 import { debounceTime, distinctUntilChanged, firstValueFrom, Subject } from 'rxjs';
 import { AvvCode, AvvCodeApi } from '../../core/avv-code-api.js';
 import { AppFehlerMelder } from '../../core/app-fehler-melder.js';
-import { beschreibeFoto, pruefeDokument, uebernehmeFoto } from '../../core/foto-validierung.js';
+import {
+  FOTO_ACCEPT,
+  FOTO_KACHELN,
+  FotoAnsicht,
+  waehleDokument,
+  waehleFoto,
+} from '../../core/foto-validierung.js';
 import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
 import { FREITEXT_MAX_LAENGE, WareneintragApi } from '../../core/wareneintrag-api.js';
 import { FokusBeiAnzeige } from '../../core/fokus-bei-anzeige.js';
-
-// Die drei Ansichten sind optional – der Nutzer entscheidet selbst, wie
-// viele Fotos er aufnimmt (0 bis 3), siehe CONTEXT.md.
-type FotoAnsicht = 'fotoFern' | 'fotoNah' | 'fotoDetail';
-
-interface FotoKachel {
-  ansicht: FotoAnsicht;
-  label: string;
-}
-
-const FOTO_KACHELN: FotoKachel[] = [
-  { ansicht: 'fotoFern', label: 'Fernansicht' },
-  { ansicht: 'fotoNah', label: 'Nahansicht' },
-  { ansicht: 'fotoDetail', label: 'Detailansicht' },
-];
 
 // Verzögerung, bevor die AVV-Suche pro Tastenanschlag ausgelöst wird – die
 // Liste hat 834 Einträge (Spezifikation Abschnitt 3.1), Anfragen bei jedem
@@ -72,6 +63,7 @@ export class WareneintragErfassen {
   private readonly snackBar = inject(MatSnackBar);
 
   protected readonly fotoKacheln = FOTO_KACHELN;
+  protected readonly fotoAccept = FOTO_ACCEPT;
   private readonly fotos: Record<FotoAnsicht, File | null> = {
     fotoFern: null,
     fotoNah: null,
@@ -143,24 +135,16 @@ export class WareneintragErfassen {
   }
 
   async onFotoAusgewaehlt(ansicht: FotoAnsicht, event: Event): Promise<void> {
-    const input = event.target as HTMLInputElement;
-    const auswahl = input.files?.[0] ?? null;
-    const { datei, meldung } = auswahl
-      ? await uebernehmeFoto(auswahl)
-      : { datei: null, meldung: null };
-    const label = this.fotoKacheln.find((kachel) => kachel.ansicht === ansicht)?.label;
-    this.fotoFehler.set(meldung ? `${label}: ${meldung}` : null);
-    if (meldung && auswahl)
-      this.fehlerMelder.melde(`Foto abgelehnt: ${label}: ${meldung} ${beschreibeFoto(auswahl)}`);
+    const { datei, fehler } = await waehleFoto(ansicht, event, this.fehlerMelder);
+    this.fotoFehler.set(fehler);
     this.fotos[ansicht] = datei;
     this.setzeFotoVorschau(ansicht, datei);
   }
 
   onDokumentAusgewaehlt(event: Event): void {
-    const auswahl = (event.target as HTMLInputElement).files?.[0] ?? null;
-    const meldung = auswahl ? pruefeDokument(auswahl) : null;
-    this.fotoFehler.set(meldung ? `Dokument (PDF): ${meldung}` : null);
-    this.dokument.set(meldung ? null : auswahl);
+    const { datei, fehler } = waehleDokument(event);
+    this.fotoFehler.set(fehler);
+    this.dokument.set(datei);
   }
 
   // Object-URLs halten die Datei im Speicher, bis sie freigegeben werden –

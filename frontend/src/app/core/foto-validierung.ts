@@ -1,8 +1,49 @@
+import { AppFehlerMelder } from './app-fehler-melder.js';
+
 // Clientseitige Vorprüfung von Foto-Uploads (Issue #59): lehnt falsche
 // Dateitypen vor dem Request verständlich ab. Verbindliche Grenze bleibt das
 // Backend (Magic-Byte-Prüfung, Größenlimit UPLOAD_MAX_MB pro Server, dessen
 // Meldung die App anzeigt, Issue #102).
 export const ERLAUBTE_FOTO_TYPEN = ['image/jpeg', 'image/png', 'image/webp'];
+// Für das accept-Attribut der Kamera-/Galerie-Inputs, damit es nicht von
+// der Prüfung abweicht.
+export const FOTO_ACCEPT = ERLAUBTE_FOTO_TYPEN.join(',');
+
+// Die drei Ansichten sind optional – der Nutzer entscheidet beim Erfassen
+// wie beim Bearbeiten selbst, wie viele Fotos er aufnimmt (0 bis 3), siehe
+// CONTEXT.md.
+export type FotoAnsicht = 'fotoFern' | 'fotoNah' | 'fotoDetail';
+
+export const FOTO_KACHELN: { ansicht: FotoAnsicht; label: string }[] = [
+  { ansicht: 'fotoFern', label: 'Fernansicht' },
+  { ansicht: 'fotoNah', label: 'Nahansicht' },
+  { ansicht: 'fotoDetail', label: 'Detailansicht' },
+];
+
+// Gemeinsame Auswahl für Erfassen und Bearbeiten (Issue #117): geprüfte
+// Datei oder Fehlermeldung für die Anzeige; abgelehnte Fotos gehen ins
+// Fehler-Log.
+export async function waehleFoto(
+  ansicht: FotoAnsicht,
+  event: Event,
+  fehlerMelder: AppFehlerMelder,
+): Promise<{ datei: File | null; fehler: string | null }> {
+  const auswahl = (event.target as HTMLInputElement).files?.[0] ?? null;
+  if (!auswahl) return { datei: null, fehler: null };
+  const { datei, meldung } = await uebernehmeFoto(auswahl);
+  if (!meldung) return { datei, fehler: null };
+  const label = FOTO_KACHELN.find((kachel) => kachel.ansicht === ansicht)?.label;
+  fehlerMelder.melde(`Foto abgelehnt: ${label}: ${meldung} ${beschreibeFoto(auswahl)}`);
+  return { datei: null, fehler: `${label}: ${meldung}` };
+}
+
+export function waehleDokument(event: Event): { datei: File | null; fehler: string | null } {
+  const auswahl = (event.target as HTMLInputElement).files?.[0] ?? null;
+  const meldung = auswahl ? pruefeDokument(auswahl) : null;
+  return meldung
+    ? { datei: null, fehler: `Dokument (PDF): ${meldung}` }
+    : { datei: auswahl, fehler: null };
+}
 
 // Optionales PDF am Wareneintrag (Issue #103), das Backend prüft die Magic Bytes.
 export function pruefeDokument(datei: File): string | null {

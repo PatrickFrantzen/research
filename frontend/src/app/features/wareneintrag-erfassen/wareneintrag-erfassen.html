@@ -15,7 +15,7 @@
               <input
                 #kameraInput
                 type="file"
-                accept="image/jpeg,image/png,image/webp"
+                [accept]="fotoAccept"
                 capture="environment"
                 [attr.data-testid]="'kamera-' + kachel.ansicht"
                 (change)="onFotoAusgewaehlt(kachel.ansicht, $event)"
@@ -24,7 +24,7 @@
               <input
                 #galerieInput
                 type="file"
-                accept="image/jpeg,image/png,image/webp"
+                [accept]="fotoAccept"
                 [attr.data-testid]="'galerie-' + kachel.ansicht"
                 (change)="onFotoAusgewaehlt(kachel.ansicht, $event)"
                 hidden
