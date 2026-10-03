@@ -33,11 +33,7 @@ import { LadeZustand } from '../../core/lade-zustand/lade-zustand.js';
 import { DeutscherPaginatorIntl } from '../../core/paginator-intl.js';
 import { StandortApi } from '../../core/standort-api.js';
 import { Wareneintrag, WareneintragApi } from '../../core/wareneintrag-api.js';
-import { WareneintragBearbeitenDialog } from './wareneintrag-bearbeiten-dialog/wareneintrag-bearbeiten-dialog.js';
-import {
-  fotosVon,
-  WareneintragDetailDialog,
-} from './wareneintrag-detail-dialog/wareneintrag-detail-dialog.js';
+import { fotosVon } from './fotos.js';
 
 // Verzögerung, bevor Filteränderungen die Liste neu laden – analog zur
 // AVV-Suche in wareneintrag-erfassen.
@@ -218,7 +214,11 @@ export class WareneintragListe {
 
   protected readonly fotosVon = fotosVon;
 
-  detailOeffnen(wareneintrag: Wareneintrag, startFoto: number): void {
+  // Dialoge per dynamischem Import: ihr Code (inkl. Tooltip, Progress-Bar
+  // usw.) lädt erst beim Öffnen statt mit der Liste (Issue #116).
+  async detailOeffnen(wareneintrag: Wareneintrag, startFoto: number): Promise<void> {
+    const { WareneintragDetailDialog } =
+      await import('./wareneintrag-detail-dialog/wareneintrag-detail-dialog.js');
     this.dialog.open(WareneintragDetailDialog, {
       data: { wareneintrag, startFoto },
       maxWidth: '100vw',
@@ -226,7 +226,9 @@ export class WareneintragListe {
     });
   }
 
-  bearbeitungOeffnen(wareneintrag: Wareneintrag): void {
+  async bearbeitungOeffnen(wareneintrag: Wareneintrag): Promise<void> {
+    const { WareneintragBearbeitenDialog } =
+      await import('./wareneintrag-bearbeiten-dialog/wareneintrag-bearbeiten-dialog.js');
     this.dialog
       // Fokus auf den Titel statt ins AVV-Feld: dessen Vorschlagsliste würde
       // sonst sofort aufklappen und die Knöpfe darunter verdecken (Issue #104).

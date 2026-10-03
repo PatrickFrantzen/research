@@ -604,8 +604,20 @@ describe('WareneintragListe', () => {
     expect(datum.textContent?.trim()).toBe('19.09.2026, 20:08');
   }));
 
+  // Die Liste lädt ihre Dialoge per import() (Issue #116), außerhalb der
+  // Zone und damit von fakeAsync. Dieselben Imports hier abwarten: die der
+  // Liste wurden vorher angestoßen und sind dann ebenfalls durch.
+  async function dialogeGeladen() {
+    await import('./wareneintrag-detail-dialog/wareneintrag-detail-dialog.js');
+    await import('./wareneintrag-bearbeiten-dialog/wareneintrag-bearbeiten-dialog.js');
+    await new Promise((resolve) => setTimeout(resolve));
+  }
+
   describe('Detail-Dialog (Issue #92)', () => {
-    function listeMitEintrag(fotos: { fotoFernUrl: string | null; fotoNahUrl: string | null }) {
+    async function listeMitEintrag(fotos: {
+      fotoFernUrl: string | null;
+      fotoNahUrl: string | null;
+    }) {
       spyOn(dialog, 'open').and.returnValue({
         afterClosed: () => of(undefined),
       } as MatDialogRef<unknown>);
@@ -630,7 +642,7 @@ describe('WareneintragListe', () => {
           ],
           gesamt: 1,
         });
-      tick();
+      await fixture.whenStable();
       fixture.detectChanges();
       const element = fixture.nativeElement as HTMLElement;
       const startFotos = () =>
@@ -638,43 +650,53 @@ describe('WareneintragListe', () => {
       return { element, startFotos };
     }
 
-    it('opens at the first foto when the card is clicked', fakeAsync(() => {
-      const { element, startFotos } = listeMitEintrag({
+    it('opens at the first foto when the card is clicked', async () => {
+      const { element, startFotos } = await listeMitEintrag({
         fotoFernUrl: '/fern.jpg',
         fotoNahUrl: '/nah.jpg',
       });
       (element.querySelector('[data-testid="wareneintrag-karte"] p') as HTMLElement).click();
+      await dialogeGeladen();
       expect(startFotos()).toEqual([0]);
-    }));
+    });
 
-    it('opens exactly once at foto N when foto N is clicked', fakeAsync(() => {
-      const { element, startFotos } = listeMitEintrag({
+    it('opens exactly once at foto N when foto N is clicked', async () => {
+      const { element, startFotos } = await listeMitEintrag({
         fotoFernUrl: '/fern.jpg',
         fotoNahUrl: '/nah.jpg',
       });
       (element.querySelectorAll('.foto-button')[1] as HTMLButtonElement).click();
+      await dialogeGeladen();
       expect(startFotos()).toEqual([1]);
-    }));
+    });
 
-    it('opens exactly once via the title button, also without fotos', fakeAsync(() => {
-      const { element, startFotos } = listeMitEintrag({ fotoFernUrl: null, fotoNahUrl: null });
+    it('opens exactly once via the title button, also without fotos', async () => {
+      const { element, startFotos } = await listeMitEintrag({
+        fotoFernUrl: null,
+        fotoNahUrl: null,
+      });
       (element.querySelector('[data-testid="wareneintrag-details"]') as HTMLButtonElement).click();
+      await dialogeGeladen();
       expect(startFotos()).toEqual([0]);
-    }));
+    });
 
-    it('does not open the details when Bearbeiten or Löschen is clicked', fakeAsync(() => {
-      const { element } = listeMitEintrag({ fotoFernUrl: null, fotoNahUrl: null });
+    it('does not open the details when Bearbeiten or Löschen is clicked', async () => {
+      const { element } = await listeMitEintrag({
+        fotoFernUrl: null,
+        fotoNahUrl: null,
+      });
       (
         element.querySelector('[data-testid="wareneintrag-bearbeiten"]') as HTMLButtonElement
       ).click();
       (element.querySelector('[data-testid="wareneintrag-loeschen"]') as HTMLButtonElement).click();
+      await dialogeGeladen();
       const geoeffnet = (dialog.open as jasmine.Spy).calls.allArgs().map((args) => args[0].name);
       expect(geoeffnet).not.toContain('WareneintragDetailDialog');
       expect(geoeffnet.length).toBe(2);
-    }));
+    });
   });
 
-  it('opens the edit dialog with the selected Wareneintrag and reloads the list once it closes successfully', fakeAsync(() => {
+  it('opens the edit dialog with the selected Wareneintrag and reloads the list once it closes successfully', async () => {
     dialogSchliesstMit(true);
     const fixture = TestBed.createComponent(WareneintragListe);
     fixture.detectChanges();
@@ -694,22 +716,22 @@ describe('WareneintragListe', () => {
     httpMock
       .expectOne((req) => req.url === '/api/v1/wareneintraege')
       .flush({ daten: [wareneintrag], gesamt: 1 });
-    tick();
+    await fixture.whenStable();
     fixture.detectChanges();
 
-    fixture.componentInstance.bearbeitungOeffnen(wareneintrag as never);
+    await fixture.componentInstance.bearbeitungOeffnen(wareneintrag as never);
 
     expect(dialog.open).toHaveBeenCalled();
     const data = (dialog.open as jasmine.Spy).calls.mostRecent().args[1].data;
     expect(data.wareneintrag).toEqual(wareneintrag);
-    tick();
+    await fixture.whenStable();
     fixture.detectChanges();
     httpMock
       .expectOne((req) => req.url === '/api/v1/wareneintraege')
       .flush({ daten: [], gesamt: 0 });
-  }));
+  });
 
-  it('reloads the list even when the edit dialog is cancelled', fakeAsync(() => {
+  it('reloads the list even when the edit dialog is cancelled', async () => {
     dialogSchliesstMit(undefined);
     const fixture = TestBed.createComponent(WareneintragListe);
     fixture.detectChanges();
@@ -717,10 +739,10 @@ describe('WareneintragListe', () => {
     httpMock
       .expectOne((req) => req.url === '/api/v1/wareneintraege')
       .flush({ daten: [], gesamt: 0 });
-    tick();
+    await fixture.whenStable();
     fixture.detectChanges();
 
-    fixture.componentInstance.bearbeitungOeffnen({
+    await fixture.componentInstance.bearbeitungOeffnen({
       id: 'wareneintrag-1',
       fotoFernUrl: '/foto.jpg',
       fotoNahUrl: null,
@@ -732,7 +754,7 @@ describe('WareneintragListe', () => {
       standort: { id: 'standort-1', name: 'Hauptsitz' },
       erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
     } as never);
-    tick();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     // Der Dialog löscht Dateien sofort, daher auch nach Abbrechen neu laden (Issue #104).
@@ -740,7 +762,7 @@ describe('WareneintragListe', () => {
       .expectOne((req) => req.url === '/api/v1/wareneintraege')
       .flush({ daten: [], gesamt: 0 });
     expect().nothing();
-  }));
+  });
 
   it('deletes a Wareneintrag after confirmation and reloads the list', fakeAsync(() => {
     dialogSchliesstMit(true);
