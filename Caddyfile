@@ -13,3 +13,8 @@
 {$FILES_DOMAIN} {
 	reverse_proxy minio:9000
 }
+
+# Weitere Apps auf demselben Server (z.B. suetterlin) bringen ihre Site als
+# Datei in /srv/caddy-sites mit und hängen am Docker-Netz "web". Ohne Dateien
+# importiert das nichts.
+import /etc/caddy/sites/*.caddy
