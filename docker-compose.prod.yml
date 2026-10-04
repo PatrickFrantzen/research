@@ -20,8 +20,11 @@ services:
       FILES_DOMAIN: ${FILES_DOMAIN}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Sites weiterer Apps auf dem Server, siehe Caddyfile.
+      - /srv/caddy-sites:/etc/caddy/sites:ro
       - caddy-data:/data
       - caddy-config:/config
+    networks: [default, web]
     depends_on:
       - app
 
@@ -144,6 +147,11 @@ services:
         mc admin policy create local research-app-policy /tmp/research-app-policy.json &&
         mc admin policy attach local research-app-policy --user research-app
       "
+
+networks:
+  # Gemeinsames Netz mit weiteren Apps (z.B. suetterlin), nur Caddy hängt hier.
+  web:
+    name: web
 
 volumes:
   app-logs:
