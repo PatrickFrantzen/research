@@ -32,7 +32,7 @@ import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
 import { LadeZustand } from '../../core/lade-zustand/lade-zustand.js';
 import { DeutscherPaginatorIntl } from '../../core/paginator-intl.js';
 import { StandortApi } from '../../core/standort-api.js';
-import { Wareneintrag, WareneintragApi } from '../../core/wareneintrag-api.js';
+import { AvvSortierung, Wareneintrag, WareneintragApi } from '../../core/wareneintrag-api.js';
 import { fotosVon } from './fotos.js';
 
 // Verzögerung, bevor Filteränderungen die Liste neu laden – analog zur
@@ -77,6 +77,10 @@ export class WareneintragListe {
   protected readonly avvFilterAnzeige = signal<string | null>(null);
   readonly standortId = signal<string | null>(null);
   readonly suche = signal('');
+  // "JJJJ-MM-TT" aus dem Datumsfeld, null = keine Grenze.
+  readonly datumVon = signal<string | null>(null);
+  readonly datumBis = signal<string | null>(null);
+  readonly sortierung = signal<AvvSortierung | null>(null);
   readonly seite = signal(0);
   readonly proSeite = signal(20);
 
@@ -108,6 +112,9 @@ export class WareneintragListe {
       avvCodeId: this.avvCodeId(),
       standortId: this.standortId(),
       suche: this.suche(),
+      datumVon: this.datumVon(),
+      datumBis: this.datumBis(),
+      sortierung: this.sortierung(),
       seite: this.seite(),
       proSeite: this.proSeite(),
     }),
@@ -179,6 +186,32 @@ export class WareneintragListe {
     this.onStandortGewaehlt(null);
   }
 
+  onDatumVonGeaendert(wert: string): void {
+    this.datumVon.set(wert || null);
+    this.seite.set(0);
+  }
+
+  onDatumBisGeaendert(wert: string): void {
+    this.datumBis.set(wert || null);
+    this.seite.set(0);
+  }
+
+  datumFilterEntfernen(): void {
+    this.onDatumVonGeaendert('');
+    this.onDatumBisGeaendert('');
+  }
+
+  onSortierungGewaehlt(sortierung: AvvSortierung | null): void {
+    this.sortierung.set(sortierung);
+    this.seite.set(0);
+  }
+
+  // "2026-10-20" -> "20.10.2026", ohne Date (keine Zeitzonenverschiebung).
+  protected deutschesDatum(iso: string): string {
+    const [jahr, monat, tag] = iso.split('-');
+    return `${tag}.${monat}.${jahr}`;
+  }
+
   sucheEntfernen(): void {
     this.filterDaten.update((daten) => ({ ...daten, suche: '' }));
     this.suche.set('');
@@ -191,6 +224,8 @@ export class WareneintragListe {
   filterZuruecksetzen(): void {
     this.avvFilterEntfernen();
     this.standortFilterEntfernen();
+    this.datumFilterEntfernen();
+    this.onSortierungGewaehlt(null);
     this.sucheEntfernen();
     this.avvSucheAnzeige = '';
   }

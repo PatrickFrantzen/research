@@ -1,4 +1,4 @@
-import { provideHttpClient } from '@angular/common/http';
+import { HttpParams, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
@@ -348,6 +348,116 @@ describe('WareneintragListe', () => {
       expect(input.value).toBe('');
       expect(fixture.nativeElement.querySelector('[data-testid="filter-avv"]')).not.toBeNull();
     }));
+
+    describe('Erfassungsdatum und AVV-Sortierung (Issue #131)', () => {
+      function ladeListe() {
+        const fixture = TestBed.createComponent(WareneintragListe);
+        fixture.detectChanges();
+        httpMock.expectOne((req) => req.url === '/api/v1/avv-codes').flush([]);
+        httpMock
+          .expectOne((req) => req.url === '/api/v1/wareneintraege')
+          .flush({ daten: [], gesamt: 0 });
+        tick();
+        fixture.detectChanges();
+        return { fixture, element: fixture.nativeElement as HTMLElement };
+      }
+
+      function erwarteAbfrage(pruefung: (params: HttpParams) => boolean) {
+        const request = httpMock.expectOne(
+          (req) => req.url === '/api/v1/wareneintraege' && pruefung(req.params),
+        );
+        request.flush({ daten: [], gesamt: 0 });
+      }
+
+      it('filters by the date range, shows it as one removable chip and starts on page 1', fakeAsync(() => {
+        const { fixture, element } = ladeListe();
+        fixture.componentInstance.onSeitenwechsel({ pageIndex: 2, pageSize: 20, length: 99 });
+        fixture.detectChanges();
+        tick();
+        erwarteAbfrage((p) => p.get('seite') === '2');
+
+        const von = element.querySelector('[data-testid="datum-von"]') as HTMLInputElement;
+        von.value = '2026-10-20';
+        von.dispatchEvent(new Event('change'));
+        fixture.detectChanges();
+        tick();
+        erwarteAbfrage((p) => p.get('datumVon') === '2026-10-20' && p.get('seite') === '0');
+
+        const bis = element.querySelector('[data-testid="datum-bis"]') as HTMLInputElement;
+        bis.value = '2026-10-21';
+        bis.dispatchEvent(new Event('change'));
+        fixture.detectChanges();
+        tick();
+        erwarteAbfrage(
+          (p) => p.get('datumVon') === '2026-10-20' && p.get('datumBis') === '2026-10-21',
+        );
+
+        const chip = element.querySelector('[data-testid="filter-datum"]');
+        expect(chip?.textContent).toContain('20.10.2026');
+        expect(chip?.textContent).toContain('21.10.2026');
+
+        (chip?.querySelector('[matChipRemove]') as HTMLButtonElement).click();
+        fixture.detectChanges();
+        tick();
+        erwarteAbfrage((p) => !p.has('datumVon') && !p.has('datumBis'));
+        expect(element.querySelector('[data-testid="filter-datum"]')).toBeNull();
+        expect(von.value).toBe('');
+      }));
+
+      it('treats a cleared date field as no filter', fakeAsync(() => {
+        const { fixture, element } = ladeListe();
+        const von = element.querySelector('[data-testid="datum-von"]') as HTMLInputElement;
+        von.value = '2026-10-20';
+        von.dispatchEvent(new Event('change'));
+        fixture.detectChanges();
+        tick();
+        erwarteAbfrage((p) => p.get('datumVon') === '2026-10-20');
+
+        von.value = '';
+        von.dispatchEvent(new Event('change'));
+        fixture.detectChanges();
+        tick();
+        erwarteAbfrage((p) => !p.has('datumVon'));
+      }));
+
+      it('sorts by AVV number ascending or descending and resets to the default', fakeAsync(() => {
+        const { fixture } = ladeListe();
+        const komponente = fixture.componentInstance;
+
+        komponente.onSortierungGewaehlt('avv-auf');
+        fixture.detectChanges();
+        tick();
+        erwarteAbfrage((p) => p.get('sortierung') === 'avv-auf');
+
+        komponente.onSortierungGewaehlt('avv-ab');
+        fixture.detectChanges();
+        tick();
+        erwarteAbfrage((p) => p.get('sortierung') === 'avv-ab');
+
+        komponente.filterZuruecksetzen();
+        fixture.detectChanges();
+        tick();
+        erwarteAbfrage((p) => !p.has('sortierung'));
+      }));
+
+      it('resets the date range with "Filter zurücksetzen"', fakeAsync(() => {
+        const { fixture, element } = ladeListe();
+        const von = element.querySelector('[data-testid="datum-von"]') as HTMLInputElement;
+        von.value = '2026-10-20';
+        von.dispatchEvent(new Event('change'));
+        fixture.detectChanges();
+        tick();
+        erwarteAbfrage((p) => p.get('datumVon') === '2026-10-20');
+
+        (
+          element.querySelector('[data-testid="filter-zuruecksetzen"]') as HTMLButtonElement
+        ).click();
+        fixture.detectChanges();
+        tick();
+        erwarteAbfrage((p) => !p.has('datumVon'));
+        expect(von.value).toBe('');
+      }));
+    });
 
     it('filters by the chosen Standort and shows it as a removable chip', fakeAsync(() => {
       const fixture = TestBed.createComponent(WareneintragListe);

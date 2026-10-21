@@ -31,4 +31,29 @@ describe('WareneintragApi', () => {
     expect(request.request.method).toBe('GET');
     request.flush({ daten: [], gesamt: 0 });
   });
+
+  it('sends date range and AVV sorting only when set (Issue #131)', () => {
+    api
+      .liste({
+        avvCodeId: null,
+        suche: '',
+        seite: 0,
+        proSeite: 20,
+        datumVon: '2026-10-20',
+        datumBis: '2026-10-21',
+        sortierung: 'avv-ab',
+      })
+      .subscribe();
+    const mit = httpMock.expectOne(
+      (req) =>
+        req.params.get('datumVon') === '2026-10-20' &&
+        req.params.get('datumBis') === '2026-10-21' &&
+        req.params.get('sortierung') === 'avv-ab',
+    );
+    mit.flush({ daten: [], gesamt: 0 });
+
+    api.liste({ avvCodeId: null, suche: '', seite: 0, proSeite: 20 }).subscribe();
+    const ohne = httpMock.expectOne('/api/v1/wareneintraege?seite=0&proSeite=20');
+    ohne.flush({ daten: [], gesamt: 0 });
+  });
 });

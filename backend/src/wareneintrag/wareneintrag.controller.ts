@@ -34,12 +34,28 @@ import {
 } from './dto/entferne-datei.dto.js';
 import { UpdateWareneintragDto } from './dto/update-wareneintrag.dto.js';
 import {
+  Sortierung,
   WareneintragDateien,
   WareneintragService,
 } from './wareneintrag.service.js';
 
 const UPLOAD_MAX_MB = uploadMaxMb();
 const STANDARD_PRO_SEITE = 20;
+// Standard ohne Angabe: neueste zuerst.
+const SORTIERUNGEN: string[] = ['avv-auf', 'avv-ab'];
+
+// "JJJJ-MM-TT", und zwar ein Datum, das es gibt (nicht 2026-02-30).
+function pruefeDatum(wert: string | undefined, name: string): void {
+  if (wert === undefined) return;
+  const zeitpunkt = Date.parse(`${wert}T00:00:00Z`);
+  const gueltig =
+    /^\d{4}-\d{2}-\d{2}$/.test(wert) &&
+    !Number.isNaN(zeitpunkt) &&
+    new Date(zeitpunkt).toISOString().startsWith(wert);
+  if (!gueltig) {
+    throw new BadRequestException(`${name} muss ein Datum JJJJ-MM-TT sein.`);
+  }
+}
 const MAX_PRO_SEITE = 100;
 
 // Enges Whitelisting statt `/^image\//`: verhindert riskante Subtypen wie
@@ -145,7 +161,20 @@ export class WareneintragController {
     @Query('seite') seite?: string,
     @Query('proSeite') proSeite?: string,
     @Query('standortId') standortId?: string,
+    @Query('datumVon') datumVon?: string,
+    @Query('datumBis') datumBis?: string,
+    @Query('sortierung') sortierung?: string,
   ) {
+    pruefeDatum(datumVon, 'datumVon');
+    pruefeDatum(datumBis, 'datumBis');
+    if (datumVon && datumBis && datumVon > datumBis) {
+      throw new BadRequestException('datumBis darf nicht vor datumVon liegen.');
+    }
+    if (sortierung !== undefined && !SORTIERUNGEN.includes(sortierung)) {
+      throw new BadRequestException(
+        `sortierung muss ${SORTIERUNGEN.join(' oder ')} sein.`,
+      );
+    }
     const seitenNummer = this.parseGanzeZahl(
       seite,
       0,
@@ -164,6 +193,9 @@ export class WareneintragController {
       avvCodeId,
       standortId,
       suche,
+      datumVon,
+      datumBis,
+      sortierung: sortierung as Sortierung | undefined,
       seite: seitenNummer,
       proSeite: eintraegeProSeite,
     });

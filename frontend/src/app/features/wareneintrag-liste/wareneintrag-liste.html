@@ -48,9 +48,44 @@
         }
       </mat-select>
     </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Erfasst von</mat-label>
+      <input
+        matInput
+        #vonInput
+        type="date"
+        data-testid="datum-von"
+        [value]="datumVon() ?? ''"
+        [max]="datumBis() ?? ''"
+        (change)="onDatumVonGeaendert(vonInput.value)"
+      />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Erfasst bis</mat-label>
+      <input
+        matInput
+        #bisInput
+        type="date"
+        data-testid="datum-bis"
+        [value]="datumBis() ?? ''"
+        [min]="datumVon() ?? ''"
+        (change)="onDatumBisGeaendert(bisInput.value)"
+      />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" data-testid="sortierung-filter">
+      <mat-label>Sortierung</mat-label>
+      <mat-select [value]="sortierung()" (selectionChange)="onSortierungGewaehlt($event.value)">
+        <mat-option [value]="null">Neueste zuerst</mat-option>
+        <mat-option value="avv-auf">AVV-Nummer aufsteigend</mat-option>
+        <mat-option value="avv-ab">AVV-Nummer absteigend</mat-option>
+      </mat-select>
+    </mat-form-field>
   </div>
 
-  @if (avvFilterAnzeige() || standortId() || suche()) {
+  @if (avvFilterAnzeige() || standortId() || suche() || datumVon() || datumBis() || sortierung()) {
     <div class="aktive-filter">
       <mat-chip-set aria-label="Aktive Filter">
         @if (avvFilterAnzeige(); as avv) {
@@ -69,6 +104,16 @@
           <mat-chip data-testid="filter-standort" (removed)="standortFilterEntfernen()">
             Standort: {{ standortFilterName() }}
             <button matChipRemove aria-label="Standort-Filter entfernen">
+              <mat-icon>cancel</mat-icon>
+            </button>
+          </mat-chip>
+        }
+        @if (datumVon() || datumBis()) {
+          <mat-chip data-testid="filter-datum" (removed)="datumFilterEntfernen()">
+            Erfasst:
+            {{ datumVon() ? 'ab ' + deutschesDatum(datumVon()!) : '' }}
+            {{ datumBis() ? 'bis ' + deutschesDatum(datumBis()!) : '' }}
+            <button matChipRemove aria-label="Datumsfilter entfernen">
               <mat-icon>cancel</mat-icon>
             </button>
           </mat-chip>

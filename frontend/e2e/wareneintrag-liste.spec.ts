@@ -346,3 +346,34 @@ test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen 
     .click();
   await expect(page.getByText('Eintrag wurde gelöscht.')).toBeVisible();
 });
+
+// Issue #131: Erfassungsdatum (Berliner Kalendertag) und AVV-Sortierung.
+test('nach Erfassungsdatum filtern und nach AVV-Nummer sortieren', async ({ page }) => {
+  const berlinTag = (verschiebungTage: number) =>
+    new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Berlin' }).format(
+      new Date(Date.now() + verschiebungTage * 86_400_000),
+    );
+  await page.goto('/wareneintraege');
+  const trefferanzahl = page.getByTestId('trefferanzahl');
+  await sucheFreitext(page, 'Karton');
+  await expect(trefferanzahl).toHaveText('16 Einträge');
+
+  // AVV_A (15 01 01) liegt vor AVV_B (17 01 07).
+  await page.getByTestId('sortierung-filter').click();
+  await page.getByRole('option', { name: 'AVV-Nummer aufsteigend' }).click();
+  await expect(page.locator('mat-card').first()).toContainText(`AVV-Code: ${AVV_A.code}`);
+  await page.getByTestId('sortierung-filter').click();
+  await page.getByRole('option', { name: 'AVV-Nummer absteigend' }).click();
+  await expect(page.locator('mat-card').first()).toContainText(`AVV-Code: ${AVV_B.code}`);
+
+  // Die Testdaten sind heute entstanden: ab heute alle, ab morgen keiner.
+  await page.getByTestId('datum-von').fill(berlinTag(0));
+  await expect(trefferanzahl).toHaveText('16 Einträge');
+  await expect(page.getByTestId('filter-datum')).toBeVisible();
+  await page.getByTestId('datum-von').fill(berlinTag(1));
+  await expect(page.getByTestId('keine-eintraege')).toBeVisible();
+
+  await page.getByTestId('filter-zuruecksetzen').click();
+  await expect(page.getByTestId('filter-datum')).toHaveCount(0);
+  await expect(page.getByTestId('datum-von')).toHaveValue('');
+});

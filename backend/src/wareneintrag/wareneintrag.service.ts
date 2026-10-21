@@ -6,6 +6,12 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateWareneintragDto } from './dto/create-wareneintrag.dto.js';
 import type { EntfernbareDatei } from './dto/entferne-datei.dto.js';
 import { UpdateWareneintragDto } from './dto/update-wareneintrag.dto.js';
+import { folgetagBeginnBerlin, tagesbeginnBerlin } from './berlin-tag.js';
+
+// Ohne Angabe: neueste zuerst. AVV-Codes haben ein festes Format (17 01 01),
+// die Textsortierung entspricht deshalb der numerischen.
+export type Sortierung = 'avv-auf' | 'avv-ab';
+const AVV_RICHTUNG = { 'avv-auf': 'asc', 'avv-ab': 'desc' } as const;
 
 export interface WareneintragDateien {
   fotoFern?: Express.Multer.File;
@@ -48,19 +54,27 @@ export class WareneintragService {
     avvCodeId?: string;
     standortId?: string;
     suche?: string;
+    datumVon?: string;
+    datumBis?: string;
+    sortierung?: Sortierung;
     seite?: number;
     proSeite?: number;
   }) {
-    const { suche, avvCodeId, standortId, seite = 0, proSeite = 20 } = filter;
+    const {
+      suche,
+      avvCodeId,
+      standortId,
+      sortierung,
+      seite = 0,
+      proSeite = 20,
+    } = filter;
+    // Berliner Kalendertage, "bis" einschließlich: obere Grenze ist der Folgetag.
+    const von = filter.datumVon && tagesbeginnBerlin(filter.datumVon);
+    const bis = filter.datumBis && folgetagBeginnBerlin(filter.datumBis);
+    const gemeinsam = { avvCodeId, standortId, von, bis, sortierung };
     const { treffer, gesamt } = suche
-      ? await this.sucheMitVolltext({
-          avvCodeId,
-          standortId,
-          suche,
-          seite,
-          proSeite,
-        })
-      : await this.listeAlle({ avvCodeId, standortId, seite, proSeite });
+      ? await this.sucheMitVolltext({ ...gemeinsam, suche, seite, proSeite })
+      : await this.listeAlle({ ...gemeinsam, seite, proSeite });
     const daten = await Promise.all(
       treffer.map(async (wareneintrag) => ({
         ...wareneintrag,
@@ -89,12 +103,21 @@ export class WareneintragService {
   private async listeAlle(filter: {
     avvCodeId?: string;
     standortId?: string;
+    von?: Date | '';
+    bis?: Date | '';
+    sortierung?: Sortierung;
     seite: number;
     proSeite: number;
   }) {
     const bedingungen = {
       ...(filter.avvCodeId && { avvCodeId: filter.avvCodeId }),
       ...(filter.standortId && { standortId: filter.standortId }),
+      ...((filter.von || filter.bis) && {
+        erstelltAm: {
+          ...(filter.von && { gte: filter.von }),
+          ...(filter.bis && { lt: filter.bis }),
+        },
+      }),
     };
     const where = Object.keys(bedingungen).length > 0 ? bedingungen : undefined;
     const [treffer, gesamt] = await Promise.all([
@@ -114,7 +137,13 @@ export class WareneintragService {
             },
           },
         },
-        orderBy: [{ erstelltAm: 'desc' }, { id: 'desc' }],
+        orderBy: [
+          ...(filter.sortierung
+            ? [{ avvCode: { code: AVV_RICHTUNG[filter.sortierung] } }]
+            : []),
+          { erstelltAm: 'desc' },
+          { id: 'desc' },
+        ],
         skip: filter.seite * filter.proSeite,
         take: filter.proSeite,
       }),
@@ -128,6 +157,9 @@ export class WareneintragService {
   private async sucheMitVolltext(filter: {
     avvCodeId?: string;
     standortId?: string;
+    von?: Date | '';
+    bis?: Date | '';
+    sortierung?: Sortierung;
     suche: string;
     seite: number;
     proSeite: number;
@@ -137,6 +169,17 @@ export class WareneintragService {
       : Prisma.empty;
     const standortFilter = filter.standortId
       ? Prisma.sql`AND wareneintraege.standort_id = ${filter.standortId}`
+      : Prisma.empty;
+    const vonFilter = filter.von
+      ? Prisma.sql`AND wareneintraege.erstellt_am >= ${filter.von}`
+      : Prisma.empty;
+    const bisFilter = filter.bis
+      ? Prisma.sql`AND wareneintraege.erstellt_am < ${filter.bis}`
+      : Prisma.empty;
+    const reihenfolge = filter.sortierung
+      ? filter.sortierung === 'avv-auf'
+        ? Prisma.sql`avv_codes.code ASC, `
+        : Prisma.sql`avv_codes.code DESC, `
       : Prisma.empty;
     const praefixSuche = (filter.suche.match(/[\p{L}\p{N}]+/gu) ?? [])
       .map((wort) => `${wort}:*`)
@@ -171,7 +214,9 @@ export class WareneintragService {
       )
       ${avvFilter}
       ${standortFilter}
-      ORDER BY wareneintraege.erstellt_am DESC, wareneintraege.id DESC
+      ${vonFilter}
+      ${bisFilter}
+      ORDER BY ${reihenfolge}wareneintraege.erstellt_am DESC, wareneintraege.id DESC
       LIMIT ${filter.proSeite} OFFSET ${filter.seite * filter.proSeite}
     `;
     return {

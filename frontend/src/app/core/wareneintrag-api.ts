@@ -54,9 +54,16 @@ export interface WareneintragFilter {
   avvCodeId: string | null;
   standortId?: string | null;
   suche: string;
+  // "JJJJ-MM-TT", beide Grenzen einschließlich (Issue #131).
+  datumVon?: string | null;
+  datumBis?: string | null;
+  // Ohne Angabe: neueste zuerst.
+  sortierung?: AvvSortierung | null;
   seite: number;
   proSeite: number;
 }
+
+export type AvvSortierung = 'avv-auf' | 'avv-ab';
 
 @Injectable({ providedIn: 'root' })
 export class WareneintragApi {
@@ -70,6 +77,9 @@ export class WareneintragApi {
     if (filter.avvCodeId) params['avvCodeId'] = filter.avvCodeId;
     if (filter.standortId) params['standortId'] = filter.standortId;
     if (filter.suche) params['suche'] = filter.suche;
+    if (filter.datumVon) params['datumVon'] = filter.datumVon;
+    if (filter.datumBis) params['datumBis'] = filter.datumBis;
+    if (filter.sortierung) params['sortierung'] = filter.sortierung;
     return this.http.get<PaginierteWareneintraege>('/api/v1/wareneintraege', { params });
   }
 
