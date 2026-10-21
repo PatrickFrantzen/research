@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
 import { WareneintragController } from './wareneintrag.controller.js';
 
@@ -64,6 +65,70 @@ describe('WareneintragController', () => {
       expect(wareneintragService.findAll).toHaveBeenCalledWith(
         expect.objectContaining({ standortId: 'standort-2' }),
       );
+    });
+  });
+
+  describe('findAll: Datum und Sortierung (Issue #131)', () => {
+    const aufruf = (
+      datumVon?: string,
+      datumBis?: string,
+      sortierung?: string,
+    ) => {
+      const wareneintragService = { findAll: vi.fn().mockResolvedValue([]) };
+      const controller = new WareneintragController(
+        wareneintragService as never,
+      );
+      const ergebnis = controller.findAll(
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        datumVon,
+        datumBis,
+        sortierung,
+      );
+      return { wareneintragService, ergebnis };
+    };
+
+    it('reicht gültiges Datum und Sortierung an den Service weiter', async () => {
+      const { wareneintragService, ergebnis } = aufruf(
+        '2026-10-20',
+        '2026-10-21',
+        'avv-ab',
+      );
+      await ergebnis;
+      expect(wareneintragService.findAll).toHaveBeenCalledWith(
+        expect.objectContaining({
+          datumVon: '2026-10-20',
+          datumBis: '2026-10-21',
+          sortierung: 'avv-ab',
+        }),
+      );
+    });
+
+    it.each(['20.10.2026', '2026-13-01', '2026-02-30', 'gestern', ''])(
+      'lehnt das ungültige Datum %j mit 400 ab',
+      async (datum) => {
+        await expect(aufruf(datum).ergebnis).rejects.toBeInstanceOf(
+          BadRequestException,
+        );
+        await expect(aufruf(undefined, datum).ergebnis).rejects.toBeInstanceOf(
+          BadRequestException,
+        );
+      },
+    );
+
+    it('lehnt ein Enddatum vor dem Startdatum ab', async () => {
+      await expect(
+        aufruf('2026-10-21', '2026-10-20').ergebnis,
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('lehnt eine unbekannte Sortierung ab', async () => {
+      await expect(
+        aufruf(undefined, undefined, 'datum').ergebnis,
+      ).rejects.toBeInstanceOf(BadRequestException);
     });
   });
 

@@ -302,6 +302,96 @@ describe('WareneintragService', () => {
       });
     });
 
+    it('filtert nach Erfassungsdatum als Berliner Kalendertage (von inklusive, bis inklusive)', async () => {
+      const prisma = {
+        wareneintrag: {
+          findMany: vi.fn().mockResolvedValue([]),
+          count: vi.fn().mockResolvedValue(0),
+        },
+      };
+      const service = new WareneintragService(prisma as never, {} as never);
+
+      await service.findAll({ datumVon: '2026-10-20', datumBis: '2026-10-21' });
+
+      const where = {
+        erstelltAm: {
+          gte: new Date('2026-10-19T22:00:00.000Z'),
+          lt: new Date('2026-10-21T22:00:00.000Z'),
+        },
+      };
+      expect(prisma.wareneintrag.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where }),
+      );
+      expect(prisma.wareneintrag.count).toHaveBeenCalledWith({ where });
+    });
+
+    it('akzeptiert auch nur eine Datumsgrenze', async () => {
+      const prisma = {
+        wareneintrag: {
+          findMany: vi.fn().mockResolvedValue([]),
+          count: vi.fn().mockResolvedValue(0),
+        },
+      };
+      const service = new WareneintragService(prisma as never, {} as never);
+
+      await service.findAll({ datumBis: '2026-10-21' });
+
+      expect(prisma.wareneintrag.count).toHaveBeenCalledWith({
+        where: {
+          erstelltAm: { lt: new Date('2026-10-21T22:00:00.000Z') },
+        },
+      });
+    });
+
+    it.each([
+      ['avv-auf', 'asc'],
+      ['avv-ab', 'desc'],
+    ] as const)(
+      'sortiert bei %s nach AVV-Code %s, bei Gleichstand neueste zuerst',
+      async (sortierung, richtung) => {
+        const prisma = {
+          wareneintrag: {
+            findMany: vi.fn().mockResolvedValue([]),
+            count: vi.fn().mockResolvedValue(0),
+          },
+        };
+        const service = new WareneintragService(prisma as never, {} as never);
+
+        await service.findAll({ sortierung });
+
+        expect(prisma.wareneintrag.findMany).toHaveBeenCalledWith(
+          expect.objectContaining({
+            orderBy: [
+              { avvCode: { code: richtung } },
+              { erstelltAm: 'desc' },
+              { id: 'desc' },
+            ],
+          }),
+        );
+      },
+    );
+
+    it('wendet Datum und AVV-Sortierung auch bei der Volltextsuche an', async () => {
+      const prisma = { $queryRaw: vi.fn().mockResolvedValue([]) };
+      const service = new WareneintragService(prisma as never, {} as never);
+
+      await service.findAll({
+        suche: 'Bauschutt',
+        datumVon: '2026-10-20',
+        datumBis: '2026-10-21',
+        sortierung: 'avv-ab',
+      });
+
+      const [strings, ...eingesetzt] = prisma.$queryRaw.mock.calls[0];
+      // Verschachtelte Fragmente zu einer Abfrage zusammensetzen.
+      const { text: sql, values } = Prisma.sql(strings, ...eingesetzt);
+      expect(sql).toContain('wareneintraege.erstellt_am >=');
+      expect(sql).toContain('wareneintraege.erstellt_am <');
+      expect(sql).toContain('ORDER BY avv_codes.code DESC');
+      expect(values).toContainEqual(new Date('2026-10-19T22:00:00.000Z'));
+      expect(values).toContainEqual(new Date('2026-10-21T22:00:00.000Z'));
+    });
+
     it('uses the tsvector full-text index instead of LIKE when a search term is given', async () => {
       const prisma = { $queryRaw: vi.fn().mockResolvedValue([]) };
       const service = new WareneintragService(prisma as never, {} as never);
