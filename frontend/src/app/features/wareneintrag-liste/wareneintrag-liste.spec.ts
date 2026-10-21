@@ -244,7 +244,14 @@ describe('WareneintragListe', () => {
             erstelltAm: '2026-09-19T20:08:00',
             avvCode: { code: '17 01 01' },
             standort: { id: 'standort-1', name: 'Hauptsitz' },
-            erfasstVon: { id: 'nutzer-2', vorname: 'Max', nachname: 'Mustermann' },
+            erfasstVon: {
+              id: 'nutzer-2',
+              vorname: 'Max',
+              nachname: 'Mustermann',
+              email: 'kontakt@research.local',
+              telefon: null,
+              position: null,
+            },
           },
         ],
         gesamt: 1,
@@ -485,7 +492,14 @@ describe('WareneintragListe', () => {
             erstelltAm: '2026-09-19T18:08:00.000Z',
             avvCode: { code: '17 01 01' },
             standort: { id: 'standort-1', name: 'Hauptsitz' },
-            erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
+            erfasstVon: {
+              id: 'nutzer-1',
+              vorname: 'Erika',
+              nachname: 'Musterfrau',
+              email: 'kontakt@research.local',
+              telefon: null,
+              position: null,
+            },
           },
         ],
         gesamt: 1,
@@ -513,7 +527,14 @@ describe('WareneintragListe', () => {
       erstelltAm: '2026-09-19T18:08:00.000Z',
       avvCode: { code: '17 01 01' },
       standort: { id: 'standort-1', name: 'Hauptsitz' },
-      erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
+      erfasstVon: {
+        id: 'nutzer-1',
+        vorname: 'Erika',
+        nachname: 'Musterfrau',
+        email: 'kontakt@research.local',
+        telefon: null,
+        position: null,
+      },
     });
     httpMock
       .expectOne((req) => req.url === '/api/v1/wareneintraege')
@@ -547,7 +568,14 @@ describe('WareneintragListe', () => {
             erstelltAm: '2026-09-19T18:08:00.000Z',
             avvCode: { code: '17 01 01' },
             standort: { id: 'standort-1', name: 'Hauptsitz' },
-            erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
+            erfasstVon: {
+              id: 'nutzer-1',
+              vorname: 'Erika',
+              nachname: 'Musterfrau',
+              email: 'kontakt@research.local',
+              telefon: null,
+              position: null,
+            },
           },
           {
             id: 'fremder-wareneintrag',
@@ -559,7 +587,14 @@ describe('WareneintragListe', () => {
             erstelltAm: '2026-09-19T18:08:00.000Z',
             avvCode: { code: '17 01 01' },
             standort: { id: 'standort-1', name: 'Hauptsitz' },
-            erfasstVon: { id: 'nutzer-2', vorname: 'Max', nachname: 'Mustermann' },
+            erfasstVon: {
+              id: 'nutzer-2',
+              vorname: 'Max',
+              nachname: 'Mustermann',
+              email: 'kontakt@research.local',
+              telefon: null,
+              position: null,
+            },
           },
         ],
         gesamt: 2,
@@ -592,7 +627,14 @@ describe('WareneintragListe', () => {
             erstelltAm: '2026-09-19T20:08:00',
             avvCode: { code: '17 01 01' },
             standort: { id: 'standort-1', name: 'Hauptsitz' },
-            erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
+            erfasstVon: {
+              id: 'nutzer-1',
+              vorname: 'Erika',
+              nachname: 'Musterfrau',
+              email: 'kontakt@research.local',
+              telefon: null,
+              position: null,
+            },
           },
         ],
         gesamt: 1,
@@ -637,7 +679,14 @@ describe('WareneintragListe', () => {
               erstelltAm: '2026-09-19T20:08:00',
               avvCode: { code: '17 01 01' },
               standort: { id: 'standort-1', name: 'Hauptsitz' },
-              erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
+              erfasstVon: {
+                id: 'nutzer-1',
+                vorname: 'Erika',
+                nachname: 'Musterfrau',
+                email: 'kontakt@research.local',
+                telefon: null,
+                position: null,
+              },
             },
           ],
           gesamt: 1,
@@ -711,7 +760,14 @@ describe('WareneintragListe', () => {
       erstelltAm: '2026-09-19T20:08:00',
       avvCode: { code: '17 01 01' },
       standort: { id: 'standort-1', name: 'Hauptsitz' },
-      erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
+      erfasstVon: {
+        id: 'nutzer-1',
+        vorname: 'Erika',
+        nachname: 'Musterfrau',
+        email: 'kontakt@research.local',
+        telefon: null,
+        position: null,
+      },
     };
     httpMock
       .expectOne((req) => req.url === '/api/v1/wareneintraege')
@@ -752,7 +808,14 @@ describe('WareneintragListe', () => {
       erstelltAm: '2026-09-19T20:08:00',
       avvCode: { code: '17 01 01' },
       standort: { id: 'standort-1', name: 'Hauptsitz' },
-      erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
+      erfasstVon: {
+        id: 'nutzer-1',
+        vorname: 'Erika',
+        nachname: 'Musterfrau',
+        email: 'kontakt@research.local',
+        telefon: null,
+        position: null,
+      },
     } as never);
     await fixture.whenStable();
     fixture.detectChanges();
@@ -779,7 +842,14 @@ describe('WareneintragListe', () => {
       erstelltAm: '2026-09-19T20:08:00',
       avvCode: { code: '17 01 01' },
       standort: { id: 'standort-1', name: 'Hauptsitz' },
-      erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
+      erfasstVon: {
+        id: 'nutzer-1',
+        vorname: 'Erika',
+        nachname: 'Musterfrau',
+        email: 'kontakt@research.local',
+        telefon: null,
+        position: null,
+      },
     };
     httpMock
       .expectOne((req) => req.url === '/api/v1/wareneintraege')
@@ -853,7 +923,14 @@ describe('WareneintragListe', () => {
       erstelltAm: '2026-09-19T20:08:00',
       avvCode: { code: '17 01 01' },
       standort: { id: 'standort-1', name: 'Hauptsitz' },
-      erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
+      erfasstVon: {
+        id: 'nutzer-1',
+        vorname: 'Erika',
+        nachname: 'Musterfrau',
+        email: 'kontakt@research.local',
+        telefon: null,
+        position: null,
+      },
     } as never);
     tick();
 

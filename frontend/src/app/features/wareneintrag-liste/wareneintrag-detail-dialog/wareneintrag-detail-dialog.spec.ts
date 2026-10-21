@@ -20,7 +20,14 @@ const WARENEINTRAG: Wareneintrag = {
   erstelltAm: '2026-09-19T20:08:00',
   avvCode: { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' },
   standort: { id: 'standort-1', name: 'Hauptsitz' },
-  erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
+  erfasstVon: {
+    id: 'nutzer-1',
+    vorname: 'Erika',
+    nachname: 'Musterfrau',
+    email: 'kontakt@research.local',
+    telefon: null,
+    position: null,
+  },
 };
 
 // Die Analyse startet erst nach dem (hier sofort bestätigten) Hinweis-Dialog.
@@ -100,6 +107,62 @@ describe('WareneintragDetailDialog', () => {
     expect(text).toContain('Hauptsitz');
     expect(text).toContain('Erika Musterfrau');
     expect(element.querySelectorAll('.spur img').length).toBe(3);
+  });
+
+  describe('Kontaktdaten des Erstellers (Issue #130)', () => {
+    const MIT_KONTAKT: Wareneintrag = {
+      ...WARENEINTRAG,
+      erfasstVon: {
+        ...WARENEINTRAG.erfasstVon,
+        email: 'erika@research.local',
+        telefon: '+49 40 123-456',
+        position: 'Betriebsleitung',
+      },
+    };
+    const knopf = (element: HTMLElement) =>
+      element.querySelector('[data-testid="ersteller-kontakt-knopf"]') as HTMLButtonElement;
+
+    it('hides the contact data until the arrow next to the name is clicked', () => {
+      const { fixture, element } = erstelle(MIT_KONTAKT, 0);
+      expect(knopf(element).textContent).toContain('Erika Musterfrau');
+      expect(knopf(element).getAttribute('aria-expanded')).toBe('false');
+      expect(element.querySelector('[data-testid="ersteller-kontakt"]')).toBeNull();
+
+      knopf(element).click();
+      fixture.detectChanges();
+
+      expect(knopf(element).getAttribute('aria-expanded')).toBe('true');
+      expect(element.querySelector('[data-testid="ersteller-kontakt"]')).not.toBeNull();
+      expect(element.textContent).toContain('Betriebsleitung');
+
+      knopf(element).click();
+      fixture.detectChanges();
+      expect(element.querySelector('[data-testid="ersteller-kontakt"]')).toBeNull();
+    });
+
+    it('links the phone number to tel: and the e-mail address to mailto:', () => {
+      const { fixture, element } = erstelle(MIT_KONTAKT, 0);
+      knopf(element).click();
+      fixture.detectChanges();
+
+      const telefon = element.querySelector(
+        'a[data-testid="ersteller-telefon"]',
+      ) as HTMLAnchorElement;
+      const email = element.querySelector('a[data-testid="ersteller-email"]') as HTMLAnchorElement;
+      expect(telefon.getAttribute('href')).toBe('tel:+4940123456');
+      expect(telefon.textContent?.trim()).toBe('+49 40 123-456');
+      expect(email.getAttribute('href')).toBe('mailto:erika@research.local');
+    });
+
+    it('omits phone and position when the creator has not set them', () => {
+      const { fixture, element } = erstelle(WARENEINTRAG, 0);
+      knopf(element).click();
+      fixture.detectChanges();
+
+      expect(element.querySelector('[data-testid="ersteller-telefon"]')).toBeNull();
+      expect(element.querySelector('[data-testid="ersteller-position"]')).toBeNull();
+      expect(element.querySelector('[data-testid="ersteller-email"]')).not.toBeNull();
+    });
   });
 
   it('offers the PDF as a link that opens in a new tab (Issue #103)', () => {

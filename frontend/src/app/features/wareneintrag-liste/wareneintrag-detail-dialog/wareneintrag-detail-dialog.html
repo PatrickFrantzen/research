@@ -54,7 +54,41 @@
       <dt>Standort</dt>
       <dd>{{ wareneintrag.standort.name }}</dd>
       <dt>Erfasst von</dt>
-      <dd>{{ wareneintrag.erfasstVon.vorname }} {{ wareneintrag.erfasstVon.nachname }}</dd>
+      <dd>
+        <button
+          type="button"
+          class="ersteller-knopf"
+          data-testid="ersteller-kontakt-knopf"
+          aria-controls="ersteller-kontakt"
+          [attr.aria-expanded]="kontaktOffen()"
+          (click)="kontaktOffen.set(!kontaktOffen())"
+        >
+          {{ wareneintrag.erfasstVon.vorname }} {{ wareneintrag.erfasstVon.nachname }}
+          <mat-icon aria-hidden="true">{{
+            kontaktOffen() ? 'expand_less' : 'expand_more'
+          }}</mat-icon>
+        </button>
+        @if (kontaktOffen()) {
+          <dl class="kontakt" id="ersteller-kontakt" data-testid="ersteller-kontakt">
+            @if (wareneintrag.erfasstVon.telefon; as telefon) {
+              <dt>Telefon</dt>
+              <dd>
+                <a data-testid="ersteller-telefon" [href]="telefonLink(telefon)">{{ telefon }}</a>
+              </dd>
+            }
+            <dt>E-Mail</dt>
+            <dd>
+              <a data-testid="ersteller-email" [href]="'mailto:' + wareneintrag.erfasstVon.email">{{
+                wareneintrag.erfasstVon.email
+              }}</a>
+            </dd>
+            @if (wareneintrag.erfasstVon.position; as position) {
+              <dt>Position</dt>
+              <dd data-testid="ersteller-position">{{ position }}</dd>
+            }
+          </dl>
+        }
+      </dd>
       @if (wareneintrag.dokumentUrl; as pdf) {
         <dt>Dokument</dt>
         <dd>
