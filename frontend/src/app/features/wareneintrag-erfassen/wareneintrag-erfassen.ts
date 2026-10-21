@@ -202,9 +202,9 @@ export class WareneintragErfassen {
       await firstValueFrom(this.wareneintragApi.erstellen(formData));
       // Direkt bereit für den nächsten Eintrag, Bestätigung per Snackbar.
       this.weitererEintrag();
-      this.snackBar.open('Wareneintrag wurde angelegt.', undefined, { duration: 3000 });
+      this.snackBar.open('Eintrag wurde angelegt.', undefined, { duration: 3000 });
     } catch (error) {
-      this.fehler.set(extrahiereFehlermeldung(error, 'Wareneintrag konnte nicht angelegt werden.'));
+      this.fehler.set(extrahiereFehlermeldung(error, 'Eintrag konnte nicht angelegt werden.'));
     } finally {
       this.wirdGeladen.set(false);
     }

@@ -18,7 +18,7 @@ for (const farbschema of ['light', 'dark'] as const) {
   });
 }
 
-test('Wareneintrag mit Foto erfassen und in der Liste wiederfinden', async ({ page }) => {
+test('Eintrag mit Foto erfassen und in der Liste wiederfinden', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('link', { name: 'Einträge anlegen' }).click();
   await expect(page.getByRole('heading', { level: 1, name: 'Stoffstrom erfassen' })).toBeFocused();
@@ -34,7 +34,7 @@ test('Wareneintrag mit Foto erfassen und in der Liste wiederfinden', async ({ pa
   await page.getByLabel('Freitext').fill('Mobil E2E mit Foto');
   await page.getByRole('button', { name: 'Absenden' }).click();
 
-  await expect(page.getByText('Wareneintrag wurde angelegt.')).toBeVisible();
+  await expect(page.getByText('Eintrag wurde angelegt.')).toBeVisible();
   // Formular ist für den nächsten Eintrag zurückgesetzt.
   await expect(page.getByLabel('Freitext')).toHaveValue('');
   await expect(page.getByRole('img', { name: 'Fernansicht' })).toHaveCount(0);
@@ -46,7 +46,7 @@ test('Wareneintrag mit Foto erfassen und in der Liste wiederfinden', async ({ pa
     'page',
   );
   await page.getByTestId('freitext-suche').fill('Mobil E2E mit Foto');
-  await expect(page.getByTestId('trefferanzahl')).toHaveText('1 Wareneintrag');
+  await expect(page.getByTestId('trefferanzahl')).toHaveText('1 Eintrag');
 
   // Foto kommt per signierter URL aus dem Objektspeicher und lädt wirklich.
   const foto = page.getByRole('img', { name: new RegExp(`^Fernansicht – AVV ${AVV_A.code}`) });

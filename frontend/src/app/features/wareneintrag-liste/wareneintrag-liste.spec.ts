@@ -82,7 +82,7 @@ describe('WareneintragListe', () => {
       fixture.detectChanges();
 
       expect(element.querySelector('[role="alert"]')?.textContent).toContain(
-        'Wareneinträge konnten nicht geladen werden.',
+        'Einträge konnten nicht geladen werden.',
       );
       expect(element.querySelector('[data-testid="keine-eintraege"]')).toBeNull();
       expect(element.querySelector('mat-paginator')).toBeNull();
@@ -218,11 +218,11 @@ describe('WareneintragListe', () => {
       const { anzahlVorher, anzahl } = ladeListe(45);
 
       expect(anzahlVorher).toBeNull();
-      expect(anzahl?.textContent?.trim()).toBe('45 Wareneinträge');
+      expect(anzahl?.textContent?.trim()).toBe('45 Einträge');
     }));
 
     it('uses the singular for exactly one hit', fakeAsync(() => {
-      expect(ladeListe(1).anzahl?.textContent?.trim()).toBe('1 Wareneintrag');
+      expect(ladeListe(1).anzahl?.textContent?.trim()).toBe('1 Eintrag');
     }));
   });
 

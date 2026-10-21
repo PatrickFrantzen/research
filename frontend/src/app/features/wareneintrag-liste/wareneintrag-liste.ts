@@ -205,7 +205,7 @@ export class WareneintragListe {
     this.proSeite.set(event.pageSize);
   }
 
-  // Nur der erfassende Nutzer darf seinen eigenen Wareneintrag
+  // Nur der erfassende Nutzer darf seinen eigenen Eintrag
   // bearbeiten/löschen (nicht mehr rollenbasiert, siehe CONTEXT.md). Das
   // Backend erzwingt es zusätzlich – hier nur zur Anzeige der Buttons.
   protected istEigenerEintrag(wareneintrag: Wareneintrag): boolean {
@@ -245,8 +245,8 @@ export class WareneintragListe {
       this.dialog
         .open(ConfirmDialog, {
           data: {
-            titel: 'Wareneintrag löschen',
-            nachricht: `Möchten Sie den Wareneintrag „${wareneintrag.freitext}“ (AVV-Code ${wareneintrag.avvCode.code}) wirklich löschen?`,
+            titel: 'Eintrag löschen',
+            nachricht: `Möchten Sie den Eintrag „${wareneintrag.freitext}“ (AVV-Code ${wareneintrag.avvCode.code}) wirklich löschen?`,
             bestaetigenLabel: 'Löschen',
           },
         })
@@ -262,10 +262,10 @@ export class WareneintragListe {
       // Überschrift statt auf <body>, Ergebnis per Snackbar (Live-Region)
       // ansagen (Issue #54).
       this.seitentitel().nativeElement.focus();
-      this.snackBar.open('Wareneintrag wurde gelöscht.', undefined, { duration: 3000 });
+      this.snackBar.open('Eintrag wurde gelöscht.', undefined, { duration: 3000 });
     } catch (error) {
       this.snackBar.open(
-        extrahiereFehlermeldung(error, 'Wareneintrag konnte nicht gelöscht werden.'),
+        extrahiereFehlermeldung(error, 'Eintrag konnte nicht gelöscht werden.'),
         'OK',
         {
           duration: 8000,

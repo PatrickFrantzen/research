@@ -274,9 +274,7 @@ export class WareneintragBearbeitenDialog {
       );
       this.dialogRef.close(true);
     } catch (error) {
-      this.fehler.set(
-        extrahiereFehlermeldung(error, 'Wareneintrag konnte nicht gespeichert werden.'),
-      );
+      this.fehler.set(extrahiereFehlermeldung(error, 'Eintrag konnte nicht gespeichert werden.'));
     } finally {
       this.speichernLaeuft = false;
     }
