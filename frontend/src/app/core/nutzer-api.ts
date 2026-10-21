@@ -7,6 +7,8 @@ export interface EigeneDaten {
   nachname: string;
   email: string;
   standortId: string;
+  telefon: string | null;
+  position: string | null;
 }
 
 export interface NeuerNutzer {
@@ -32,7 +34,12 @@ export type NutzerAnlegenDaten = {
   email: string;
 } & StandortAuswahl;
 
-export type EigeneDatenUpdate = { vorname: string; nachname: string } & StandortAuswahl;
+export type EigeneDatenUpdate = {
+  vorname: string;
+  nachname: string;
+  telefon: string;
+  position: string;
+} & StandortAuswahl;
 
 @Injectable({ providedIn: 'root' })
 export class NutzerApi {

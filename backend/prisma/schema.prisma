@@ -21,6 +21,9 @@ model Nutzer {
   vorname   String
   nachname  String
   email     String @unique
+  // Optionale Kontaktdaten, in den Einstellungen pflegbar (Issue #129).
+  telefon  String?
+  position String?
   standortId String @map("standort_id")
   standort   Standort @relation(fields: [standortId], references: [id])
 

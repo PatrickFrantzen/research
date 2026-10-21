@@ -2,6 +2,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -25,4 +26,18 @@ export class UpdateEigeneDatenDto {
   @IsString()
   @MaxLength(100)
   neuerStandort?: string;
+
+  // Optional; leer (oder null) löscht den Wert, fehlend lässt ihn unverändert.
+  @IsOptional()
+  @IsString()
+  @MaxLength(30)
+  @Matches(/^[0-9+()/\-\s]*$/, {
+    message: 'telefon darf nur Ziffern, Leerzeichen und + ( ) / - enthalten',
+  })
+  telefon?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  position?: string | null;
 }
