@@ -27,13 +27,21 @@ describe('NutzerApi', () => {
     });
 
     api
-      .aktualisiereEigeneDaten({ vorname: 'Erika', nachname: 'Neu', standortId: 'standort-2' })
+      .aktualisiereEigeneDaten({
+        vorname: 'Erika',
+        nachname: 'Neu',
+        telefon: '',
+        position: 'Leitung',
+        standortId: 'standort-2',
+      })
       .subscribe();
     const request = httpMock.expectOne('/api/v1/nutzer/me');
     expect(request.request.method).toBe('PATCH');
     expect(request.request.body).toEqual({
       vorname: 'Erika',
       nachname: 'Neu',
+      telefon: '',
+      position: 'Leitung',
       standortId: 'standort-2',
     });
     request.flush({});

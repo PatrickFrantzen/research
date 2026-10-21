@@ -262,6 +262,47 @@ describe('NutzerService', () => {
       );
     });
 
+    it('speichert Telefon und Position getrimmt, leer wird zu null, fehlend bleibt unverändert', async () => {
+      const prisma = {
+        nutzer: {
+          update: vi.fn().mockResolvedValue({
+            id: 'nutzer-1',
+            vorname: 'Erika',
+            nachname: 'Musterfrau',
+            email: 'erika@research.local',
+            standortId: 'standort-1',
+            telefon: '+49 40 123',
+            position: null,
+          }),
+        },
+      };
+      const service = new NutzerService(prisma as never, mailerFake() as never);
+
+      const result = await service.updateEigeneDaten('nutzer-1', {
+        vorname: 'Erika',
+        nachname: 'Musterfrau',
+        standortId: 'standort-1',
+        telefon: ' +49 40 123 ',
+        position: '  ',
+      });
+      await service.updateEigeneDaten('nutzer-1', {
+        vorname: 'Erika',
+        nachname: 'Musterfrau',
+        standortId: 'standort-1',
+      });
+
+      const [mitWerten, ohneWerte] = prisma.nutzer.update.mock.calls.map(
+        (c) => c[0].data,
+      );
+      expect(mitWerten).toMatchObject({
+        telefon: '+49 40 123',
+        position: null,
+      });
+      expect(ohneWerte.telefon).toBeUndefined();
+      expect(ohneWerte.position).toBeUndefined();
+      expect(result).toMatchObject({ telefon: '+49 40 123', position: null });
+    });
+
     it('lässt auch in den eigenen Einstellungen einen neuen Standort zu', async () => {
       const prisma = prismaMitStandorten([]);
       const service = new NutzerService(prisma as never, mailerFake() as never);

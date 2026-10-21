@@ -1,6 +1,6 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { FormField, disabled, form, required, maxLength } from '@angular/forms/signals';
+import { FormField, disabled, form, maxLength, pattern, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -57,6 +57,8 @@ export class Einstellungen {
   protected readonly einstellungenDaten = signal({
     vorname: '',
     nachname: '',
+    telefon: '',
+    position: '',
     standortId: '',
     neuerStandort: '',
   });
@@ -69,7 +71,14 @@ export class Einstellungen {
       when: () => this.einstellungenDaten().standortId === ANDERER_STANDORT,
     });
     maxLength(pfad.neuerStandort, 100);
+    maxLength(pfad.telefon, 30);
+    pattern(pfad.telefon, /^[0-9+()/\-\s]*$/);
+    maxLength(pfad.position, 100);
   });
+
+  protected readonly email = computed(() =>
+    this.eigeneDaten.hasValue() ? this.eigeneDaten.value().email : '',
+  );
 
   protected readonly fehler = signal<string | null>(null);
   protected readonly wirdGeladen = signal(false);
@@ -82,6 +91,8 @@ export class Einstellungen {
         this.einstellungenDaten.set({
           vorname: daten.vorname,
           nachname: daten.nachname,
+          telefon: daten.telefon ?? '',
+          position: daten.position ?? '',
           standortId: daten.standortId,
           neuerStandort: '',
         });
@@ -103,6 +114,22 @@ export class Einstellungen {
 
   set nachname(nachname: string) {
     this.einstellungenDaten.update((daten) => ({ ...daten, nachname }));
+  }
+
+  get telefon(): string {
+    return this.einstellungenDaten().telefon;
+  }
+
+  set telefon(telefon: string) {
+    this.einstellungenDaten.update((daten) => ({ ...daten, telefon }));
+  }
+
+  get position(): string {
+    return this.einstellungenDaten().position;
+  }
+
+  set position(position: string) {
+    this.einstellungenDaten.update((daten) => ({ ...daten, position }));
   }
 
   get standortId(): string {
@@ -130,6 +157,8 @@ export class Einstellungen {
         this.nutzerApi.aktualisiereEigeneDaten({
           vorname: this.vorname,
           nachname: this.nachname,
+          telefon: this.einstellungenDaten().telefon,
+          position: this.einstellungenDaten().position,
           ...standortAuswahl(this.standortId, this.neuerStandort),
         }),
       );

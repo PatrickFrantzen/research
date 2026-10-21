@@ -18,6 +18,31 @@ const INITIAL_ZUGANG_GUELTIGKEIT_MS = 7 * 24 * 60 * 60 * 1000; // 7 Tage
 // selbst angefordert und liest sie evtl. erst später.
 const ADMIN_PASSWORT_LINK_GUELTIGKEIT_MS = 24 * 60 * 60 * 1000; // 24 Stunden
 
+// undefined = nicht angegeben (Prisma lässt das Feld dann unverändert).
+function leerAlsNull(wert?: string | null): string | null | undefined {
+  return wert === undefined ? undefined : wert?.trim() || null;
+}
+
+function eigeneDatenAus(nutzer: {
+  id: string;
+  vorname: string;
+  nachname: string;
+  email: string;
+  standortId: string;
+  telefon: string | null;
+  position: string | null;
+}) {
+  return {
+    id: nutzer.id,
+    vorname: nutzer.vorname,
+    nachname: nutzer.nachname,
+    email: nutzer.email,
+    standortId: nutzer.standortId,
+    telefon: nutzer.telefon,
+    position: nutzer.position,
+  };
+}
+
 export interface NeuerNutzer {
   id: string;
   vorname: string;
@@ -131,13 +156,7 @@ export class NutzerService {
     const nutzer = await this.prisma.nutzer.findUniqueOrThrow({
       where: { id },
     });
-    return {
-      id: nutzer.id,
-      vorname: nutzer.vorname,
-      nachname: nutzer.nachname,
-      email: nutzer.email,
-      standortId: nutzer.standortId,
-    };
+    return eigeneDatenAus(nutzer);
   }
 
   async updateEigeneDaten(id: string, dto: UpdateEigeneDatenDto) {
@@ -146,15 +165,15 @@ export class NutzerService {
     const standortId = await this.standortIdAus(dto);
     const nutzer = await this.prisma.nutzer.update({
       where: { id },
-      data: { vorname: dto.vorname, nachname: dto.nachname, standortId },
+      data: {
+        vorname: dto.vorname,
+        nachname: dto.nachname,
+        standortId,
+        telefon: leerAlsNull(dto.telefon),
+        position: leerAlsNull(dto.position),
+      },
     });
-    return {
-      id: nutzer.id,
-      vorname: nutzer.vorname,
-      nachname: nutzer.nachname,
-      email: nutzer.email,
-      standortId: nutzer.standortId,
-    };
+    return eigeneDatenAus(nutzer);
   }
 
   // Standort aus der Liste oder als Freitext. Freitext wird ohne Rücksicht auf

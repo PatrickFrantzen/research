@@ -65,12 +65,19 @@ describe('Einstellungen', () => {
       nachname: 'Musterfrau',
       email: 'erika@research.local',
       standortId: 'standort-1',
+      telefon: null,
+      position: 'Leitung',
     });
     await fixture.whenStable();
+    fixture.detectChanges();
 
     const component = fixture.componentInstance;
+    expect(component.telefon).toBe('');
+    expect(component.position).toBe('Leitung');
     component.vorname = 'Erika';
     component.nachname = 'Neuername';
+    component.telefon = '+49 40 123';
+    component.position = '';
     component.standortId = 'standort-2';
 
     const submitPromise = component.submit();
@@ -79,6 +86,8 @@ describe('Einstellungen', () => {
     expect(request.request.body).toEqual({
       vorname: 'Erika',
       nachname: 'Neuername',
+      telefon: '+49 40 123',
+      position: '',
       standortId: 'standort-2',
     });
     request.flush({
@@ -116,6 +125,8 @@ describe('Einstellungen', () => {
     expect(request.request.body).toEqual({
       vorname: 'Erika',
       nachname: 'M',
+      telefon: '',
+      position: '',
       neuerStandort: 'Außenstelle Nord',
     });
     request.flush({
