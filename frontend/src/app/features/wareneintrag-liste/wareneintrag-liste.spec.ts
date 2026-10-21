@@ -601,7 +601,7 @@ describe('WareneintragListe', () => {
     fixture.detectChanges();
 
     const datum = fixture.nativeElement.querySelector('.datum') as HTMLElement;
-    expect(datum.textContent?.trim()).toBe('19.09.2026, 20:08');
+    expect(datum.textContent?.trim()).toBe('Erfasst am 19.09.2026, 20:08');
   }));
 
   // Die Liste lädt ihre Dialoge per import() (Issue #116), außerhalb der

@@ -122,7 +122,7 @@ test('eigenen Wareneintrag nach Bestätigung löschen', async ({ page }) => {
 
   await expect(page.getByText('Wareneintrag wurde gelöscht.')).toBeVisible();
   await expect(page.getByTestId('keine-eintraege')).toBeVisible();
-  await expect(page.getByRole('heading', { level: 1, name: 'Wareneinträge' })).toBeFocused();
+  await expect(page.getByRole('heading', { level: 1, name: 'Portal' })).toBeFocused();
 });
 
 test('PDF-Dokument anlegen, in Liste und Details sehen, ersetzen und löschen (Issues #103, #104)', async ({

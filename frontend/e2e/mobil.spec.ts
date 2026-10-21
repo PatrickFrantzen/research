@@ -21,9 +21,7 @@ for (const farbschema of ['light', 'dark'] as const) {
 test('Wareneintrag mit Foto erfassen und in der Liste wiederfinden', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('link', { name: 'Einträge anlegen' }).click();
-  await expect(
-    page.getByRole('heading', { level: 1, name: 'Wareneintrag erfassen' }),
-  ).toBeFocused();
+  await expect(page.getByRole('heading', { level: 1, name: 'Stoffstrom erfassen' })).toBeFocused();
 
   await page
     .locator('input[type="file"]')
@@ -42,8 +40,8 @@ test('Wareneintrag mit Foto erfassen und in der Liste wiederfinden', async ({ pa
   await expect(page.getByRole('img', { name: 'Fernansicht' })).toHaveCount(0);
 
   const mobileNavigation = page.getByRole('navigation', { name: 'Mobile Navigation' });
-  await mobileNavigation.getByRole('link', { name: 'Wareneinträge' }).click();
-  await expect(mobileNavigation.getByRole('link', { name: 'Wareneinträge' })).toHaveAttribute(
+  await mobileNavigation.getByRole('link', { name: 'Portal' }).click();
+  await expect(mobileNavigation.getByRole('link', { name: 'Portal' })).toHaveAttribute(
     'aria-current',
     'page',
   );

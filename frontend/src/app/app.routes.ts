@@ -67,7 +67,7 @@ export const routes: Routes = [
       },
       {
         path: 'wareneintraege',
-        title: 'Wareneinträge – RE-SEARCH',
+        title: 'Portal – RE-SEARCH',
         loadComponent: () =>
           import('./features/wareneintrag-liste/wareneintrag-liste.js').then(
             (m) => m.WareneintragListe,
@@ -75,7 +75,7 @@ export const routes: Routes = [
       },
       {
         path: 'wareneintrag-erfassen',
-        title: 'Wareneintrag erfassen – RE-SEARCH',
+        title: 'Stoffstrom erfassen – RE-SEARCH',
         loadComponent: () =>
           import('./features/wareneintrag-erfassen/wareneintrag-erfassen.js').then(
             (m) => m.WareneintragErfassen,

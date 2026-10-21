@@ -17,14 +17,14 @@
         routerLink="/wareneintraege"
         routerLinkActive="aktiv"
         ariaCurrentWhenActive="page"
-        >Wareneinträge</a
+        >Portal</a
       >
       <a
         matButton
         routerLink="/wareneintrag-erfassen"
         routerLinkActive="aktiv"
         ariaCurrentWhenActive="page"
-        >Wareneintrag erfassen</a
+        >Stoffstrom erfassen</a
       >
       @if (authService.istAdmin()) {
         <a
@@ -86,7 +86,7 @@
     class="bottom-nav-item"
   >
     <mat-icon>list_alt</mat-icon>
-    <span>Wareneinträge</span>
+    <span>Portal</span>
   </a>
   <a
     routerLink="/wareneintrag-erfassen"

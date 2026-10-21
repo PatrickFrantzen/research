@@ -1,5 +1,5 @@
 <div class="liste">
-  <h1 #seitentitel class="seitentitel" tabindex="-1">Wareneinträge</h1>
+  <h1 #seitentitel class="seitentitel" tabindex="-1">Portal</h1>
 
   <div class="filter">
     <mat-form-field appearance="outline">
@@ -126,7 +126,7 @@
               </button>
             </mat-card-title>
             <mat-card-subtitle class="datum">
-              {{ wareneintrag.erstelltAm | date: 'dd.MM.yyyy, HH:mm' }}
+              Erfasst am {{ wareneintrag.erstelltAm | date: 'dd.MM.yyyy, HH:mm' }}
               @if (wareneintrag.dokumentUrl) {
                 <mat-icon
                   class="pdf-hinweis"
