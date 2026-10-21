@@ -18,7 +18,14 @@ const WARENEINTRAG: Wareneintrag = {
   erstelltAm: '2026-09-19T20:08:00',
   avvCode: { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' },
   standort: { id: 'standort-1', name: 'Hauptsitz' },
-  erfasstVon: { id: 'nutzer-1', vorname: 'Erika', nachname: 'Musterfrau' },
+  erfasstVon: {
+    id: 'nutzer-1',
+    vorname: 'Erika',
+    nachname: 'Musterfrau',
+    email: 'kontakt@research.local',
+    telefon: null,
+    position: null,
+  },
 };
 
 interface TestableDialog {

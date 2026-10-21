@@ -16,7 +16,14 @@ export interface Wareneintrag {
   erstelltAm: string;
   avvCode: Pick<AvvCode, 'id' | 'code' | 'bezeichnung'>;
   standort: { id: string; name: string };
-  erfasstVon: { id: string; vorname: string; nachname: string };
+  erfasstVon: {
+    id: string;
+    vorname: string;
+    nachname: string;
+    email: string;
+    telefon: string | null;
+    position: string | null;
+  };
 }
 
 // KI-Analyse (Issue #93): Anteile ganzzahlig, Summe 100, absteigend.

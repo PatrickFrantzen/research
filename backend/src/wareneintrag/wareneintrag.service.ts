@@ -103,7 +103,16 @@ export class WareneintragService {
         include: {
           avvCode: { select: { id: true, code: true, bezeichnung: true } },
           standort: { select: { id: true, name: true } },
-          erfasstVon: { select: { id: true, vorname: true, nachname: true } },
+          erfasstVon: {
+            select: {
+              id: true,
+              vorname: true,
+              nachname: true,
+              email: true,
+              telefon: true,
+              position: true,
+            },
+          },
         },
         orderBy: [{ erstelltAm: 'desc' }, { id: 'desc' }],
         skip: filter.seite * filter.proSeite,
@@ -150,7 +159,7 @@ export class WareneintragService {
         wareneintraege.standort_id AS "standortId", wareneintraege.erstellt_am AS "erstelltAm",
         json_build_object('id', avv_codes.id, 'code', avv_codes.code, 'bezeichnung', avv_codes.bezeichnung) AS "avvCode",
         json_build_object('id', standorte.id, 'name', standorte.name) AS "standort",
-        json_build_object('id', nutzer.id, 'vorname', nutzer.vorname, 'nachname', nutzer.nachname) AS "erfasstVon",
+        json_build_object('id', nutzer.id, 'vorname', nutzer.vorname, 'nachname', nutzer.nachname, 'email', nutzer.email, 'telefon', nutzer.telefon, 'position', nutzer.position) AS "erfasstVon",
         COUNT(*) OVER () AS "gesamt"
       FROM wareneintraege
       JOIN avv_codes ON avv_codes.id = wareneintraege.avv_code_id

@@ -34,7 +34,16 @@ describe('WareneintragService', () => {
         include: {
           avvCode: { select: { id: true, code: true, bezeichnung: true } },
           standort: { select: { id: true, name: true } },
-          erfasstVon: { select: { id: true, vorname: true, nachname: true } },
+          erfasstVon: {
+            select: {
+              id: true,
+              vorname: true,
+              nachname: true,
+              email: true,
+              telefon: true,
+              position: true,
+            },
+          },
         },
         orderBy: [{ erstelltAm: 'desc' }, { id: 'desc' }],
         skip: 20,
@@ -73,7 +82,16 @@ describe('WareneintragService', () => {
         include: {
           avvCode: { select: { id: true, code: true, bezeichnung: true } },
           standort: { select: { id: true, name: true } },
-          erfasstVon: { select: { id: true, vorname: true, nachname: true } },
+          erfasstVon: {
+            select: {
+              id: true,
+              vorname: true,
+              nachname: true,
+              email: true,
+              telefon: true,
+              position: true,
+            },
+          },
         },
         orderBy: [{ erstelltAm: 'desc' }, { id: 'desc' }],
         skip: 0,
@@ -246,7 +264,16 @@ describe('WareneintragService', () => {
         include: {
           avvCode: { select: { id: true, code: true, bezeichnung: true } },
           standort: { select: { id: true, name: true } },
-          erfasstVon: { select: { id: true, vorname: true, nachname: true } },
+          erfasstVon: {
+            select: {
+              id: true,
+              vorname: true,
+              nachname: true,
+              email: true,
+              telefon: true,
+              position: true,
+            },
+          },
         },
         orderBy: [{ erstelltAm: 'desc' }, { id: 'desc' }],
         skip: 0,
@@ -296,6 +323,9 @@ describe('WareneintragService', () => {
       expect(sql).toContain('"erstelltAm"');
       expect(sql).toContain('"standort"');
       expect(sql).toContain('"erfasstVon"');
+      expect(sql).toContain("'email', nutzer.email");
+      expect(sql).toContain("'telefon', nutzer.telefon");
+      expect(sql).toContain("'position', nutzer.position");
     });
 
     it('finds a Wareneintrag when the search term is only the beginning of a word', async () => {

@@ -83,3 +83,30 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.ersteller-knopf {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.kontakt {
+  margin: 8px 0 0;
+  padding-left: 12px;
+  border-left: 2px solid var(--mat-sys-outline-variant);
+
+  dt {
+    font-size: var(--mat-sys-body-small-size);
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  dd {
+    margin: 0 0 8px;
+  }
+}

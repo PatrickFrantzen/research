@@ -47,9 +47,15 @@ export class WareneintragDetailDialog {
   protected readonly wareneintrag = this.daten.wareneintrag;
   protected readonly fotos = fotosVon(this.wareneintrag);
   protected readonly position = signal(this.daten.startFoto);
+  protected readonly kontaktOffen = signal(false);
   private readonly spur = viewChild<ElementRef<HTMLElement>>('spur');
   private readonly wareneintragApi = inject(WareneintragApi);
   private readonly dialog = inject(MatDialog);
+
+  // Leerzeichen und Trennstriche raus, tel: erwartet nur Ziffern und ein führendes +.
+  protected telefonLink(telefon: string): string {
+    return 'tel:' + telefon.replace(/[^\d+]/g, '');
+  }
 
   // Vorschau, noch nicht gespeichert. Schließen verwirft sie ohne Rückfrage,
   // in Redis läuft sie nach einer Stunde ab (Issue #94).
