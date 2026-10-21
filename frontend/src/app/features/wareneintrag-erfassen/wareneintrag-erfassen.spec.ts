@@ -321,11 +321,7 @@ describe('WareneintragErfassen', () => {
     request.flush({ id: 'wareneintrag-1' });
     await submitPromise;
 
-    expect(openSpy).toHaveBeenCalledWith(
-      'Wareneintrag wurde angelegt.',
-      undefined,
-      jasmine.anything(),
-    );
+    expect(openSpy).toHaveBeenCalledWith('Eintrag wurde angelegt.', undefined, jasmine.anything());
     expect(fixture.componentInstance.freitext).toBe('');
     expect(component.ausgewaehlterAvvCode).toBeNull();
   });
@@ -362,7 +358,7 @@ describe('WareneintragErfassen', () => {
       .flush('error', { status: 500, statusText: 'Server Error' });
     await submitPromise;
 
-    expect(component.fehler()).toBe('Wareneintrag konnte nicht angelegt werden.');
+    expect(component.fehler()).toBe('Eintrag konnte nicht angelegt werden.');
   });
 
   it('resets fotos, AVV-Code and freitext when starting another entry', async () => {

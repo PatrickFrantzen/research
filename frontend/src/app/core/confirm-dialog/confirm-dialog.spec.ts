@@ -23,14 +23,14 @@ describe('ConfirmDialog', () => {
 
   it('shows the given title and message', async () => {
     await setup({
-      titel: 'Wareneintrag löschen',
+      titel: 'Eintrag löschen',
       nachricht: 'Möchten Sie "Bauschutt" wirklich löschen?',
     });
     const fixture = TestBed.createComponent(ConfirmDialog);
     fixture.detectChanges();
 
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
-    expect(text).toContain('Wareneintrag löschen');
+    expect(text).toContain('Eintrag löschen');
     expect(text).toContain('Möchten Sie "Bauschutt" wirklich löschen?');
   });
 

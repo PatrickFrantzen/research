@@ -32,7 +32,7 @@ describe('Datenschutz', () => {
       'Geltungsbereich',
       'Hosting',
       'Nutzerkonto',
-      'Wareneinträge, Fotos und Dokumente',
+      'Einträge, Fotos und Dokumente',
       'Cookies und Speicher im Browser',
       'Protokolle',
       'Schutz vor Missbrauch',

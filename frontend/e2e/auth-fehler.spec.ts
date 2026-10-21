@@ -43,13 +43,13 @@ test.describe('403: keine Berechtigung', () => {
 
     await page.goto('/wareneintraege');
     await page.getByTestId('freitext-suche').fill('Max 01');
-    await expect(page.getByTestId('trefferanzahl')).toHaveText('1 Wareneintrag');
+    await expect(page.getByTestId('trefferanzahl')).toHaveText('1 Eintrag');
     await page.getByTestId('wareneintrag-loeschen').click();
     await page.getByTestId('confirm-dialog-bestaetigen').click();
 
     await expect(page.getByText('Keine Berechtigung für diese Aktion.')).toBeVisible();
     await expect(page).toHaveURL(/\/wareneintraege$/);
-    await expect(page.getByTestId('trefferanzahl')).toHaveText('1 Wareneintrag');
+    await expect(page.getByTestId('trefferanzahl')).toHaveText('1 Eintrag');
 
     const nochDa = await page.request.get('/api/v1/wareneintraege', {
       params: { suche: 'Erika 01', proSeite: '1' },

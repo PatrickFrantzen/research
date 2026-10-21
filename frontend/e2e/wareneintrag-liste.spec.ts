@@ -53,7 +53,7 @@ test('Freitext, AVV-Code und Standort kombiniert filtern, mit Pagination', async
   await page.keyboard.press('Enter');
   await page.getByRole('option', { name: '10' }).click();
   await sucheFreitext(page, 'Karton');
-  await expect(trefferanzahl).toHaveText('16 Wareneinträge');
+  await expect(trefferanzahl).toHaveText('16 Einträge');
   await expect(karten).toHaveCount(10);
   await page.getByRole('button', { name: 'Nächste Seite' }).click();
   await expect(page.getByText('11 – 16 von 16')).toBeVisible();
@@ -61,7 +61,7 @@ test('Freitext, AVV-Code und Standort kombiniert filtern, mit Pagination', async
 
   // Zusätzlicher Filter setzt auf Seite 1 zurück.
   await waehleAvvFilter(page, AVV_B.suche);
-  await expect(trefferanzahl).toHaveText('8 Wareneinträge');
+  await expect(trefferanzahl).toHaveText('8 Einträge');
   await expect(page.getByText('1 – 8 von 8')).toBeVisible();
   await expect(page.getByTestId('filter-avv')).toContainText(AVV_B.code);
   await expect(page.getByTestId('filter-suche')).toContainText('Karton');
@@ -79,20 +79,20 @@ test('Freitext, AVV-Code und Standort kombiniert filtern, mit Pagination', async
   await sucheFreitext(page, 'Palette');
   await page.getByTestId('standort-filter').click();
   await page.getByRole('option', { name: MAX.standort }).click();
-  await expect(trefferanzahl).toHaveText('3 Wareneinträge');
+  await expect(trefferanzahl).toHaveText('3 Einträge');
   await expect(karten.filter({ hasText: `Standort: ${MAX.standort}` })).toHaveCount(3);
   // Fremde Einträge lassen sich nicht bearbeiten.
   await expect(page.getByTestId('wareneintrag-bearbeiten')).toHaveCount(0);
 });
 
-test('eigenen Wareneintrag bearbeiten', async ({ page }) => {
+test('eigenen Eintrag bearbeiten', async ({ page }) => {
   await legeEintragAn(page.request, 'E2E Bearbeiten Original');
   await page.goto('/wareneintraege');
   await sucheFreitext(page, 'E2E Bearbeiten');
-  await expect(page.getByTestId('trefferanzahl')).toHaveText('1 Wareneintrag');
+  await expect(page.getByTestId('trefferanzahl')).toHaveText('1 Eintrag');
 
   await page.getByTestId('wareneintrag-bearbeiten').click();
-  const dialog = page.getByRole('dialog', { name: 'Wareneintrag bearbeiten' });
+  const dialog = page.getByRole('dialog', { name: 'Eintrag bearbeiten' });
   await expect(dialog).toBeVisible();
   await pruefeBarrierefreiheit(page, 'Bearbeiten-Dialog');
   await dialog.getByTestId('bearbeiten-freitext').fill('E2E Bearbeiten Geändert');
@@ -102,27 +102,27 @@ test('eigenen Wareneintrag bearbeiten', async ({ page }) => {
   await expect(page.locator('mat-card')).toContainText('E2E Bearbeiten Geändert');
 });
 
-test('eigenen Wareneintrag nach Bestätigung löschen', async ({ page }) => {
+test('eigenen Eintrag nach Bestätigung löschen', async ({ page }) => {
   await legeEintragAn(page.request, 'E2E Löschen');
   await page.goto('/wareneintraege');
   await sucheFreitext(page, 'E2E Löschen');
-  await expect(page.getByTestId('trefferanzahl')).toHaveText('1 Wareneintrag');
+  await expect(page.getByTestId('trefferanzahl')).toHaveText('1 Eintrag');
 
   // Abbrechen lässt den Eintrag stehen.
   await page.getByTestId('wareneintrag-loeschen').click();
-  const dialog = page.getByRole('dialog', { name: 'Wareneintrag löschen' });
+  const dialog = page.getByRole('dialog', { name: 'Eintrag löschen' });
   await expect(dialog).toContainText('„E2E Löschen“');
   await pruefeBarrierefreiheit(page, 'Lösch-Bestätigung');
   await dialog.getByTestId('confirm-dialog-abbrechen').click();
   await expect(dialog).toBeHidden();
-  await expect(page.getByTestId('trefferanzahl')).toHaveText('1 Wareneintrag');
+  await expect(page.getByTestId('trefferanzahl')).toHaveText('1 Eintrag');
 
   await page.getByTestId('wareneintrag-loeschen').click();
   await dialog.getByTestId('confirm-dialog-bestaetigen').click();
 
-  await expect(page.getByText('Wareneintrag wurde gelöscht.')).toBeVisible();
+  await expect(page.getByText('Eintrag wurde gelöscht.')).toBeVisible();
   await expect(page.getByTestId('keine-eintraege')).toBeVisible();
-  await expect(page.getByRole('heading', { level: 1, name: 'Wareneinträge' })).toBeFocused();
+  await expect(page.getByRole('heading', { level: 1, name: 'Portal' })).toBeFocused();
 });
 
 test('PDF-Dokument anlegen, in Liste und Details sehen, ersetzen und löschen (Issues #103, #104)', async ({
@@ -150,7 +150,7 @@ test('PDF-Dokument anlegen, in Liste und Details sehen, ersetzen und löschen (I
 
   await page.goto('/wareneintraege');
   await sucheFreitext(page, 'E2E Lieferschein');
-  await expect(page.getByTestId('trefferanzahl')).toHaveText('1 Wareneintrag');
+  await expect(page.getByTestId('trefferanzahl')).toHaveText('1 Eintrag');
   await expect(page.getByRole('img', { name: 'Mit PDF-Dokument' })).toBeVisible();
 
   await page.getByTestId('wareneintrag-details').click();
@@ -160,7 +160,7 @@ test('PDF-Dokument anlegen, in Liste und Details sehen, ersetzen und löschen (I
   await page.keyboard.press('Escape');
 
   await page.getByTestId('wareneintrag-bearbeiten').click();
-  const bearbeiten = page.getByRole('dialog', { name: 'Wareneintrag bearbeiten' });
+  const bearbeiten = page.getByRole('dialog', { name: 'Eintrag bearbeiten' });
   await bearbeiten.getByTestId('bearbeiten-dokument').setInputFiles(pdf('neu.pdf'));
   await expect(bearbeiten).toContainText('neu.pdf');
   await bearbeiten.getByTestId('bearbeiten-speichern').click();
@@ -184,7 +184,7 @@ test('Detail-Dialog mit Bildergalerie öffnen (Issue #92)', async ({ page }) => 
   await legeEintragAn(page.request, 'E2E Details', ['fotoFern', 'fotoNah']);
   await page.goto('/wareneintraege');
   await sucheFreitext(page, 'E2E Details');
-  await expect(page.getByTestId('trefferanzahl')).toHaveText('1 Wareneintrag');
+  await expect(page.getByTestId('trefferanzahl')).toHaveText('1 Eintrag');
   const dialog = page.getByRole('dialog', { name: `AVV-Code ${AVV_A.code}` });
   const position = dialog.getByTestId('galerie-position');
 
@@ -214,7 +214,7 @@ test('Detail-Dialog mit Bildergalerie öffnen (Issue #92)', async ({ page }) => 
   // Bearbeiten öffnet nur den Bearbeiten-Dialog.
   await page.getByTestId('wareneintrag-bearbeiten').click();
   await expect(page.getByRole('dialog')).toHaveCount(1);
-  await expect(page.getByRole('dialog', { name: 'Wareneintrag bearbeiten' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Eintrag bearbeiten' })).toBeVisible();
 });
 
 test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen (Issues #93 bis #96, #104)', async ({
@@ -225,7 +225,7 @@ test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen 
   await legeEintragAn(page.request, 'E2E Analyse', ['fotoFern']);
   await page.goto('/wareneintraege');
   await sucheFreitext(page, 'E2E Analyse');
-  await expect(page.getByTestId('trefferanzahl')).toHaveText('1 Wareneintrag');
+  await expect(page.getByTestId('trefferanzahl')).toHaveText('1 Eintrag');
   const dialog = page.getByRole('dialog', { name: `AVV-Code ${AVV_A.code}` });
   const oeffnen = async () => {
     await page.getByTestId('wareneintrag-details').click();
@@ -293,7 +293,7 @@ test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen 
   await schliessen();
 
   // Issue #96: nur Freitext ändern lässt die Analyse stehen ...
-  const bearbeiten = page.getByRole('dialog', { name: 'Wareneintrag bearbeiten' });
+  const bearbeiten = page.getByRole('dialog', { name: 'Eintrag bearbeiten' });
   await page.getByTestId('wareneintrag-bearbeiten').click();
   await bearbeiten.getByTestId('bearbeiten-freitext').fill('E2E Analyse geändert');
   await bearbeiten.getByTestId('bearbeiten-speichern').click();
@@ -320,7 +320,7 @@ test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen 
   // ließe sich direkt ein neues Foto wählen, hier wird abgebrochen.
   await page.getByTestId('wareneintrag-bearbeiten').click();
   // Fokus auf dem Titel, die AVV-Vorschläge bleiben zu und verdecken nichts.
-  await expect(bearbeiten.getByRole('heading', { name: 'Wareneintrag bearbeiten' })).toBeFocused();
+  await expect(bearbeiten.getByRole('heading', { name: 'Eintrag bearbeiten' })).toBeFocused();
   await bearbeiten.getByTestId('bearbeiten-loeschen-fotoFern').click();
   await page
     .getByRole('dialog', { name: 'Fernansicht löschen?' })
@@ -341,8 +341,8 @@ test('KI-Analyse: Vorschau, AVV-Prüfung, verwerfen, speichern, wieder anzeigen 
   // Löschen des Eintrags nimmt die Analyse mit (ON DELETE CASCADE).
   await page.getByTestId('wareneintrag-loeschen').click();
   await page
-    .getByRole('dialog', { name: 'Wareneintrag löschen' })
+    .getByRole('dialog', { name: 'Eintrag löschen' })
     .getByTestId('confirm-dialog-bestaetigen')
     .click();
-  await expect(page.getByText('Wareneintrag wurde gelöscht.')).toBeVisible();
+  await expect(page.getByText('Eintrag wurde gelöscht.')).toBeVisible();
 });

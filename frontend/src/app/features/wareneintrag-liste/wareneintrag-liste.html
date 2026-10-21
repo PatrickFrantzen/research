@@ -1,5 +1,5 @@
 <div class="liste">
-  <h1 #seitentitel class="seitentitel" tabindex="-1">Wareneinträge</h1>
+  <h1 #seitentitel class="seitentitel" tabindex="-1">Portal</h1>
 
   <div class="filter">
     <mat-form-field appearance="outline">
@@ -96,14 +96,11 @@
   @if (wareneintraege.hasValue()) {
     <p class="trefferanzahl" data-testid="trefferanzahl" role="status">
       {{ wareneintraege.value().gesamt }}
-      {{ wareneintraege.value().gesamt === 1 ? 'Wareneintrag' : 'Wareneinträge' }}
+      {{ wareneintraege.value().gesamt === 1 ? 'Eintrag' : 'Einträge' }}
     </p>
   }
 
-  <app-lade-zustand
-    [ressource]="wareneintraege"
-    meldung="Wareneinträge konnten nicht geladen werden."
-  />
+  <app-lade-zustand [ressource]="wareneintraege" meldung="Einträge konnten nicht geladen werden." />
 
   <div class="karten">
     @if (wareneintraege.hasValue()) {
@@ -126,7 +123,7 @@
               </button>
             </mat-card-title>
             <mat-card-subtitle class="datum">
-              {{ wareneintrag.erstelltAm | date: 'dd.MM.yyyy, HH:mm' }}
+              Erfasst am {{ wareneintrag.erstelltAm | date: 'dd.MM.yyyy, HH:mm' }}
               @if (wareneintrag.dokumentUrl) {
                 <mat-icon
                   class="pdf-hinweis"
@@ -190,7 +187,7 @@
           }
         </mat-card>
       } @empty {
-        <p data-testid="keine-eintraege">Keine Wareneinträge gefunden.</p>
+        <p data-testid="keine-eintraege">Keine Einträge gefunden.</p>
       }
     }
   </div>
@@ -201,7 +198,7 @@
       [pageIndex]="seite()"
       [pageSize]="proSeite()"
       [pageSizeOptions]="[10, 20, 50]"
-      aria-label="Seitennavigation für Wareneinträge"
+      aria-label="Seitennavigation für Einträge"
       (page)="onSeitenwechsel($event)"
     />
   }

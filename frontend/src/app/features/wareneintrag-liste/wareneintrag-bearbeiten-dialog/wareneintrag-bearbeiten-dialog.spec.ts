@@ -314,7 +314,7 @@ describe('WareneintragBearbeitenDialog', () => {
       .flush('error', { status: 500, statusText: 'Server Error' });
     tick();
 
-    expect(component.fehler()).toBe('Wareneintrag konnte nicht gespeichert werden.');
+    expect(component.fehler()).toBe('Eintrag konnte nicht gespeichert werden.');
     expect(dialogRef.close).not.toHaveBeenCalled();
   }));
 
