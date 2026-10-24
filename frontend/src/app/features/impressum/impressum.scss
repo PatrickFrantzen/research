@@ -16,9 +16,37 @@ h3 {
   margin: 16px 0 4px;
 }
 
-h4 {
-  font: var(--mat-sys-label-large);
-  margin: 12px 0 2px;
+h3 {
+  margin: 0 0 4px;
+}
+
+.ueber-karte-klein {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 16px 0;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--mat-sys-surface-container);
+
+  mat-icon {
+    flex: none;
+    width: 40px;
+    height: 40px;
+    font-size: 40px;
+    color: var(--mat-sys-primary);
+    padding-right: 16px;
+    border-right: 1px solid var(--mat-sys-outline-variant);
+    box-sizing: content-box;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.faq-titel {
+  margin: 24px 0 8px;
 }
 
 .trenner {

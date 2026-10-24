@@ -40,58 +40,99 @@
       <section class="ueber" aria-labelledby="ueber-titel">
         <h2 id="ueber-titel">Über RE-SEARCH</h2>
         <p class="hinweis">Dieser Abschnitt gehört nicht zum Impressum.</p>
-        <h3>Idee &amp; Konzept</h3>
-        <p>
-          Die Idee zu RE-SEARCH stammt von Thomas Fritsche. Er gibt die fachlichen Hinweise zum
-          Stoffstrom und sorgt dafür, dass die App abbildet, wie in der Praxis mit Abfällen
-          gearbeitet wird. Die Idee: Was vor Ort an Abfall anfällt, soll dort sofort und einheitlich
-          festgehalten werden und danach für alle Standorte auffindbar sein.
-        </p>
 
-        <h4>Stoffstrom erfassen</h4>
-        <p>
-          Ein Wareneintrag hält eine vor Ort vorgefundene Abfallmenge fest, direkt vom Smartphone
-          aus. Bis zu drei Fotos (Fern-, Nah- und Detailansicht) zeigen, wie der Abfall aussieht,
-          ein Freitext ergänzt, was Fotos nicht zeigen. Ein optionales Dokument, etwa ein
-          Lieferschein, gehört gleich dazu.
-        </p>
+        <div class="ueber-karte-klein">
+          <mat-icon aria-hidden="true">lightbulb</mat-icon>
+          <div>
+            <h3>Idee &amp; Konzept</h3>
+            <p>
+              Die Idee zu RE-SEARCH stammt von Thomas Fritsche. Er gibt die fachlichen Hinweise zum
+              Stoffstrom, damit die App zur Praxis passt.
+            </p>
+          </div>
+        </div>
 
-        <h4>Abfallart und Standort</h4>
-        <p>
-          Jeder Eintrag bekommt eine Abfallart nach dem amtlichen Abfallverzeichnis (AVV-Code), samt
-          Hinweis, ob der Abfall als gefährlich gilt. Der Standort wird automatisch vom erfassenden
-          Nutzer übernommen und bleibt am Eintrag stehen, auch wenn jemand später an einen anderen
-          Standort wechselt.
-        </p>
+        <div class="ueber-karte-klein">
+          <mat-icon aria-hidden="true">code</mat-icon>
+          <div>
+            <h3>Technische Umsetzung &amp; Betrieb</h3>
+            <p>Technische Realisierung und Betrieb: Patrick Frantzen (printByPatrick)</p>
+          </div>
+        </div>
 
-        <h4>Stoffstrom-Portal</h4>
-        <p>
-          Alle Einträge aller Standorte lassen sich im Portal ansehen, durchsuchen und nach
-          Abfallart, Standort und Zeitraum filtern. So wird sichtbar, was wo anfällt. Bearbeiten und
-          löschen kann einen Eintrag nur, wer ihn erfasst hat.
-        </p>
+        <h3 class="faq-titel">Häufige Fragen</h3>
+        <mat-accordion>
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>Was ist ein Wareneintrag?</mat-panel-title>
+            </mat-expansion-panel-header>
+            <p>
+              Eine vor Ort vorgefundene Abfallmenge, die du direkt vom Smartphone erfasst: mit
+              Fotos, Abfallart und einem kurzen Freitext.
+            </p>
+          </mat-expansion-panel>
 
-        <h4>KI-Analyse</h4>
-        <p>
-          Aus den Fotos eines Eintrags kann eine KI die Zusammensetzung des Abfalls schätzen:
-          Materialien mit ungefährem Anteil und eine kurze Einschätzung. Das ist eine Schätzung als
-          Orientierung, keine Messung. Die Nutzerin oder der Nutzer sieht zuerst eine Vorschau und
-          entscheidet, ob sie gespeichert wird.
-        </p>
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>Welche Fotos und Unterlagen kann ich anhängen?</mat-panel-title>
+            </mat-expansion-panel-header>
+            <p>
+              Bis zu drei Fotos (Fern-, Nah- und Detailansicht) und ein Dokument, zum Beispiel einen
+              Lieferschein als PDF. Alles ist optional.
+            </p>
+          </mat-expansion-panel>
 
-        <h4>Nutzer und Standorte</h4>
-        <p>
-          Es gibt keine offene Registrierung. Zugänge legt ein Admin an, die Einladung kommt per
-          E-Mail. So bleibt der Kreis derer, die Einträge sehen und erfassen, überschaubar.
-        </p>
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>Wofür ist der AVV-Code?</mat-panel-title>
+            </mat-expansion-panel-header>
+            <p>
+              Er ordnet den Abfall nach dem amtlichen Abfallverzeichnis ein und zeigt, ob der Abfall
+              als gefährlich gilt.
+            </p>
+          </mat-expansion-panel>
 
-        <h3>Technische Umsetzung &amp; Betrieb</h3>
-        <p>
-          Patrick Frantzen (printByPatrick) setzt RE-SEARCH technisch um: Entwicklung, Gestaltung,
-          Sicherheit, Datenschutz und der laufende Betrieb liegen bei ihm. Die App ist für den
-          Einsatz auf dem Smartphone und am Rechner gemacht und wird gemeinsam mit Thomas Fritsche
-          anhand der Erfahrungen aus der Praxis weiterentwickelt.
-        </p>
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>Was passiert mit dem Standort, wenn ich wechsle?</mat-panel-title>
+            </mat-expansion-panel-header>
+            <p>
+              Der Standort wird beim Erfassen vom Nutzer übernommen und bleibt am Eintrag stehen.
+              Bestehende Einträge ändern sich bei einem Wechsel nicht.
+            </p>
+          </mat-expansion-panel>
+
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>Wer sieht und bearbeitet meine Einträge?</mat-panel-title>
+            </mat-expansion-panel-header>
+            <p>
+              Alle Nutzer sehen alle Einträge im Stoffstrom-Portal und können sie nach Abfallart,
+              Standort und Zeitraum filtern. Bearbeiten und löschen kannst nur du deine eigenen.
+            </p>
+          </mat-expansion-panel>
+
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>Was kann die KI-Analyse?</mat-panel-title>
+            </mat-expansion-panel-header>
+            <p>
+              Sie schätzt aus den Fotos, woraus der Abfall besteht, mit ungefähren Anteilen und
+              einer kurzen Einschätzung. Das ist eine Orientierung, keine Messung. Du siehst zuerst
+              eine Vorschau und entscheidest, ob sie gespeichert wird.
+            </p>
+          </mat-expansion-panel>
+
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>Wie bekomme ich einen Zugang?</mat-panel-title>
+            </mat-expansion-panel-header>
+            <p>
+              Eine offene Registrierung gibt es nicht. Ein Admin legt deinen Zugang an, du bekommst
+              eine Einladung per E-Mail und setzt darüber dein Passwort.
+            </p>
+          </mat-expansion-panel>
+        </mat-accordion>
       </section>
     </mat-card-content>
 

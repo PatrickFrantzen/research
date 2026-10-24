@@ -39,6 +39,16 @@ describe('Impressum', () => {
     expect(text).toContain('Patrick Frantzen (printByPatrick)');
   });
 
+  it('zeigt die FAQ als Fragen mit aufklappbaren Antworten', () => {
+    const fragen = Array.from(element.querySelectorAll('section.ueber mat-panel-title')).map((f) =>
+      f.textContent?.trim(),
+    );
+
+    expect(fragen.length).toBeGreaterThanOrEqual(5);
+    expect(fragen).toContain('Was kann die KI-Analyse?');
+    expect(fragen.every((frage) => frage?.endsWith('?'))).toBeTrue();
+  });
+
   it('shows name and address of the operator', () => {
     const text = element.textContent ?? '';
 
