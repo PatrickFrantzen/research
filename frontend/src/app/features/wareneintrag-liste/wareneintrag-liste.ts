@@ -123,7 +123,7 @@ export class WareneintragListe {
 
   // Neue Standorte erscheinen automatisch, die Liste kommt vom Server.
   protected readonly standorte = rxResource({
-    stream: () => this.standortApi.liste(),
+    stream: () => this.standortApi.liste(true),
   });
   protected readonly standortListe = computed(() =>
     this.standorte.hasValue() ? this.standorte.value() : [],

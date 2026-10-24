@@ -29,14 +29,14 @@ describe('Impressum', () => {
     expect(text).toContain('Patrick Frantzen');
     expect(text).toContain('Vögelser Kamp 26');
     expect(text).toContain('21357 Bardowick');
-    expect(text).toContain('Handelsname: PrintByPatrickDE');
+    expect(text).toContain('Handelsname: printByPatrick');
   });
 
   it('links e-mail and WhatsApp', () => {
-    const email = element.querySelector('a[href="mailto:patrickfrantzen@web.de"]');
+    const email = element.querySelector('a[href="mailto:patrick@printbypatrick.de"]');
     const whatsapp = element.querySelector('a[href="https://wa.me/4915567213415"]');
 
-    expect(email?.textContent?.trim()).toBe('patrickfrantzen@web.de');
+    expect(email?.textContent?.trim()).toBe('patrick@printbypatrick.de');
     expect(whatsapp?.textContent?.trim()).toBe('015567213415');
   });
 

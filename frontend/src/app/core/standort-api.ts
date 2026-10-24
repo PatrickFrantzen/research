@@ -19,7 +19,9 @@ export interface Standort {
 export class StandortApi {
   private readonly http = inject(HttpClient);
 
-  liste() {
-    return this.http.get<Standort[]>('/api/v1/standorte');
+  liste(nurMitEintraegen = false) {
+    return this.http.get<Standort[]>('/api/v1/standorte', {
+      params: nurMitEintraegen ? { nurMitEintraegen: true } : {},
+    });
   }
 }
