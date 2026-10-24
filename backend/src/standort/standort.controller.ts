@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
@@ -8,7 +8,10 @@ export class StandortController {
   constructor(private readonly prisma: PrismaService) {}
 
   @Get()
-  async findAll() {
-    return this.prisma.standort.findMany({ orderBy: { name: 'asc' } });
+  async findAll(@Query('nurMitEintraegen') nurMitEintraegen?: string) {
+    return this.prisma.standort.findMany({
+      where: nurMitEintraegen === 'true' ? { wareneintraege: { some: {} } } : undefined,
+      orderBy: { name: 'asc' },
+    });
   }
 }

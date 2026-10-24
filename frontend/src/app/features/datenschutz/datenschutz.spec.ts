@@ -51,7 +51,7 @@ describe('Datenschutz', () => {
     expect(verantwortlicher).toContain('Patrick Frantzen');
     expect(verantwortlicher).toContain('Vögelser Kamp 26');
     expect(verantwortlicher).toContain('21357 Bardowick');
-    expect(element.querySelector('a[href="mailto:patrickfrantzen@web.de"]')).not.toBeNull();
+    expect(element.querySelector('a[href="mailto:patrick@printbypatrick.de"]')).not.toBeNull();
   });
 
   it('explains that the KI-Analyse only runs on an explicit click and transfers photos to the USA', () => {

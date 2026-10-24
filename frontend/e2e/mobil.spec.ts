@@ -20,7 +20,7 @@ for (const farbschema of ['light', 'dark'] as const) {
 
 test('Eintrag mit Foto erfassen und in der Liste wiederfinden', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'Einträge anlegen' }).click();
+  await page.getByRole('link', { name: 'Stoffstrom erfassen' }).click();
   await expect(page.getByRole('heading', { level: 1, name: 'Stoffstrom erfassen' })).toBeFocused();
 
   await page
