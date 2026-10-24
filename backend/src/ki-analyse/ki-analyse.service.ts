@@ -13,8 +13,8 @@ import type { Redis } from 'ioredis';
 import { Prisma } from '../generated/prisma/client.js';
 import { ObjectStorageService } from '../object-storage/object-storage.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { KiClient } from './ki.client.js';
 import {
-  GeminiClient,
   GeminiKontingentErschoepft,
   GeminiNichtEingerichtet,
 } from './gemini.client.js';
@@ -38,8 +38,9 @@ const ANALYSE_AUSWAHL = {
   analysiertVon: { select: { vorname: true, nachname: true } },
 } as const;
 
-// Gemini nimmt inline höchstens ~20 MB pro Request, Base64 bläht um 4/3 auf.
-export const MAX_FOTOS_BYTES = 14 * 1024 * 1024;
+// Base64 bläht um 4/3 auf: 10 MB werden ~13,4 MB, die KI-Zentrale nimmt höchstens
+// 15 MB pro Anfrage (Gemini ~20 MB).
+export const MAX_FOTOS_BYTES = 10 * 1024 * 1024;
 export const ANALYSEN_PRO_MINUTE = 5;
 const VORSCHAU_TTL_SEKUNDEN = 60 * 60;
 
@@ -57,7 +58,7 @@ export class KiAnalyseService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly objectStorage: ObjectStorageService,
-    private readonly gemini: GeminiClient,
+    private readonly gemini: KiClient,
     @Inject(KI_REDIS)
     private readonly redis: Pick<
       Redis,

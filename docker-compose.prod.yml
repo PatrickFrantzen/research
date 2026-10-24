@@ -55,6 +55,9 @@ services:
       MAIL_FROM: ${MAIL_FROM:-}
       APP_URL: https://${DOMAIN}
       REDIS_URL: redis://redis:6379
+      # Mit KI_ZENTRALE_TOKEN läuft die KI-Analyse über ki-zentrale (Patricks Codex-Abo),
+      # sonst über Gemini. Token aus APP_TOKENS in /srv/apps/ki-zentrale/.env.
+      KI_ZENTRALE_TOKEN: ${KI_ZENTRALE_TOKEN:-}
       # Ohne GEMINI_API_KEY ist die KI-Analyse abgeschaltet, siehe ADR-0008.
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.8-flash}
@@ -66,6 +69,7 @@ services:
     # Tages-Logs (Aktivität/Fehler) überleben so Rebuilds, siehe ADR-0007.
     volumes:
       - app-logs:/app/backend/logs
+    networks: [default, ki]
     depends_on:
       postgres:
         condition: service_healthy
@@ -152,6 +156,9 @@ networks:
   # Gemeinsames Netz mit weiteren Apps (z.B. suetterlin), nur Caddy hängt hier.
   web:
     name: web
+  # Netz von ki-zentrale (dort angelegt).
+  ki:
+    external: true
 
 volumes:
   app-logs:

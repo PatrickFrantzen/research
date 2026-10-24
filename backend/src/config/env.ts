@@ -27,6 +27,8 @@ export interface EnvConfig {
     // Basis für absolute Links in Mails, z.B. https://research.patrickfrantzen.de
     appUrl: string;
   };
+  // KI über den zentralen Dienst im Docker-Netz "ki"; gesetzt hat Vorrang vor Gemini.
+  kiZentrale?: { url: string; token: string };
   // Ohne GEMINI_API_KEY ist die KI-Analyse abgeschaltet (ADR-0008).
   gemini?: {
     apiKey: string;
@@ -118,6 +120,12 @@ export function loadEnv(): EnvConfig {
       url: required('REDIS_URL'),
     },
     mail: loadMail(),
+    kiZentrale: process.env['KI_ZENTRALE_TOKEN']
+      ? {
+          url: process.env['KI_ZENTRALE_URL'] || 'http://ki-zentrale:8080',
+          token: process.env['KI_ZENTRALE_TOKEN'],
+        }
+      : undefined,
     gemini: process.env['GEMINI_API_KEY']
       ? {
           apiKey: process.env['GEMINI_API_KEY'],
