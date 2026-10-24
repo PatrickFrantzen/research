@@ -39,6 +39,12 @@ describe('Impressum', () => {
     expect(text).toContain('Patrick Frantzen (printByPatrick)');
   });
 
+  it('verweist von "Über RE-SEARCH" auf die FAQ-Seite', () => {
+    const link = element.querySelector('section.ueber a[href="/faq"]');
+
+    expect(link).not.toBeNull();
+  });
+
   it('shows name and address of the operator', () => {
     const text = element.textContent ?? '';
 
