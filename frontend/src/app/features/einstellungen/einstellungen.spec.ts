@@ -77,7 +77,7 @@ describe('Einstellungen', () => {
     component.vorname = 'Erika';
     component.nachname = 'Neuername';
     component.telefon = '+49 40 123';
-    component.position = '';
+    component.position = 'Betriebsleitung';
     component.standortId = 'standort-2';
 
     const submitPromise = component.submit();
@@ -87,7 +87,7 @@ describe('Einstellungen', () => {
       vorname: 'Erika',
       nachname: 'Neuername',
       telefon: '+49 40 123',
-      position: '',
+      position: 'Betriebsleitung',
       standortId: 'standort-2',
     });
     request.flush({
@@ -99,6 +99,26 @@ describe('Einstellungen', () => {
     await submitPromise;
 
     expect(openSpy).toHaveBeenCalledWith('Änderungen gespeichert.', undefined, jasmine.anything());
+  });
+
+  it('speichert nicht, solange Telefon oder Position fehlen', async () => {
+    const fixture = TestBed.createComponent(Einstellungen);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/v1/standorte').flush([{ id: 'standort-1', name: 'Hauptsitz' }]);
+    httpMock.expectOne('/api/v1/nutzer/me').flush({
+      vorname: 'Erika',
+      nachname: 'M',
+      email: 'erika@research.local',
+      standortId: 'standort-1',
+      telefon: null,
+      position: null,
+    });
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    await fixture.componentInstance.submit();
+
+    httpMock.expectNone('/api/v1/nutzer/me');
   });
 
   it('wechselt auf einen neuen Standort als Freitext und übernimmt ihn danach in die Liste', async () => {
@@ -115,6 +135,8 @@ describe('Einstellungen', () => {
     fixture.detectChanges(); // Vorbefüllen aus den eigenen Daten abschließen
     const component = fixture.componentInstance;
 
+    component.telefon = '040 123';
+    component.position = 'Leitung';
     component.standortId = ANDERER_STANDORT;
     fixture.detectChanges();
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Neuer Standort');
@@ -125,8 +147,8 @@ describe('Einstellungen', () => {
     expect(request.request.body).toEqual({
       vorname: 'Erika',
       nachname: 'M',
-      telefon: '',
-      position: '',
+      telefon: '040 123',
+      position: 'Leitung',
       neuerStandort: 'Außenstelle Nord',
     });
     request.flush({
@@ -187,6 +209,8 @@ describe('Einstellungen', () => {
       nachname: 'Musterfrau',
       email: 'erika@research.local',
       standortId: 'standort-1',
+      telefon: '040 123',
+      position: 'Leitung',
     });
     await fixture.whenStable();
     fixture.detectChanges();

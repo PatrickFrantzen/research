@@ -179,6 +179,8 @@ describe('NutzerService', () => {
         vorname: 'Erika',
         nachname: 'Neuername',
         standortId: 'standort-2',
+        telefon: '040 123',
+        position: 'Leitung',
       });
 
       expect(prisma.nutzer.update).toHaveBeenCalledWith({
@@ -187,6 +189,8 @@ describe('NutzerService', () => {
           vorname: 'Erika',
           nachname: 'Neuername',
           standortId: 'standort-2',
+          telefon: '040 123',
+          position: 'Leitung',
         },
       });
       expect(result).toEqual({
@@ -262,7 +266,7 @@ describe('NutzerService', () => {
       );
     });
 
-    it('speichert Telefon und Position getrimmt, leer wird zu null, fehlend bleibt unverändert', async () => {
+    it('speichert Telefon und Position getrimmt', async () => {
       const prisma = {
         nutzer: {
           update: vi.fn().mockResolvedValue({
@@ -272,35 +276,24 @@ describe('NutzerService', () => {
             email: 'erika@research.local',
             standortId: 'standort-1',
             telefon: '+49 40 123',
-            position: null,
+            position: 'Leitung',
           }),
         },
       };
       const service = new NutzerService(prisma as never, mailerFake() as never);
 
-      const result = await service.updateEigeneDaten('nutzer-1', {
-        vorname: 'Erika',
-        nachname: 'Musterfrau',
-        standortId: 'standort-1',
-        telefon: ' +49 40 123 ',
-        position: '  ',
-      });
       await service.updateEigeneDaten('nutzer-1', {
         vorname: 'Erika',
         nachname: 'Musterfrau',
         standortId: 'standort-1',
+        telefon: ' +49 40 123 ',
+        position: '  Leitung ',
       });
 
-      const [mitWerten, ohneWerte] = prisma.nutzer.update.mock.calls.map(
-        (c) => c[0].data,
-      );
-      expect(mitWerten).toMatchObject({
+      expect(prisma.nutzer.update.mock.calls[0][0].data).toMatchObject({
         telefon: '+49 40 123',
-        position: null,
+        position: 'Leitung',
       });
-      expect(ohneWerte.telefon).toBeUndefined();
-      expect(ohneWerte.position).toBeUndefined();
-      expect(result).toMatchObject({ telefon: '+49 40 123', position: null });
     });
 
     it('lässt auch in den eigenen Einstellungen einen neuen Standort zu', async () => {
@@ -311,6 +304,8 @@ describe('NutzerService', () => {
         vorname: 'E',
         nachname: 'M',
         neuerStandort: 'Außenstelle Nord',
+        telefon: '040 123',
+        position: 'Leitung',
       });
 
       expect(prisma.standort.create).toHaveBeenCalledWith({

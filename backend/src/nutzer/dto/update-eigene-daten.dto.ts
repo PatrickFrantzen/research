@@ -27,17 +27,16 @@ export class UpdateEigeneDatenDto {
   @MaxLength(100)
   neuerStandort?: string;
 
-  // Optional; leer (oder null) löscht den Wert, fehlend lässt ihn unverändert.
-  @IsOptional()
   @IsString()
   @MaxLength(30)
+  @Matches(/\S/, { message: 'telefon darf nicht leer sein' })
   @Matches(/^[0-9+()/\-\s]*$/, {
     message: 'telefon darf nur Ziffern, Leerzeichen und + ( ) / - enthalten',
   })
-  telefon?: string | null;
+  telefon!: string;
 
-  @IsOptional()
   @IsString()
   @MaxLength(100)
-  position?: string | null;
+  @Matches(/\S/, { message: 'position darf nicht leer sein' })
+  position!: string;
 }

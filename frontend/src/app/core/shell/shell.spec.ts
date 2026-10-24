@@ -28,7 +28,7 @@ describe('Shell', () => {
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
 
     expect(fixture.nativeElement.querySelector('.desktop-toolbar')).not.toBeNull();
-    expect(text).toContain('Portal');
+    expect(text).toContain('Stoffstrom-Portal');
     expect(text).toContain('Stoffstrom erfassen');
     expect(text).toContain('Einstellungen');
     expect(text).toContain('Erfassen');

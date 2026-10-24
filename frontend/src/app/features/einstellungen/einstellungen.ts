@@ -66,6 +66,8 @@ export class Einstellungen {
     disabled(pfad, { when: () => !this.geladen() });
     required(pfad.vorname);
     required(pfad.nachname);
+    required(pfad.telefon);
+    required(pfad.position);
     required(pfad.standortId);
     required(pfad.neuerStandort, {
       when: () => this.einstellungenDaten().standortId === ANDERER_STANDORT,

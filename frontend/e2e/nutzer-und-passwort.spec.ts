@@ -72,6 +72,8 @@ test.describe('mit Session von Max', () => {
     const vorname = page.getByLabel('Vorname');
     await expect(vorname).toHaveValue(MAX.vorname);
     await vorname.fill('Maximilian');
+    await page.getByLabel('Telefonnummer').fill('040 123456');
+    await page.getByLabel('Position im Unternehmen').fill('Betriebsleitung');
     await page.getByRole('button', { name: 'Speichern' }).click();
 
     await expect(page.getByText('Änderungen gespeichert.')).toBeVisible();

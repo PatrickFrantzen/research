@@ -29,6 +29,8 @@ describe('NutzerController', () => {
         vorname: 'Erika',
         nachname: 'Neuername',
         standortId: 'standort-2',
+        telefon: '040 123',
+        position: 'Leitung',
       };
 
       await controller.updateMe(buildRequest('nutzer-1'), dto);
