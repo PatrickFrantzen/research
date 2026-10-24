@@ -6,6 +6,7 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from './app.routes.js';
 import { AuthService } from './core/auth.service.js';
 import { Datenschutz } from './features/datenschutz/datenschutz.js';
+import { Faq } from './features/faq/faq.js';
 import { Impressum } from './features/impressum/impressum.js';
 import { NichtGefunden } from './features/nicht-gefunden/nicht-gefunden.js';
 
@@ -17,6 +18,14 @@ describe('app routes', () => {
     TestBed.configureTestingModule({
       providers: [provideRouter(routes), { provide: AuthService, useValue: { istEingeloggt } }],
     });
+  });
+
+  it('shows the FAQ without a session', async () => {
+    const harness = await RouterTestingHarness.create();
+
+    await harness.navigateByUrl('/faq', Faq);
+
+    expect(TestBed.inject(Router).url).toBe('/faq');
   });
 
   it('shows the Impressum without a session', async () => {

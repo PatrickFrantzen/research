@@ -39,14 +39,10 @@ describe('Impressum', () => {
     expect(text).toContain('Patrick Frantzen (printByPatrick)');
   });
 
-  it('zeigt die FAQ als Fragen mit aufklappbaren Antworten', () => {
-    const fragen = Array.from(element.querySelectorAll('section.ueber mat-panel-title')).map((f) =>
-      f.textContent?.trim(),
-    );
+  it('verweist von "Über RE-SEARCH" auf die FAQ-Seite', () => {
+    const link = element.querySelector('section.ueber a[href="/faq"]');
 
-    expect(fragen.length).toBeGreaterThanOrEqual(5);
-    expect(fragen).toContain('Was kann die KI-Analyse?');
-    expect(fragen.every((frage) => frage?.endsWith('?'))).toBeTrue();
+    expect(link).not.toBeNull();
   });
 
   it('shows name and address of the operator', () => {
