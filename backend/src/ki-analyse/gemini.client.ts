@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import type { EnvConfig } from '../config/env.js';
 import { ANTWORT_SCHEMA, SYSTEM_PROMPT } from './ki-analyse.js';
+import { KiClient } from './ki.client.js';
 
 const TIMEOUT_MS = 60_000;
 // Überlastet (503) oder interner Fehler (500): Google empfiehlt Wiederholen.
@@ -21,13 +22,15 @@ export class GeminiFehler extends Error {}
 // Direkter REST-Aufruf statt SDK (ADR-0008). Der Key geht per Header, nicht
 // in der URL, damit er in keinem Fehler-Log und keiner Response auftaucht.
 // Ohne Config (kein GEMINI_API_KEY) ist die KI-Analyse abgeschaltet.
-export class GeminiClient {
+export class GeminiClient extends KiClient {
   private readonly logger = new Logger(GeminiClient.name);
 
   constructor(
     private readonly config: EnvConfig['gemini'],
     private readonly wartezeitMs = 2_000,
-  ) {}
+  ) {
+    super();
+  }
 
   // Liefert das von Gemini geparste JSON, ungeprüft (siehe pruefeAntwort).
   async analysiere(fotos: AnalyseFoto[], kontext: string): Promise<unknown> {

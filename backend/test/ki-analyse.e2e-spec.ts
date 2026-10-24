@@ -1,3 +1,4 @@
+import { KiClient } from '../src/ki-analyse/ki.client.js';
 import { ExecutionContext, INestApplication } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
@@ -47,7 +48,7 @@ describe('KI-Analyse-Endpunkt', () => {
       providers: [
         KiAnalyseService,
         {
-          provide: GeminiClient,
+          provide: KiClient,
           useValue: new GeminiClient({
             apiKey: API_KEY,
             model: 'gemini-test-flash',

@@ -3,6 +3,8 @@ import { Redis } from 'ioredis';
 import { loadEnv } from '../config/env.js';
 import { ObjectStorageModule } from '../object-storage/object-storage.module.js';
 import { GeminiClient } from './gemini.client.js';
+import { KiClient } from './ki.client.js';
+import { KiZentraleClient } from './ki-zentrale.client.js';
 import { KiAnalyseController } from './ki-analyse.controller.js';
 import { KI_REDIS, KiAnalyseService } from './ki-analyse.service.js';
 
@@ -11,9 +13,15 @@ import { KI_REDIS, KiAnalyseService } from './ki-analyse.service.js';
   controllers: [KiAnalyseController],
   providers: [
     KiAnalyseService,
+    // Mit KI_ZENTRALE_TOKEN die KI-Zentrale, sonst Gemini (Rückweg, E2E-Stub).
     {
-      provide: GeminiClient,
-      useFactory: () => new GeminiClient(loadEnv().gemini),
+      provide: KiClient,
+      useFactory: () => {
+        const { kiZentrale, gemini } = loadEnv();
+        return kiZentrale
+          ? new KiZentraleClient(kiZentrale)
+          : new GeminiClient(gemini);
+      },
     },
     { provide: KI_REDIS, useFactory: () => new Redis(loadEnv().redis.url) },
   ],
