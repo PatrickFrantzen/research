@@ -20,7 +20,23 @@ describe('Impressum', () => {
       h2.textContent?.trim(),
     );
 
-    expect(ueberschriften).toEqual(['Angaben gemäß § 5 DDG', 'Kontakt', 'Steuerliche Angaben']);
+    expect(ueberschriften).toEqual([
+      'Angaben gemäß § 5 DDG',
+      'Kontakt',
+      'Steuerliche Angaben',
+      'Über RE-SEARCH',
+    ]);
+  });
+
+  it('trennt "Über RE-SEARCH" sichtbar vom Impressum und nennt beide Beteiligten', () => {
+    const trenner = element.querySelector('hr.trenner');
+    const ueber = element.querySelector('section.ueber');
+
+    expect(trenner?.nextElementSibling).toBe(ueber);
+    const text = ueber?.textContent ?? '';
+    expect(text).toContain('gehört nicht zum Impressum');
+    expect(text).toContain('Thomas Fritsche');
+    expect(text).toContain('Patrick Frantzen (printByPatrick)');
   });
 
   it('shows name and address of the operator', () => {

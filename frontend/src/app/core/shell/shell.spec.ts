@@ -53,9 +53,9 @@ describe('Shell', () => {
     fixture.detectChanges();
 
     const link = fixture.nativeElement.querySelector(
-      'footer.desktop-footer a[href="/impressum"]',
+      'footer.desktop-footer a',
     ) as HTMLAnchorElement | null;
-    expect(link).not.toBeNull();
+    expect(link?.getAttribute('href')).toBe('/impressum');
   });
 
   it('links to the Datenschutzerklärung in the desktop footer (Issue #107)', () => {
@@ -67,7 +67,7 @@ describe('Shell', () => {
         'footer.desktop-footer a',
       ) as NodeListOf<HTMLAnchorElement>,
     ).map((link) => link.getAttribute('href'));
-    expect(links).toEqual(['/ueber', '/impressum', '/datenschutz']);
+    expect(links).toEqual(['/impressum', '/datenschutz']);
   });
 
   it('toggles the color mode from the desktop toolbar', () => {

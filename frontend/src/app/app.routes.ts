@@ -24,11 +24,6 @@ export const routes: Routes = [
       import('./features/passwort-setzen/passwort-setzen.js').then((m) => m.PasswortSetzen),
   },
   {
-    path: 'ueber',
-    title: 'Über RE-SEARCH',
-    loadComponent: () => import('./features/ueber/ueber.js').then((m) => m.Ueber),
-  },
-  {
     path: 'impressum',
     title: 'Impressum – RE-SEARCH',
     loadComponent: () => import('./features/impressum/impressum.js').then((m) => m.Impressum),
