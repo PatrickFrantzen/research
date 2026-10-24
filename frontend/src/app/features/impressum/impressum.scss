@@ -10,3 +10,24 @@ h2 {
 p {
   margin: 0 0 8px;
 }
+
+h3 {
+  font: var(--mat-sys-title-small);
+  margin: 16px 0 4px;
+}
+
+h4 {
+  font: var(--mat-sys-label-large);
+  margin: 12px 0 2px;
+}
+
+.trenner {
+  border: 0;
+  border-top: 1px solid var(--mat-sys-outline-variant);
+  margin: 32px 0 16px;
+}
+
+.hinweis {
+  color: var(--mat-sys-on-surface-variant);
+  font-style: italic;
+}
