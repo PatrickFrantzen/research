@@ -37,7 +37,7 @@ describe('Datenschutz', () => {
       'Protokolle',
       'Schutz vor Missbrauch',
       'E-Mail-Versand',
-      'KI-Analyse mit Google Gemini',
+      'KI-Analyse mit OpenAI',
       'Datensicherung',
       'Externe Inhalte',
       'Ihre Rechte',
@@ -55,12 +55,12 @@ describe('Datenschutz', () => {
   });
 
   it('explains that the KI-Analyse only runs on an explicit click and transfers photos to the USA', () => {
-    const gemini = abschnitt('KI-Analyse mit Google Gemini');
+    const gemini = abschnitt('KI-Analyse mit OpenAI');
 
     expect(gemini).toContain('ausdrücklich');
     expect(gemini).toContain('USA');
     expect(gemini).toContain('Drittland');
-    expect(gemini).toContain('kostenlosen Tarif');
+    expect(gemini).toContain('OpenAI');
   });
 
   it('states the retention of logs and backups', () => {

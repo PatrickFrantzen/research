@@ -458,17 +458,17 @@ describe('WareneintragDetailDialog', () => {
     });
   });
 
-  describe('Hinweis auf Google Gemini vor der Analyse', () => {
+  describe('Hinweis auf OpenAI vor der Analyse', () => {
     const URL = '/api/v1/wareneintraege/wareneintrag-1/ki-analyse';
 
-    it('asks for confirmation that the fotos go to Google, who may use the inputs', async () => {
+    it('asks for confirmation that the fotos go to OpenAI', async () => {
       const { element } = erstelle(WARENEINTRAG, 0);
       (element.querySelector('[data-testid="analysieren"]') as HTMLButtonElement).click();
       await nachBestaetigung();
 
       const { data } = bestaetigung.calls.mostRecent().args[1];
-      expect(data.nachricht).toContain('Google Gemini API');
-      expect(data.nachricht).toContain('Google darf diese Eingaben');
+      expect(data.nachricht).toContain('OpenAI in den USA');
+      expect(data.nachricht).not.toContain('Google');
       TestBed.inject(HttpTestingController).expectOne({ method: 'POST', url: URL });
     });
 

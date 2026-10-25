@@ -83,17 +83,16 @@ export class WareneintragDetailDialog {
     }, 'Die KI-Analyse konnte nicht gespeichert werden.');
   }
 
-  // Vor jeder Analyse (auch Wiederholen) bestätigen: die Fotos gehen an
-  // Google, im Free Tier darf Google sie verwenden (ADR-0008).
+  // Vor jeder Analyse (auch Wiederholen) bestätigen: die Fotos gehen über die
+  // KI-Zentrale an OpenAI in den USA (ADR-0009).
   protected async analysieren(): Promise<void> {
     const bestaetigt = await firstValueFrom(
       this.dialog
         .open(ConfirmDialog, {
           data: {
-            titel: 'Fotos an Google senden?',
+            titel: 'Fotos an OpenAI senden?',
             nachricht:
-              'Die KI-Analyse schickt die Fotos, den AVV-Code und den Freitext dieses Eintrags an die Google Gemini API. ' +
-              'Google darf diese Eingaben zur Verbesserung seiner Dienste verwenden, auch Menschen bei Google können sie sehen. ' +
+              'Die KI-Analyse schickt die Fotos, den AVV-Code und den Freitext dieses Eintrags an OpenAI in den USA. ' +
               'Keine Fotos mit Personen, Kennzeichen oder vertraulichen Informationen analysieren.',
             bestaetigenLabel: 'Senden und analysieren',
           },
