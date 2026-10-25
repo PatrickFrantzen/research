@@ -1,0 +1,10 @@
+# Wird vom zentralen Caddy importiert (/srv/apps/caddy, /srv/caddy-sites, siehe deploy-research).
+research.patrickfrantzen.de {
+	reverse_proxy research-app:3000
+}
+
+# Fotos: MinIO bleibt intern, Browser lädt Foto-URLs per presigned URL über
+# diese Subdomain (forcePathStyle, siehe object-storage.service.ts).
+fotos-research.patrickfrantzen.de {
+	reverse_proxy research-minio:9000
+}

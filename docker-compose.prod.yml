@@ -1,7 +1,7 @@
 # Produktiv-/Demo-Deployment auf einem Linux-VPS (z.B. IONOS VPS S+).
 # Unterschied zu docker-compose.yml: kein Port-Publishing für app/minio
 # (nur Caddy ist öffentlich erreichbar), NODE_ENV=production,
-# TLS-Reverse-Proxy inklusive. Alle Secrets kommen aus ".env" (siehe
+# TLS kommt vom zentralen Caddy (/srv/apps/caddy, Site: deploy/research.caddy). Alle Secrets kommen aus ".env" (siehe
 # .env.prod.example) statt aus unsicheren Defaults.
 #
 # Start: docker compose -f docker-compose.prod.yml up -d
@@ -9,26 +9,6 @@
 # Go-live-Checkliste (Backups, Firewall, Secrets).
 
 services:
-  caddy:
-    image: caddy:2.10-alpine
-    restart: unless-stopped
-    mem_limit: 128m
-    ports:
-      - "80:80"
-      - "443:443"
-    environment:
-      DOMAIN: ${DOMAIN}
-      FILES_DOMAIN: ${FILES_DOMAIN}
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      # Sites weiterer Apps auf dem Server, siehe Caddyfile.
-      - /srv/caddy-sites:/etc/caddy/sites:ro
-      - caddy-data:/data
-      - caddy-config:/config
-    networks: [default, web]
-    depends_on:
-      - app
-
   app:
     build:
       context: .
@@ -70,7 +50,11 @@ services:
     # Tages-Logs (Aktivität/Fehler) überleben so Rebuilds, siehe ADR-0007.
     volumes:
       - app-logs:/app/backend/logs
-    networks: [default, ki]
+    networks:
+      default:
+      ki:
+      web:
+        aliases: [research-app]
     depends_on:
       postgres:
         condition: service_healthy
@@ -128,6 +112,10 @@ services:
     # vom alten Image als root beschrieben, daher weiterhin root.
     user: "0:0"
     restart: unless-stopped
+    networks:
+      default:
+      web:
+        aliases: [research-minio]
     mem_limit: 256m
     command: server /data --console-address ":9001"
     environment:
@@ -157,9 +145,10 @@ services:
       "
 
 networks:
-  # Gemeinsames Netz mit weiteren Apps (z.B. suetterlin), nur Caddy hängt hier.
+  # Netz des zentralen Caddy (/srv/apps/caddy, dort angelegt). Aliase statt
+  # Dienstnamen, weil im Netz "web" mehrere Apps hängen.
   web:
-    name: web
+    external: true
   # Netz von ki-zentrale (dort angelegt).
   ki:
     external: true
@@ -168,5 +157,3 @@ volumes:
   app-logs:
   postgres-data:
   minio-data:
-  caddy-data:
-  caddy-config:
