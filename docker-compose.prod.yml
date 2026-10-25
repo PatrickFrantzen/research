@@ -12,6 +12,7 @@ services:
   caddy:
     image: caddy:2.10-alpine
     restart: unless-stopped
+    mem_limit: 128m
     ports:
       - "80:80"
       - "443:443"
@@ -83,6 +84,7 @@ services:
   redis:
     image: redis:8.8.2-alpine
     restart: unless-stopped
+    mem_limit: 128m
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -92,6 +94,7 @@ services:
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
+    mem_limit: 256m
     environment:
       POSTGRES_USER: research
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -125,6 +128,7 @@ services:
     # vom alten Image als root beschrieben, daher weiterhin root.
     user: "0:0"
     restart: unless-stopped
+    mem_limit: 256m
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: research
