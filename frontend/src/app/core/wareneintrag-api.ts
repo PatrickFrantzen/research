@@ -4,7 +4,7 @@ import type { AvvCode } from './avv-code-api.js';
 
 // Muss zur Backend-Grenze in CreateWareneintragDto passen (Security-Audit run-1).
 export const FREITEXT_MAX_LAENGE = 2000;
-export const GEWICHT_MAX_LAENGE = 100;
+export const GEWICHT_MAX_LAENGE = 2000;
 
 export interface Wareneintrag {
   id: string;

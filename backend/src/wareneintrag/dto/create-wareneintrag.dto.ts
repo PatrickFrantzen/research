@@ -10,7 +10,7 @@ import {
 // Liste nicht aufblähen können (Security-Audit run-1).
 export const FREITEXT_MAX_LAENGE = 2000;
 
-export const GEWICHT_MAX_LAENGE = 100;
+export const GEWICHT_MAX_LAENGE = 2000;
 
 export class CreateWareneintragDto {
   @IsUUID()
