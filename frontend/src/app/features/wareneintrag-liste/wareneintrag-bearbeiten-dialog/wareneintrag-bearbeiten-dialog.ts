@@ -122,6 +122,7 @@ export class WareneintragBearbeitenDialog {
     gewicht: this.daten.wareneintrag.gewicht ?? '',
   });
   protected readonly freitextMaxLaenge = FREITEXT_MAX_LAENGE;
+  protected readonly gewichtMaxLaenge = GEWICHT_MAX_LAENGE;
   protected readonly bearbeitenForm = form(this.bearbeitungDaten, (pfad) => {
     required(pfad.freitext);
     maxLength(pfad.freitext, FREITEXT_MAX_LAENGE);

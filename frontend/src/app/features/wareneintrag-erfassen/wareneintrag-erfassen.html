@@ -113,7 +113,10 @@
 
         <mat-form-field appearance="outline">
           <mat-label>Gewicht (optional)</mat-label>
-          <input matInput [formField]="wareneintragForm.gewicht" />
+          <textarea matInput [formField]="wareneintragForm.gewicht" rows="4"></textarea>
+          <mat-hint align="end"
+            >{{ wareneintragDaten().gewicht.length }} / {{ gewichtMaxLaenge }}</mat-hint
+          >
         </mat-form-field>
 
         @if (fehler()) {

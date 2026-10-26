@@ -34,7 +34,15 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Gewicht (optional)</mat-label>
-    <input matInput data-testid="bearbeiten-gewicht" [formField]="bearbeitenForm.gewicht" />
+    <textarea
+      matInput
+      data-testid="bearbeiten-gewicht"
+      [formField]="bearbeitenForm.gewicht"
+      rows="4"
+    ></textarea>
+    <mat-hint align="end"
+      >{{ bearbeitungDaten().gewicht.length }} / {{ gewichtMaxLaenge }}</mat-hint
+    >
   </mat-form-field>
 
   <div class="fotos-ersetzen">

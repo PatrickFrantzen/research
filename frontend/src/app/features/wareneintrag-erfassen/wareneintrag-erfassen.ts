@@ -80,6 +80,7 @@ export class WareneintragErfassen {
   });
 
   protected readonly freitextMaxLaenge = FREITEXT_MAX_LAENGE;
+  protected readonly gewichtMaxLaenge = GEWICHT_MAX_LAENGE;
   protected readonly wareneintragDaten = signal({ avvSucheAnzeige: '', freitext: '', gewicht: '' });
   protected readonly wareneintragForm = form(this.wareneintragDaten, (pfad) => {
     required(pfad.freitext);
