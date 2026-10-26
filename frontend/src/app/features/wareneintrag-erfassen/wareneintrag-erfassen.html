@@ -111,6 +111,11 @@
           <mat-hint align="end">{{ freitext.length }} / {{ freitextMaxLaenge }}</mat-hint>
         </mat-form-field>
 
+        <mat-form-field appearance="outline">
+          <mat-label>Gewicht (optional)</mat-label>
+          <input matInput [formField]="wareneintragForm.gewicht" />
+        </mat-form-field>
+
         @if (fehler()) {
           <p class="fehler" role="alert" appFokusBeiAnzeige>{{ fehler() }}</p>
         }

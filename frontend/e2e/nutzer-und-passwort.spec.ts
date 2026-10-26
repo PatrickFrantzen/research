@@ -35,7 +35,7 @@ test.describe('mit Session von Erika', () => {
     // Direkt angemeldet, ohne zweiten Login-Schritt (Issue #80).
     await expect(clara.getByText('Passwort gesetzt, du bist angemeldet.')).toBeVisible();
     await expect(clara).not.toHaveURL(/\/(login|passwort-setzen)/);
-    await expect(clara.getByRole('heading', { level: 1, name: 'Portal' })).toBeVisible();
+    await expect(clara.getByRole('heading', { level: 1, name: 'Stoffstrom-Portal' })).toBeVisible();
     await neuerKontext.close();
   });
 });

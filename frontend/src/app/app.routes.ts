@@ -72,7 +72,7 @@ export const routes: Routes = [
       },
       {
         path: 'wareneintraege',
-        title: 'Portal – RE-SEARCH',
+        title: 'Stoffstrom-Portal – RE-SEARCH',
         loadComponent: () =>
           import('./features/wareneintrag-liste/wareneintrag-liste.js').then(
             (m) => m.WareneintragListe,

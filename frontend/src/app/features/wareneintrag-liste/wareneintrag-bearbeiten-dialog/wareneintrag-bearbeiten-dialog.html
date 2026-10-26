@@ -32,6 +32,11 @@
     <mat-hint align="end">{{ freitext.length }} / {{ freitextMaxLaenge }}</mat-hint>
   </mat-form-field>
 
+  <mat-form-field appearance="outline">
+    <mat-label>Gewicht (optional)</mat-label>
+    <input matInput data-testid="bearbeiten-gewicht" [formField]="bearbeitenForm.gewicht" />
+  </mat-form-field>
+
   <div class="fotos-ersetzen">
     @for (kachel of fotoKacheln; track kachel.ansicht) {
       <input

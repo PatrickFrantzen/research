@@ -51,6 +51,10 @@
       <dd>{{ wareneintrag.erstelltAm | date: 'dd.MM.yyyy, HH:mm' }}</dd>
       <dt>Freitext</dt>
       <dd class="freitext">{{ wareneintrag.freitext }}</dd>
+      @if (wareneintrag.gewicht) {
+        <dt>Gewicht</dt>
+        <dd>{{ wareneintrag.gewicht }}</dd>
+      }
       <dt>Standort</dt>
       <dd>{{ wareneintrag.standort.name }}</dd>
       <dt>Erfasst von</dt>

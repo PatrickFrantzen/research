@@ -14,7 +14,7 @@ const OEFFENTLICHE_SEITEN = [
 ];
 
 const GESCHUETZTE_SEITEN = [
-  { pfad: '/wareneintraege', ueberschrift: 'Portal' },
+  { pfad: '/wareneintraege', ueberschrift: 'Stoffstrom-Portal' },
   { pfad: '/wareneintrag-erfassen', ueberschrift: 'Stoffstrom erfassen' },
   { pfad: '/nutzerverwaltung', ueberschrift: 'Nutzerverwaltung' },
   { pfad: '/protokolle', ueberschrift: 'Logs' },

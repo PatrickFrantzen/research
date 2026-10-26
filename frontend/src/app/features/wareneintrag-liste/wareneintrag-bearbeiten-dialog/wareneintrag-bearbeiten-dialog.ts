@@ -30,6 +30,7 @@ import {
 import { extrahiereFehlermeldung } from '../../../core/http-fehler.js';
 import {
   FREITEXT_MAX_LAENGE,
+  GEWICHT_MAX_LAENGE,
   Wareneintrag,
   WareneintragApi,
 } from '../../../core/wareneintrag-api.js';
@@ -118,11 +119,13 @@ export class WareneintragBearbeitenDialog {
   protected readonly bearbeitungDaten = signal({
     avvSucheAnzeige: `${this.daten.wareneintrag.avvCode.code} – ${this.daten.wareneintrag.avvCode.bezeichnung}`,
     freitext: this.daten.wareneintrag.freitext,
+    gewicht: this.daten.wareneintrag.gewicht ?? '',
   });
   protected readonly freitextMaxLaenge = FREITEXT_MAX_LAENGE;
   protected readonly bearbeitenForm = form(this.bearbeitungDaten, (pfad) => {
     required(pfad.freitext);
     maxLength(pfad.freitext, FREITEXT_MAX_LAENGE);
+    maxLength(pfad.gewicht, GEWICHT_MAX_LAENGE);
   });
 
   private readonly avvSucheEingabe = new Subject<string>();
@@ -258,6 +261,7 @@ export class WareneintragBearbeitenDialog {
     const formData = new FormData();
     formData.set('avvCodeId', avvCodeId);
     formData.set('freitext', this.freitext.trim());
+    formData.set('gewicht', this.bearbeitungDaten().gewicht.trim());
     for (const { ansicht } of this.fotoKacheln) {
       const datei = this.fotos()[ansicht];
       if (datei) formData.set(ansicht, datei);

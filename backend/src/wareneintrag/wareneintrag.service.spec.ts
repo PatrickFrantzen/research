@@ -554,7 +554,11 @@ describe('WareneintragService', () => {
       } as Express.Multer.File;
       await service.create(
         'nutzer-1',
-        { avvCodeId: 'avv-1', freitext: 'Bauschutt am Eingang' },
+        {
+          avvCodeId: 'avv-1',
+          freitext: 'Bauschutt am Eingang',
+          gewicht: ' ca. 2 t ',
+        },
         {
           fotoFern,
           fotoNah,
@@ -570,6 +574,7 @@ describe('WareneintragService', () => {
           fotoDetailUrl: 'wareneintraege/detail',
           avvCodeId: 'avv-1',
           freitext: 'Bauschutt am Eingang',
+          gewicht: 'ca. 2 t',
           erfasstVonId: 'nutzer-1',
           standortId: 'standort-1',
         },
@@ -607,6 +612,7 @@ describe('WareneintragService', () => {
           fotoDetailUrl: undefined,
           avvCodeId: 'avv-1',
           freitext: 'Bauschutt am Eingang',
+          gewicht: null,
           erfasstVonId: 'nutzer-1',
           standortId: 'standort-1',
         },
@@ -727,6 +733,7 @@ describe('WareneintragService', () => {
         data: {
           avvCodeId: 'avv-2',
           freitext: 'Aktualisierter Text',
+          gewicht: null,
           fotoFernUrl: 'wareneintraege/fern',
           fotoNahUrl: null,
           fotoDetailUrl: null,
@@ -787,6 +794,7 @@ describe('WareneintragService', () => {
         data: {
           avvCodeId: 'avv-2',
           freitext: 'Aktualisierter Text',
+          gewicht: null,
           fotoFernUrl: 'wareneintraege/neu',
           fotoNahUrl: null,
           fotoDetailUrl: null,

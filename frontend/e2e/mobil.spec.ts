@@ -40,8 +40,8 @@ test('Eintrag mit Foto erfassen und in der Liste wiederfinden', async ({ page })
   await expect(page.getByRole('img', { name: 'Fernansicht' })).toHaveCount(0);
 
   const mobileNavigation = page.getByRole('navigation', { name: 'Mobile Navigation' });
-  await mobileNavigation.getByRole('link', { name: 'Portal' }).click();
-  await expect(mobileNavigation.getByRole('link', { name: 'Portal' })).toHaveAttribute(
+  await mobileNavigation.getByRole('link', { name: 'Stoffstrom-Portal' }).click();
+  await expect(mobileNavigation.getByRole('link', { name: 'Stoffstrom-Portal' })).toHaveAttribute(
     'aria-current',
     'page',
   );
