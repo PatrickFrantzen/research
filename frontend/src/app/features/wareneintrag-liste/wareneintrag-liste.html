@@ -1,5 +1,5 @@
 <div class="liste">
-  <h1 #seitentitel class="seitentitel" tabindex="-1">Portal</h1>
+  <h1 #seitentitel class="seitentitel" tabindex="-1">Stoffstrom-Portal</h1>
 
   <div class="filter">
     <mat-form-field appearance="outline">
@@ -203,6 +203,9 @@
               }
             </div>
             <p>{{ wareneintrag.freitext }}</p>
+            @if (wareneintrag.gewicht) {
+              <p class="gewicht">Gewicht: {{ wareneintrag.gewicht }}</p>
+            }
             <p>Standort: {{ wareneintrag.standort.name }}</p>
             <p>
               Erfasst von: {{ wareneintrag.erfasstVon.vorname }}

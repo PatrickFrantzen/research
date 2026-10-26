@@ -42,11 +42,11 @@ test('Login nur per Tastatur, erst mit falschem, dann mit richtigem Passwort', a
 
   // Desktop-Startseite ist die Liste; der Fokus springt auf ihre Überschrift.
   await expect(page).toHaveURL(/\/wareneintraege$/);
-  await expect(page).toHaveTitle('Portal – RE-SEARCH');
-  await expect(page.getByRole('heading', { level: 1, name: 'Portal' })).toBeFocused();
+  await expect(page).toHaveTitle('Stoffstrom-Portal – RE-SEARCH');
+  await expect(page.getByRole('heading', { level: 1, name: 'Stoffstrom-Portal' })).toBeFocused();
 
   const hauptnavigation = page.getByRole('navigation', { name: 'Hauptnavigation' });
-  await expect(hauptnavigation.getByRole('link', { name: 'Portal' })).toHaveAttribute(
+  await expect(hauptnavigation.getByRole('link', { name: 'Stoffstrom-Portal' })).toHaveAttribute(
     'aria-current',
     'page',
   );
@@ -56,7 +56,7 @@ test('Login nur per Tastatur, erst mit falschem, dann mit richtigem Passwort', a
   await page.keyboard.press('Enter');
   await expect(page.getByRole('heading', { level: 1, name: 'Stoffstrom erfassen' })).toBeFocused();
   await expect(erfassenLink).toHaveAttribute('aria-current', 'page');
-  await expect(hauptnavigation.getByRole('link', { name: 'Portal' })).not.toHaveAttribute(
-    'aria-current',
-  );
+  await expect(
+    hauptnavigation.getByRole('link', { name: 'Stoffstrom-Portal' }),
+  ).not.toHaveAttribute('aria-current');
 });

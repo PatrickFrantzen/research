@@ -85,6 +85,9 @@ model Wareneintrag {
 
   freitext String
 
+  // Reine Information (Freitext, z. B. "ca. 2 t"), nicht durchsuchbar.
+  gewicht String?
+
   // Standort als Kopie des Nutzer-Standorts zum Erfassungszeitpunkt, siehe
   // ADR-0004 – deshalb zusätzlich zu erfasstVonId, nicht nur darüber ableitbar.
   erfasstVonId String @map("erfasst_von_id")

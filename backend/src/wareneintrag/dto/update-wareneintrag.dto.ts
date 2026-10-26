@@ -7,7 +7,10 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { FREITEXT_MAX_LAENGE } from './create-wareneintrag.dto.js';
+import {
+  FREITEXT_MAX_LAENGE,
+  GEWICHT_MAX_LAENGE,
+} from './create-wareneintrag.dto.js';
 
 export class UpdateWareneintragDto {
   @IsUUID()
@@ -17,6 +20,11 @@ export class UpdateWareneintragDto {
   @MinLength(1)
   @MaxLength(FREITEXT_MAX_LAENGE)
   freitext!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(GEWICHT_MAX_LAENGE)
+  gewicht?: string;
 
   // Die gespeicherte KI-Analyse löschen, das entscheidet der Nutzer beim
   // Ersetzen eines Fotos (Issue #104).

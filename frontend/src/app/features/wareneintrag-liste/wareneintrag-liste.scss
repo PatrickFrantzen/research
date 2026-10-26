@@ -105,3 +105,11 @@
   vertical-align: text-bottom;
   margin-left: 4px;
 }
+
+// Lange Gewichtstexte: feste Höhe, danach scrollbar; komplett in der Detailansicht.
+.gewicht {
+  max-height: 4.5em;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

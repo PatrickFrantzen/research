@@ -20,6 +20,8 @@ const analyse = {
 createServer((request, response) => {
   request.resume().on('end', () => {
     response.setHeader('content-type', 'application/json');
-    response.end(JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify(analyse) }] } }] }));
+    response.end(
+      JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify(analyse) }] } }] }),
+    );
   });
 }).listen(Number(process.env['GEMINI_STUB_PORT'] ?? 4010));

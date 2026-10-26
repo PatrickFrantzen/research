@@ -17,6 +17,7 @@ const WARENEINTRAG: Wareneintrag = {
   fotoDetailUrl: PIXEL,
   dokumentUrl: null,
   freitext: 'Bauschutt am Eingang',
+  gewicht: null,
   erstelltAm: '2026-09-19T20:08:00',
   avvCode: { id: 'avv-1', code: '17 01 01', bezeichnung: 'Beton' },
   standort: { id: 'standort-1', name: 'Hauptsitz' },

@@ -32,7 +32,11 @@ import {
   waehleFoto,
 } from '../../core/foto-validierung.js';
 import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
-import { FREITEXT_MAX_LAENGE, WareneintragApi } from '../../core/wareneintrag-api.js';
+import {
+  FREITEXT_MAX_LAENGE,
+  GEWICHT_MAX_LAENGE,
+  WareneintragApi,
+} from '../../core/wareneintrag-api.js';
 import { FokusBeiAnzeige } from '../../core/fokus-bei-anzeige.js';
 
 // Verzögerung, bevor die AVV-Suche pro Tastenanschlag ausgelöst wird – die
@@ -76,10 +80,12 @@ export class WareneintragErfassen {
   });
 
   protected readonly freitextMaxLaenge = FREITEXT_MAX_LAENGE;
-  protected readonly wareneintragDaten = signal({ avvSucheAnzeige: '', freitext: '' });
+  protected readonly gewichtMaxLaenge = GEWICHT_MAX_LAENGE;
+  protected readonly wareneintragDaten = signal({ avvSucheAnzeige: '', freitext: '', gewicht: '' });
   protected readonly wareneintragForm = form(this.wareneintragDaten, (pfad) => {
     required(pfad.freitext);
     maxLength(pfad.freitext, FREITEXT_MAX_LAENGE);
+    maxLength(pfad.gewicht, GEWICHT_MAX_LAENGE);
   });
 
   protected ausgewaehlterAvvCode: AvvCode | null = null;
@@ -198,6 +204,7 @@ export class WareneintragErfassen {
       if (dokument) formData.append('dokument', dokument);
       formData.append('avvCodeId', this.ausgewaehlterAvvCode.id);
       formData.append('freitext', this.freitext);
+      formData.append('gewicht', this.wareneintragDaten().gewicht.trim());
 
       await firstValueFrom(this.wareneintragApi.erstellen(formData));
       // Direkt bereit für den nächsten Eintrag, Bestätigung per Snackbar.
@@ -221,7 +228,7 @@ export class WareneintragErfassen {
     this.dokument.set(null);
     this.fotoVorschauenFreigeben();
     this.ausgewaehlterAvvCode = null;
-    this.wareneintragDaten.set({ avvSucheAnzeige: '', freitext: '' });
+    this.wareneintragDaten.set({ avvSucheAnzeige: '', freitext: '', gewicht: '' });
     this.avvSucheEingabe.next('');
     this.suchbegriff.set('');
   }
