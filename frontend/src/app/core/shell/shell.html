@@ -64,6 +64,19 @@
         alt="RE-SEARCH – Transparente Entsorgungswege"
       />
     </a>
+    <span class="spacer"></span>
+    <!-- Ersetzt "Mehr" in der Bottom-Navigation (Issue #147). -->
+    <button
+      #kontoButton
+      matIconButton
+      type="button"
+      aria-label="Konto und Einstellungen"
+      aria-haspopup="dialog"
+      data-testid="konto-menue"
+      (click)="kontoMenueOeffnen()"
+    >
+      <mat-icon>account_circle</mat-icon>
+    </button>
   </mat-toolbar>
 </header>
 
@@ -98,14 +111,13 @@
     <mat-icon>add_circle</mat-icon>
     <span>Erfassen</span>
   </a>
-  <button
-    #mehrButton
-    type="button"
+  <a
+    routerLink="/foto-analyse"
+    routerLinkActive="aktiv"
+    ariaCurrentWhenActive="page"
     class="bottom-nav-item"
-    aria-haspopup="dialog"
-    (click)="mehrOeffnen()"
   >
-    <mat-icon>more_horiz</mat-icon>
-    <span>Mehr</span>
-  </button>
+    <mat-icon>photo_camera</mat-icon>
+    <span>Foto-Analyse</span>
+  </a>
 </nav>

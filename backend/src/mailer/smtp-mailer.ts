@@ -1,4 +1,4 @@
-import type { Transporter } from 'nodemailer';
+import type { SendMailOptions, Transporter } from 'nodemailer';
 import { Mailer } from './mailer.js';
 
 // Links kommen relativ aus den Services und werden hier absolut gemacht.
@@ -31,16 +31,32 @@ export class SmtpMailer extends Mailer {
     );
   }
 
+  async sendFotoAnalyse(
+    empfaenger: string,
+    text: string,
+    foto: { daten: Buffer; mimeType: string },
+  ): Promise<void> {
+    await this.senden(empfaenger, 'RESEARCH: Foto-Analyse', text, [
+      {
+        filename: `foto.${foto.mimeType.split('/')[1]}`,
+        content: foto.daten,
+        contentType: foto.mimeType,
+      },
+    ]);
+  }
+
   private async senden(
     empfaenger: string,
     betreff: string,
     text: string,
+    attachments?: SendMailOptions['attachments'],
   ): Promise<void> {
     await this.transport.sendMail({
       from: this.absender,
       to: empfaenger,
       subject: betreff,
       text,
+      attachments,
     });
   }
 }

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  fotoAnalyseMailText,
   normalisiereAvvCode,
   pruefeAntwort,
   rundeAufHundert,
@@ -174,4 +175,45 @@ describe('normalisiereAvvCode', () => {
       expect(normalisiereAvvCode(roh)).toBeNull();
     },
   );
+});
+
+describe('fotoAnalyseMailText', () => {
+  const datum = new Date('2026-10-27T12:00:00Z');
+
+  it('enthält Fraktionen, Einschätzung, Vorschlag und Gefahrhinweis', () => {
+    const text = fotoAnalyseMailText(
+      {
+        fraktionen: [{ name: 'Holz', anteilProzent: 100 }],
+        einschaetzung: 'Behandeltes Holz.',
+        avvVorschlag: {
+          code: '17 02 04',
+          bezeichnung: 'Holz mit gefährlichen Stoffen',
+          gefaehrlich: true,
+          begruendung: 'Lackiert.',
+        },
+      },
+      'Max',
+      datum,
+    );
+
+    expect(text).toContain('Hallo Max');
+    expect(text).toContain('27.10.2026, 13:00');
+    expect(text).toContain('- Holz: 100 %');
+    expect(text).toContain('Einschätzung: Behandeltes Holz.');
+    expect(text).toContain(
+      'AVV-Vorschlag: 17 02 04 – Holz mit gefährlichen Stoffen\n⚠ gefährlicher Abfall\nBegründung: Lackiert.',
+    );
+  });
+
+  it('nennt fehlenden Abfall und fehlenden Vorschlag', () => {
+    const text = fotoAnalyseMailText(
+      { fraktionen: [], einschaetzung: 'Kein Abfall.', avvVorschlag: null },
+      'Max',
+      datum,
+    );
+
+    expect(text).toContain('Auf dem Foto ist kein Abfall erkennbar.');
+    expect(text).toContain('AVV-Vorschlag: keiner');
+    expect(text).not.toContain('gefährlicher Abfall');
+  });
 });

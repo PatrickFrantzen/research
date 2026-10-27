@@ -84,3 +84,9 @@ Stoffstrom gibt es höchstens eine gespeicherte KI-Analyse, jedes Speichern
 Löscht oder ersetzt der Ersteller Fotos, entscheidet er per Rückfrage, ob die
 gespeicherte KI-Analyse bleibt; das PDF spielt dafür keine Rolle.
 _Avoid_: Bilderkennung, Auswertung, Gutachten
+
+**Foto-Analyse**:
+Mobile Schnellprüfung ohne Stoffstrom: ein Foto, daraus eine KI-Analyse samt
+AVV-Code-Vorschlag, die der Nutzer per E-Mail an sich selbst schickt oder
+verwirft. Nichts wird gespeichert (Issue #147).
+_Avoid_: Schnellanalyse, Kamera-Analyse

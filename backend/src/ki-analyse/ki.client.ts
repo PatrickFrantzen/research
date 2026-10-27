@@ -4,5 +4,10 @@ import type { AnalyseFoto } from './gemini.client.js';
 // auf dem Server (ki-zentrale), je nach Konfiguration (KiAnalyseModule).
 export abstract class KiClient {
   // Liefert das geparste JSON der Antwort, ungeprüft (siehe pruefeAntwort).
-  abstract analysiere(fotos: AnalyseFoto[], kontext: string): Promise<unknown>;
+  // anweisung: Systemprompt, Standard ist die Wareneintrag-Analyse.
+  abstract analysiere(
+    fotos: AnalyseFoto[],
+    kontext: string,
+    anweisung?: string,
+  ): Promise<unknown>;
 }

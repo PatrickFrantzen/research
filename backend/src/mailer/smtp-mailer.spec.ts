@@ -58,3 +58,25 @@ describe('SmtpMailer', () => {
     );
   });
 });
+
+describe('SmtpMailer.sendFotoAnalyse', () => {
+  it('hängt das Foto an die Textmail an', async () => {
+    const { mailer, gesendet } = buildMailer();
+
+    await mailer.sendFotoAnalyse('max@research.local', 'Analyse', {
+      daten: Buffer.from('jpeg'),
+      mimeType: 'image/jpeg',
+    });
+
+    const mail = gesendet[0] as unknown as {
+      text: string;
+      attachments: Array<{ filename: string; contentType: string }>;
+    };
+    expect(gesendet[0].to[0].address).toBe('max@research.local');
+    expect(mail.text).toBe('Analyse');
+    expect(mail.attachments[0]).toMatchObject({
+      filename: 'foto.jpeg',
+      contentType: 'image/jpeg',
+    });
+  });
+});

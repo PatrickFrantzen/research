@@ -42,7 +42,7 @@ const ANALYSE_AUSWAHL = {
 // 15 MB pro Anfrage (Gemini ~20 MB).
 export const MAX_FOTOS_BYTES = 10 * 1024 * 1024;
 export const ANALYSEN_PRO_MINUTE = 5;
-const VORSCHAU_TTL_SEKUNDEN = 60 * 60;
+export const VORSCHAU_TTL_SEKUNDEN = 60 * 60;
 
 // Schlüssel pro Eintrag und Nutzer: das Speichern (Issue #94) übernimmt nur,
 // was hier wirklich von der KI kam, nie Werte aus dem Client.
@@ -53,6 +53,53 @@ export function vorschauSchluessel(
   return `ki-analyse:vorschau:${wareneintragId}:${nutzerId}`;
 }
 
+export type KiRedis = Pick<Redis, 'incr' | 'expire' | 'set' | 'get' | 'del'>;
+
+// Eigener Zähler statt ThrottlerGuard: der globale Guard läuft vor der
+// Anmeldung und kennt nur die IP, das Limit gilt aber pro Nutzer. Gilt für
+// KI-Analyse und Foto-Analyse gemeinsam (Issue #147).
+export async function pruefeKiLimit(
+  redis: Pick<KiRedis, 'incr' | 'expire'>,
+  nutzerId: string,
+): Promise<void> {
+  const schluessel = `ki-analyse:limit:${nutzerId}`;
+  const anzahl = await redis.incr(schluessel);
+  if (anzahl === 1) await redis.expire(schluessel, 60);
+  if (anzahl > ANALYSEN_PRO_MINUTE) {
+    throw new HttpException(
+      'Zu viele KI-Analysen. Bitte eine Minute warten.',
+      HttpStatus.TOO_MANY_REQUESTS,
+    );
+  }
+}
+
+// Ruft die KI auf und prüft die Antwort; übersetzt Fehler in HTTP-Antworten.
+export async function frageKi(
+  aufruf: () => Promise<unknown>,
+): Promise<GepruefteAntwort> {
+  let antwort: GepruefteAntwort | null;
+  try {
+    antwort = pruefeAntwort(await aufruf());
+  } catch (error) {
+    if (error instanceof GeminiNichtEingerichtet)
+      throw new ServiceUnavailableException(
+        'Die KI-Analyse ist nicht eingerichtet.',
+      );
+    if (error instanceof GeminiKontingentErschoepft) {
+      throw new HttpException(
+        'Tageskontingent der KI-Analyse erschöpft, bitte morgen erneut versuchen.',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+    antwort = null;
+  }
+  if (!antwort)
+    throw new BadGatewayException(
+      'Die KI-Analyse ist fehlgeschlagen. Bitte später erneut versuchen.',
+    );
+  return antwort;
+}
+
 @Injectable()
 export class KiAnalyseService {
   constructor(
@@ -60,10 +107,7 @@ export class KiAnalyseService {
     private readonly objectStorage: ObjectStorageService,
     private readonly gemini: KiClient,
     @Inject(KI_REDIS)
-    private readonly redis: Pick<
-      Redis,
-      'incr' | 'expire' | 'set' | 'get' | 'del'
-    >,
+    private readonly redis: KiRedis,
   ) {}
 
   async gespeicherte(
@@ -126,7 +170,7 @@ export class KiAnalyseService {
     if (keys.length === 0)
       throw new BadRequestException('Der Wareneintrag hat keine Fotos.');
 
-    await this.pruefeLimit(nutzerId);
+    await pruefeKiLimit(this.redis, nutzerId);
 
     // Größe erst über die Metadaten prüfen: zu große Fotos nie in den RAM
     // laden, Base64 für Gemini würde sie noch einmal aufblähen (Issue #102).
@@ -148,26 +192,7 @@ export class KiAnalyseService {
     );
 
     const kontext = `Erfasster AVV-Code: ${wareneintrag.avvCode.code} ${wareneintrag.avvCode.bezeichnung}\nFreitext des Nutzers: ${wareneintrag.freitext}`;
-    let antwort: GepruefteAntwort | null;
-    try {
-      antwort = pruefeAntwort(await this.gemini.analysiere(fotos, kontext));
-    } catch (error) {
-      if (error instanceof GeminiNichtEingerichtet)
-        throw new ServiceUnavailableException(
-          'Die KI-Analyse ist nicht eingerichtet.',
-        );
-      if (error instanceof GeminiKontingentErschoepft) {
-        throw new HttpException(
-          'Tageskontingent der KI-Analyse erschöpft, bitte morgen erneut versuchen.',
-          HttpStatus.TOO_MANY_REQUESTS,
-        );
-      }
-      antwort = null;
-    }
-    if (!antwort)
-      throw new BadGatewayException(
-        'Die KI-Analyse ist fehlgeschlagen. Bitte später erneut versuchen.',
-      );
+    const antwort = await frageKi(() => this.gemini.analysiere(fotos, kontext));
     const ergebnis = await this.mitAvvVorschlag(
       antwort,
       wareneintrag.avvCode.code,
@@ -198,19 +223,5 @@ export class KiAnalyseService {
           })
         : null;
     return { ...antwort, avvPruefung: { ...pruefung, vorschlag } };
-  }
-
-  // Eigener Zähler statt ThrottlerGuard: der globale Guard läuft vor der
-  // Anmeldung und kennt nur die IP, das Limit gilt aber pro Nutzer.
-  private async pruefeLimit(nutzerId: string): Promise<void> {
-    const schluessel = `ki-analyse:limit:${nutzerId}`;
-    const anzahl = await this.redis.incr(schluessel);
-    if (anzahl === 1) await this.redis.expire(schluessel, 60);
-    if (anzahl > ANALYSEN_PRO_MINUTE) {
-      throw new HttpException(
-        'Zu viele KI-Analysen. Bitte eine Minute warten.',
-        HttpStatus.TOO_MANY_REQUESTS,
-      );
-    }
   }
 }
