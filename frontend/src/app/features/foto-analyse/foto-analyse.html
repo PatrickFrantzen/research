@@ -23,16 +23,13 @@
 
       @if (ergebnis(); as analyse) {
         <section aria-labelledby="ergebnis-titel">
-          <h2 id="ergebnis-titel">Ergebnis</h2>
+          <h2 id="ergebnis-titel" appFokusBeiAnzeige>Ergebnis</h2>
           <app-ki-analyse-ergebnis [ergebnis]="analyse" />
           <div class="avv-vorschlag" data-testid="avv-vorschlag">
             @if (analyse.avvVorschlag; as vorschlag) {
               <p class="code">AVV-Vorschlag: {{ vorschlag.code }} – {{ vorschlag.bezeichnung }}</p>
               @if (vorschlag.gefaehrlich) {
-                <p class="gefaehrlich" data-testid="gefaehrlich">
-                  <mat-icon aria-hidden="true">warning</mat-icon>
-                  Gefährlicher Abfall
-                </p>
+                <p class="gefaehrlich" data-testid="gefaehrlich">⚠ gefährlicher Abfall</p>
               }
               <p>{{ vorschlag.begruendung }}</p>
             } @else {
@@ -54,10 +51,10 @@
         </p>
       }
       @if (fehler(); as meldung) {
-        <p class="fehler" role="alert">{{ meldung }}</p>
+        <p class="fehler" role="alert" appFokusBeiAnzeige>{{ meldung }}</p>
       }
       @if (gesendet()) {
-        <p role="status" data-testid="gesendet">
+        <p role="status" data-testid="gesendet" appFokusBeiAnzeige>
           Die Analyse wurde an deine E-Mail-Adresse gesendet.
         </p>
       }

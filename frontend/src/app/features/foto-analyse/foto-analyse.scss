@@ -25,11 +25,8 @@
   }
 }
 
-// Nie nur über Farbe: Icon und Text.
+// Nie nur über Farbe: Zeichen und Text.
 .gefaehrlich {
-  display: flex;
-  align-items: center;
-  gap: 6px;
   color: var(--mat-sys-error);
   font-weight: 500;
 }

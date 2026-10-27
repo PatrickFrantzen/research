@@ -29,4 +29,10 @@ describe('FotoAnalyseApi', () => {
       request.flush(null);
     }
   });
+
+  it('deletes the preview when discarding', () => {
+    api.verwerfen().subscribe();
+
+    expect(httpMock.expectOne('/api/v1/foto-analyse').request.method).toBe('DELETE');
+  });
 });

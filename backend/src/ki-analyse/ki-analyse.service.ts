@@ -57,7 +57,7 @@ export type KiRedis = Pick<Redis, 'incr' | 'expire' | 'set' | 'get' | 'del'>;
 
 // Eigener Zähler statt ThrottlerGuard: der globale Guard läuft vor der
 // Anmeldung und kennt nur die IP, das Limit gilt aber pro Nutzer. Gilt für
-// Wareneintrag- und Foto-Analyse gemeinsam (Issue #147).
+// KI-Analyse und Foto-Analyse gemeinsam (Issue #147).
 export async function pruefeKiLimit(
   redis: Pick<KiRedis, 'incr' | 'expire'>,
   nutzerId: string,

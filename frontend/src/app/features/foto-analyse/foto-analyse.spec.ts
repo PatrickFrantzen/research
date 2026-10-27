@@ -18,7 +18,11 @@ describe('FotoAnalyse', () => {
   let api: jasmine.SpyObj<FotoAnalyseApi>;
 
   beforeEach(() => {
-    api = jasmine.createSpyObj<FotoAnalyseApi>('FotoAnalyseApi', ['analysieren', 'senden']);
+    api = jasmine.createSpyObj<FotoAnalyseApi>('FotoAnalyseApi', [
+      'analysieren',
+      'senden',
+      'verwerfen',
+    ]);
     spyOn(HTMLInputElement.prototype, 'click');
     TestBed.configureTestingModule({
       providers: [{ provide: FotoAnalyseApi, useValue: api }],
@@ -85,11 +89,13 @@ describe('FotoAnalyse', () => {
     klick(element, 'analysieren');
     await fixture.whenStable();
 
+    api.verwerfen.and.returnValue(of(undefined));
     klick(element, 'verwerfen');
     await fixture.whenStable();
 
     expect(element.querySelector('.vorschau')).toBeNull();
     expect(element.querySelector('[data-testid="aufnehmen"]')).not.toBeNull();
+    expect(api.verwerfen).toHaveBeenCalled();
   });
 
   it('shows the error and retries', async () => {

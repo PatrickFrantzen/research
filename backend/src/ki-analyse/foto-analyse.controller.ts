@@ -1,5 +1,6 @@
 import {
   Controller,
+  Delete,
   FileTypeValidator,
   HttpCode,
   ParseFilePipe,
@@ -53,6 +54,12 @@ export class FotoAnalyseController {
       { daten: foto.buffer, mimeType: foto.mimetype },
       request.user.id,
     );
+  }
+
+  @Delete()
+  @HttpCode(204)
+  async verwerfen(@Req() request: AuthenticatedRequest): Promise<void> {
+    await this.fotoAnalyseService.verwerfe(request.user.id);
   }
 
   // Das Foto kommt erneut vom Client, das Ergebnis aus Redis.

@@ -14,6 +14,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { firstValueFrom } from 'rxjs';
 import { AppFehlerMelder } from '../../core/app-fehler-melder.js';
+import { FokusBeiAnzeige } from '../../core/fokus-bei-anzeige.js';
 import { FotoAnalyseApi, FotoAnalyseErgebnis } from '../../core/foto-analyse-api.js';
 import { FOTO_ACCEPT, beschreibeFoto, uebernehmeFoto } from '../../core/foto-validierung.js';
 import { extrahiereFehlermeldung } from '../../core/http-fehler.js';
@@ -24,6 +25,7 @@ import { KiAnalyseErgebnisAnzeige } from '../wareneintrag-liste/ki-analyse-ergeb
 @Component({
   selector: 'app-foto-analyse',
   imports: [
+    FokusBeiAnzeige,
     KiAnalyseErgebnisAnzeige,
     MatButtonModule,
     MatCardModule,
@@ -103,6 +105,9 @@ export class FotoAnalyse {
   }
 
   protected verwerfen(): void {
+    // Fehler egal: die Vorschau läuft in Redis ohnehin nach einer Stunde ab.
+    if (this.ergebnis() && !this.gesendet())
+      this.api.verwerfen().subscribe({ error: () => undefined });
     this.foto.set(null);
     this.ergebnis.set(null);
     this.fehler.set(null);

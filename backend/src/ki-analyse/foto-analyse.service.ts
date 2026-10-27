@@ -22,9 +22,9 @@ export function fotoVorschauSchluessel(nutzerId: string): string {
   return `ki-analyse:foto:${nutzerId}`;
 }
 
-// Foto-Analyse ohne Wareneintrag (Issue #147). Foto und Ergebnis werden nicht
-// gespeichert; nur das Ergebnis liegt bis zum Mailversand in Redis, damit die
-// Mail genau das enthält, was von der KI kam.
+// Foto-Analyse ohne Stoffstrom (Issue #147). Foto und Ergebnis werden nicht
+// gespeichert; nur das Ergebnis liegt bis zum Mailversand oder Verwerfen in
+// Redis, damit die Mail genau das enthält, was von der KI kam.
 @Injectable()
 export class FotoAnalyseService {
   constructor(
@@ -67,6 +67,11 @@ export class FotoAnalyseService {
       VORSCHAU_TTL_SEKUNDEN,
     );
     return ergebnis;
+  }
+
+  // "Verwerfen": die Vorschau nicht erst nach einer Stunde ablaufen lassen.
+  async verwerfe(nutzerId: string): Promise<void> {
+    await this.redis.del(fotoVorschauSchluessel(nutzerId));
   }
 
   // Empfänger ist immer die eigene Adresse, nie ein Wert aus dem Request.

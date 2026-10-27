@@ -114,7 +114,7 @@ describe('Shell', () => {
     fixture.detectChanges();
     document.body.appendChild(fixture.nativeElement);
 
-    fixture.componentInstance.mehrOeffnen();
+    fixture.componentInstance.kontoMenueOeffnen();
     (document.activeElement as HTMLElement | null)?.blur();
     geschlossen.next();
 

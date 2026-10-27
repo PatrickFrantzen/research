@@ -127,6 +127,15 @@ describe('FotoAnalyseService', () => {
     expect(redis.werte.has(fotoVorschauSchluessel('nutzer-1'))).toBe(false);
   });
 
+  it('löscht die Vorschau beim Verwerfen', async () => {
+    const { service, redis } = erstelle();
+    await service.analysiere(FOTO, 'nutzer-1');
+
+    await service.verwerfe('nutzer-1');
+
+    expect(redis.werte.has(fotoVorschauSchluessel('nutzer-1'))).toBe(false);
+  });
+
   it('lehnt das Senden ohne aktuelle Analyse ab', async () => {
     const { service, mailer } = erstelle();
 
