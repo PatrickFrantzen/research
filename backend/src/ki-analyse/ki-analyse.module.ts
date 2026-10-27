@@ -5,14 +5,17 @@ import { ObjectStorageModule } from '../object-storage/object-storage.module.js'
 import { GeminiClient } from './gemini.client.js';
 import { KiClient } from './ki.client.js';
 import { KiZentraleClient } from './ki-zentrale.client.js';
+import { FotoAnalyseController } from './foto-analyse.controller.js';
+import { FotoAnalyseService } from './foto-analyse.service.js';
 import { KiAnalyseController } from './ki-analyse.controller.js';
 import { KI_REDIS, KiAnalyseService } from './ki-analyse.service.js';
 
 @Module({
   imports: [ObjectStorageModule],
-  controllers: [KiAnalyseController],
+  controllers: [KiAnalyseController, FotoAnalyseController],
   providers: [
     KiAnalyseService,
+    FotoAnalyseService,
     // Mit KI_ZENTRALE_TOKEN die KI-Zentrale, sonst Gemini (Rückweg, E2E-Stub).
     {
       provide: KiClient,

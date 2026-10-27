@@ -1,4 +1,4 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { KiAnalyseErgebnis } from '../../../core/wareneintrag-api.js';
 
@@ -49,18 +49,20 @@ const PALETTE = [
     }
     <p class="einschaetzung" data-testid="einschaetzung">{{ ergebnis().einschaetzung }}</p>
     <!-- Nur Anzeige: übernommen wird ein Vorschlag über "Bearbeiten" (Issue #95). -->
-    <div class="avv-pruefung" [class]="ergebnis().avvPruefung.urteil" data-testid="avv-pruefung">
-      <p class="urteil">
-        <mat-icon aria-hidden="true">{{ urteil().icon }}</mat-icon>
-        {{ urteil().text }}
-      </p>
-      <p>{{ ergebnis().avvPruefung.begruendung }}</p>
-      @if (ergebnis().avvPruefung.vorschlag; as vorschlag) {
-        <p data-testid="avv-vorschlag">
-          Vorschlag: {{ vorschlag.code }} – {{ vorschlag.bezeichnung }}
+    @if (ergebnis().avvPruefung; as pruefung) {
+      <div class="avv-pruefung" [class]="pruefung.urteil" data-testid="avv-pruefung">
+        <p class="urteil">
+          <mat-icon aria-hidden="true">{{ URTEILE[pruefung.urteil].icon }}</mat-icon>
+          {{ URTEILE[pruefung.urteil].text }}
         </p>
-      }
-    </div>
+        <p>{{ pruefung.begruendung }}</p>
+        @if (pruefung.vorschlag; as vorschlag) {
+          <p data-testid="avv-vorschlag">
+            Vorschlag: {{ vorschlag.code }} – {{ vorschlag.bezeichnung }}
+          </p>
+        }
+      </div>
+    }
     <p class="hinweis">KI-Schätzung aus den Fotos, keine Messung.</p>
   `,
   styles: `
@@ -138,8 +140,11 @@ const PALETTE = [
   `,
 })
 export class KiAnalyseErgebnisAnzeige {
-  readonly ergebnis = input.required<KiAnalyseErgebnis>();
-  protected readonly urteil = computed(() => URTEILE[this.ergebnis().avvPruefung.urteil]);
+  // Ohne avvPruefung (Foto-Analyse, Issue #147) nur die Zusammensetzung.
+  readonly ergebnis = input.required<
+    Omit<KiAnalyseErgebnis, 'avvPruefung'> & Partial<Pick<KiAnalyseErgebnis, 'avvPruefung'>>
+  >();
+  protected readonly URTEILE = URTEILE;
 
   protected farbe(index: number): string {
     return PALETTE[index % PALETTE.length];

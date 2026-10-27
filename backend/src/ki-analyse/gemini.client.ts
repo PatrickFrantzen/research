@@ -33,10 +33,14 @@ export class GeminiClient extends KiClient {
   }
 
   // Liefert das von Gemini geparste JSON, ungeprüft (siehe pruefeAntwort).
-  async analysiere(fotos: AnalyseFoto[], kontext: string): Promise<unknown> {
+  async analysiere(
+    fotos: AnalyseFoto[],
+    kontext: string,
+    anweisung = SYSTEM_PROMPT,
+  ): Promise<unknown> {
     if (!this.config) throw new GeminiNichtEingerichtet();
     const anfrage = JSON.stringify({
-      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      systemInstruction: { parts: [{ text: anweisung }] },
       contents: [
         {
           role: 'user',

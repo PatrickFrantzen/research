@@ -6,6 +6,11 @@ export abstract class Mailer {
     link: string,
   ): Promise<void>;
   abstract sendEinladung(empfaenger: string, link: string): Promise<void>;
+  abstract sendFotoAnalyse(
+    empfaenger: string,
+    text: string,
+    foto: { daten: Buffer; mimeType: string },
+  ): Promise<void>;
 }
 
 // Es ist noch kein SMTP-Versand angebunden (kein Bestandteil dieses Tickets).
@@ -25,5 +30,9 @@ export class ConsoleMailer extends Mailer {
 
   async sendEinladung(empfaenger: string, _link: string): Promise<void> {
     this.logger.log(`Einladung wurde an ${empfaenger} versendet.`);
+  }
+
+  async sendFotoAnalyse(empfaenger: string): Promise<void> {
+    this.logger.log(`Foto-Analyse wurde an ${empfaenger} versendet.`);
   }
 }

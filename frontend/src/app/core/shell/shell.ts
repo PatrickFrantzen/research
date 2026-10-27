@@ -28,14 +28,16 @@ export class Shell {
   protected readonly themeService = inject(ThemeService);
   private readonly router = inject(Router);
   private readonly bottomSheet = inject(MatBottomSheet);
-  private readonly mehrButton = viewChild.required<ElementRef<HTMLButtonElement>>('mehrButton');
+  private readonly mehrButton = viewChild.required('mehrButton', {
+    read: ElementRef<HTMLButtonElement>,
+  });
 
   // Kein automatisches Zurücksetzen des Fokus: nach einer Navigation aus dem
   // Menü gehört er auf die Überschrift der neuen Seite (FokusNachNavigation).
-  // Nur wenn das Menü ohne Navigation geschlossen wurde, zurück auf "Mehr".
+  // Nur wenn das Menü ohne Navigation geschlossen wurde, zurück auf den Konto-Button.
   mehrOeffnen(): void {
     this.bottomSheet
-      .open(MehrMenu, { restoreFocus: false, ariaLabel: 'Weitere Aktionen' })
+      .open(MehrMenu, { restoreFocus: false, ariaLabel: 'Konto und Einstellungen' })
       .afterDismissed()
       .subscribe(() => {
         const aktiv = document.activeElement;

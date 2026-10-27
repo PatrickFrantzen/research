@@ -32,7 +32,11 @@ describe('Shell', () => {
     expect(text).toContain('Stoffstrom erfassen');
     expect(text).toContain('Einstellungen');
     expect(text).toContain('Erfassen');
-    expect(text).toContain('Mehr');
+    expect(text).toContain('Foto-Analyse');
+    expect(text).not.toContain('Mehr');
+    expect(
+      fixture.nativeElement.querySelector('.mobile-titelleiste [data-testid="konto-menue"]'),
+    ).not.toBeNull();
     const logo = fixture.nativeElement.querySelector('.marke') as HTMLImageElement | null;
     expect(logo?.getAttribute('src')).toBe('brand/re-search-header.svg');
   });
@@ -84,7 +88,7 @@ describe('Shell', () => {
     expect(umschaltenSpy).toHaveBeenCalled();
   });
 
-  it('opens the Mehr bottom sheet with MehrMenu', () => {
+  it('opens MehrMenu as bottom sheet from the account button in the mobile title bar (Issue #147)', () => {
     const bottomSheet = TestBed.inject(MatBottomSheet);
     const openSpy = spyOn(bottomSheet, 'open').and.returnValue({
       afterDismissed: () => EMPTY,
@@ -92,13 +96,15 @@ describe('Shell', () => {
     const fixture = TestBed.createComponent(Shell);
     fixture.detectChanges();
 
-    fixture.componentInstance.mehrOeffnen();
+    (
+      fixture.nativeElement.querySelector('[data-testid="konto-menue"]') as HTMLButtonElement
+    ).click();
 
     const arg: unknown = openSpy.calls.mostRecent().args[0];
     expect(arg).toBe(MehrMenu);
   });
 
-  it('returns focus to "Mehr" when the bottom sheet closes without navigation', () => {
+  it('returns focus to the account button when the bottom sheet closes without navigation', () => {
     const bottomSheet = TestBed.inject(MatBottomSheet);
     const geschlossen = new Subject<void>();
     const openSpy = spyOn(bottomSheet, 'open').and.returnValue({
@@ -114,9 +120,9 @@ describe('Shell', () => {
 
     expect(openSpy.calls.mostRecent().args[1]).toEqual({
       restoreFocus: false,
-      ariaLabel: 'Weitere Aktionen',
+      ariaLabel: 'Konto und Einstellungen',
     });
-    expect(document.activeElement?.textContent).toContain('Mehr');
+    expect(document.activeElement?.getAttribute('data-testid')).toBe('konto-menue');
     fixture.nativeElement.remove();
   });
 

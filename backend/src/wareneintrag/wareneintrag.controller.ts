@@ -61,7 +61,7 @@ const MAX_PRO_SEITE = 100;
 // Enges Whitelisting statt `/^image\//`: verhindert riskante Subtypen wie
 // image/svg+xml (kann Script enthalten) und erzwingt echte
 // Magic-Number-Prüfung statt client-kontrolliertem MIME-Type (Issue #32).
-const ERLAUBTE_FOTO_TYPEN = /^(image\/jpeg|image\/png|image\/webp)$/;
+export const ERLAUBTE_FOTO_TYPEN = /^(image\/jpeg|image\/png|image\/webp)$/;
 const ERLAUBTER_DOKUMENT_TYP = /^application\/pdf$/;
 
 // Multer bricht den Stream ab, sobald ein Limit überschritten wird, statt

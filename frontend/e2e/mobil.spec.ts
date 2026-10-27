@@ -1,15 +1,15 @@
 // Mobile Journey (Issues #54, #62): Dashboard → Wareneintrag mit Foto
 // erfassen → in der Liste wiederfinden, dazu Bottom-Navigation und
-// "Mehr"-Menü per Tastatur sowie AXE auf den mobilen Ansichten.
+// Konto-Menü per Tastatur sowie AXE auf den mobilen Ansichten.
 import { expect, test } from '@playwright/test';
 import { AVV_A, ERIKA, pruefeBarrierefreiheit, TEST_PNG } from './testdaten.js';
 
 test.use({ storageState: ERIKA.storageState });
 
 for (const farbschema of ['light', 'dark'] as const) {
-  test(`AXE auf Dashboard, Erfassen und Liste (${farbschema})`, async ({ page }) => {
+  test(`AXE auf Dashboard, Erfassen, Liste und Foto-Analyse (${farbschema})`, async ({ page }) => {
     await page.emulateMedia({ colorScheme: farbschema });
-    for (const pfad of ['/', '/wareneintrag-erfassen', '/wareneintraege']) {
+    for (const pfad of ['/', '/wareneintrag-erfassen', '/wareneintraege', '/foto-analyse']) {
       await page.goto(pfad);
       await expect(page.getByRole('heading', { level: 1 })).toBeAttached();
       await page.waitForLoadState('networkidle');
@@ -70,17 +70,18 @@ test('Eintrag mit Foto erfassen und in der Liste wiederfinden', async ({ page })
   await pruefeBarrierefreiheit(page, 'Detail-Dialog mobil');
 });
 
-test('"Mehr"-Menü per Tastatur öffnen, schließen und darüber navigieren', async ({ page }) => {
+// Konto-Menü in der Titelleiste ersetzt "Mehr" (Issue #147).
+test('Konto-Menü per Tastatur öffnen, schließen und darüber navigieren', async ({ page }) => {
   await page.goto('/');
-  const mehr = page.getByRole('button', { name: 'Mehr' });
+  const mehr = page.getByRole('button', { name: 'Konto und Einstellungen' });
 
   await mehr.focus();
   await page.keyboard.press('Enter');
   const menue = page.locator('mat-bottom-sheet-container');
   await expect(menue.getByRole('link', { name: 'Einstellungen' })).toBeVisible();
-  await pruefeBarrierefreiheit(page, 'Mehr-Menü offen');
+  await pruefeBarrierefreiheit(page, 'Konto-Menü offen');
 
-  // Ohne Navigation geschlossen: Fokus zurück auf "Mehr".
+  // Ohne Navigation geschlossen: Fokus zurück auf den Konto-Button.
   await page.keyboard.press('Escape');
   await expect(menue).toBeHidden();
   await expect(mehr).toBeFocused();

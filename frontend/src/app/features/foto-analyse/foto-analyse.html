@@ -1,0 +1,111 @@
+<div class="seite">
+  <mat-card class="karte">
+    <mat-card-header>
+      <h1 mat-card-title>Foto-Analyse</h1>
+    </mat-card-header>
+
+    <mat-card-content>
+      <input
+        #kamera
+        type="file"
+        [accept]="FOTO_ACCEPT"
+        capture="environment"
+        data-testid="kamera"
+        (change)="fotoGewaehlt($event)"
+        hidden
+      />
+
+      @if (vorschauUrl(); as url) {
+        <img class="vorschau" [src]="url" alt="Aufgenommenes Foto" />
+      } @else {
+        <p>Fotografiere eine Abfallmenge. Die KI schätzt Zusammensetzung und AVV-Code.</p>
+      }
+
+      @if (ergebnis(); as analyse) {
+        <section aria-labelledby="ergebnis-titel">
+          <h2 id="ergebnis-titel">Ergebnis</h2>
+          <app-ki-analyse-ergebnis [ergebnis]="analyse" />
+          <div class="avv-vorschlag" data-testid="avv-vorschlag">
+            @if (analyse.avvVorschlag; as vorschlag) {
+              <p class="code">AVV-Vorschlag: {{ vorschlag.code }} – {{ vorschlag.bezeichnung }}</p>
+              @if (vorschlag.gefaehrlich) {
+                <p class="gefaehrlich" data-testid="gefaehrlich">
+                  <mat-icon aria-hidden="true">warning</mat-icon>
+                  Gefährlicher Abfall
+                </p>
+              }
+              <p>{{ vorschlag.begruendung }}</p>
+            } @else {
+              <p>Kein AVV-Vorschlag, die KI war sich nicht sicher.</p>
+            }
+          </div>
+        </section>
+      } @else if (foto()) {
+        <p class="hinweis">
+          Das Foto geht über die KI-Zentrale an OpenAI in den USA. Keine Fotos mit Personen,
+          Kennzeichen oder vertraulichen Informationen analysieren.
+        </p>
+      }
+
+      @if (laeuft()) {
+        <mat-progress-bar mode="indeterminate" aria-label="Wird verarbeitet" />
+        <p class="cdk-visually-hidden" role="status">
+          {{ ergebnis() ? 'E-Mail wird gesendet …' : 'KI-Analyse läuft …' }}
+        </p>
+      }
+      @if (fehler(); as meldung) {
+        <p class="fehler" role="alert">{{ meldung }}</p>
+      }
+      @if (gesendet()) {
+        <p role="status" data-testid="gesendet">
+          Die Analyse wurde an deine E-Mail-Adresse gesendet.
+        </p>
+      }
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      @if (gesendet()) {
+        <button matButton="filled" type="button" (click)="verwerfen(); aufnehmen()">
+          Neue Foto-Analyse
+        </button>
+      } @else if (ergebnis()) {
+        <button matButton type="button" data-testid="verwerfen" (click)="verwerfen()">
+          Verwerfen
+        </button>
+        @if (fehler()) {
+          <button matButton type="button" [disabled]="laeuft()" (click)="erneutVersuchen()">
+            Erneut versuchen
+          </button>
+        } @else {
+          <button
+            matButton="filled"
+            type="button"
+            data-testid="senden"
+            [disabled]="laeuft()"
+            (click)="senden()"
+          >
+            Per E-Mail senden
+          </button>
+        }
+      } @else if (foto()) {
+        <button matButton type="button" [disabled]="laeuft()" (click)="aufnehmen()">
+          Neu aufnehmen
+        </button>
+        <button
+          matButton="filled"
+          type="button"
+          data-testid="analysieren"
+          [disabled]="laeuft()"
+          (click)="fehler() ? erneutVersuchen() : analysieren()"
+        >
+          {{ fehler() ? 'Erneut versuchen' : 'Analysieren' }}
+        </button>
+      } @else {
+        <button matButton="filled" type="button" data-testid="aufnehmen" (click)="aufnehmen()">
+          <mat-icon>photo_camera</mat-icon>
+          Foto aufnehmen
+        </button>
+      }
+    </mat-card-actions>
+  </mat-card>
+</div>

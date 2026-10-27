@@ -87,6 +87,12 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'foto-analyse',
+        title: 'Foto-Analyse – RE-SEARCH',
+        loadComponent: () =>
+          import('./features/foto-analyse/foto-analyse.js').then((m) => m.FotoAnalyse),
+      },
+      {
         path: 'einstellungen',
         title: 'Einstellungen – RE-SEARCH',
         loadComponent: () =>

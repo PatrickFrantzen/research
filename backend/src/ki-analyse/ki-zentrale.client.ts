@@ -47,7 +47,11 @@ export class KiZentraleClient extends KiClient {
     super();
   }
 
-  async analysiere(fotos: AnalyseFoto[], kontext: string): Promise<unknown> {
+  async analysiere(
+    fotos: AnalyseFoto[],
+    kontext: string,
+    anweisung = SYSTEM_PROMPT,
+  ): Promise<unknown> {
     const antwort = await fetch(`${this.config.url}/erzeuge`, {
       method: 'POST',
       headers: {
@@ -56,7 +60,7 @@ export class KiZentraleClient extends KiClient {
       },
       body: JSON.stringify({
         zugang: 'patrick',
-        anweisung: SYSTEM_PROMPT,
+        anweisung,
         schema: SCHEMA,
         text: kontext,
         bilder: fotos.map((foto) => ({
