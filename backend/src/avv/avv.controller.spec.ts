@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { AvvController } from './avv.controller.js';
 
-// Nur die AVV-Kapitel, die im Betrieb vorkommen (15, 16, 17, 19, 20).
+// Nur die AVV-Kapitel, die im Betrieb vorkommen (15, 16, 17, 19, 20) plus 12 01 05.
 const NUR_ERLAUBTE_KAPITEL = {
   OR: [
     { code: { startsWith: '15 ' } },
@@ -9,6 +9,7 @@ const NUR_ERLAUBTE_KAPITEL = {
     { code: { startsWith: '17 ' } },
     { code: { startsWith: '19 ' } },
     { code: { startsWith: '20 ' } },
+    { code: { in: ['12 01 05'] } },
   ],
 };
 
